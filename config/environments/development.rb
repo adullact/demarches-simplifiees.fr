@@ -75,7 +75,6 @@ Rails.application.configure do
   config.assets.raise_runtime_errors = true
 
   # Action Mailer settings
-
   if ENV['SENDINBLUE_ENABLED'] == 'enabled'
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = {
@@ -85,6 +84,27 @@ Rails.application.configure do
       domain: 'smtp-relay.sendinblue.com',
       port: '587',
       authentication: :cram_md5
+    }
+  elsif ENV['SMTP_ENABLED'] == 'enabled'
+    # documentation:
+    # https://guides.rubyonrails.org/action_mailer_basics.html#action-mailer-configuration
+
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      # user_name: ENV['SMTP_USERNAME'],
+      # password: ENV['SMTP_PASSWORD'],
+      user_name: Rails.application.secrets.smtp[:username],
+      password: Rails.application.secrets.smtp[:password],
+      address: ENV['SMTP_ADDRESS'],
+      domain: ENV['SMTP_DOMAIN'],
+      port: ENV['SMTP_PORT'],
+      enable_starttls_auto: true,
+      # openssl_verify_mode: 'none',
+      # openssl_verify_mode: 'peer',
+      # ssl:  true,
+      # tls:  true,
+      # authentication: ENV['SMTP_AUTHENTICATION'] # :cram_md5 | :login | :plain
+      authentication: :plain
     }
   else
     config.action_mailer.delivery_method = :letter_opener_web
