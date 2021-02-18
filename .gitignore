@@ -53,9 +53,9 @@ public/vite
 public/vite-dev
 public/vite-test
 
-
 app/graphql/schema.json
 public/graphql/schema
+
 # Synbioz
 *.secrets
 *.override.yml
