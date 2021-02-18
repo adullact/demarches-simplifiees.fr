@@ -56,3 +56,8 @@ public/vite-test
 
 app/graphql/schema.json
 public/graphql/schema
+# Synbioz
+*.secrets
+*.override.yml
+!/app/custom_views/adullact
+!/config/custom_locales/adullact

@@ -1,0 +1,49 @@
+include:
+  - project: 'plunge/gitlab-ci-templates'
+    ref: master
+    file: '/templates/.gitlab-ci-common-kaniko.yml'
+
+variables:
+  CODE_QUALITY_DISABLED: "true"
+  PRODUCTION_RANCHERV2_CATALOG_APP_NAMESPACE: "demarches-simplifiees"
+  RANCHERV2_CATALOG_APP_NAME: "demarches-simplifiees"
+  RANCHERV2_CATALOG_APP_NAMESPACE: "demarches-simplifiees"
+  RANCHERV2_CATALOG_APP_VERSION: "0.2.0"
+  REVIEW_DOMAIN: "demarches-simplifiees.staging.plunge.cloud"
+  SENTRY_ORG: addullact
+  SENTRY_PROJECT: demarches-simplifiees
+  STAGING_URL: "https://staging-demarches-simplifiees.staging.plunge.cloud"
+  TEST: test
+  TESTS_COMMAND: "rake spec"
+  WITH_ASSETS: "true"
+  WITH_STAGING: "true"
+  WITH_TESTS: "true"
+
+test:lint:
+  needs: ["test:build"]
+  extends: .test_runner
+  stage: test
+  rules:
+    - if: $WITH_TESTS == "true"
+  script:
+    - |
+      app_env_file=${CI_PROJECT_DIR}/ops/ci/release/test_runner/app_env
+      if [ -e "$app_env_file" ]; then
+        source "$app_env_file"
+      fi
+    - bundle exec rake lint
+    - bundle exec rake zeitwerk:check
+
+# Adullact
+adullact:
+  extends:
+    - .production
+  image: $RANCHERV2_CLI_IMAGE
+  environment:
+    name: adullact-production
+    url: https://adullact.demarches-simplifiees.plunge.cloud
+  variables:
+    RANCHERV2_CATALOG_APP_NAMESPACE: "adullact-ds"
+  script:
+    - rancherv2_connect
+    - rancherv2_update adullact-production

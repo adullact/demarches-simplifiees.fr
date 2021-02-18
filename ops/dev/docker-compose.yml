@@ -1,0 +1,63 @@
+version: '3.7'
+x-app_common:
+  &app_common
+  build:
+    context: ../../
+    dockerfile: ops/dev/Dockerfile
+  env_file:
+    - app_env
+    - app_env.secrets
+  stdin_open: true
+  tty: true
+  volumes:
+    - app_data:/app:cached
+  ports:
+    - 3000
+  tmpfs:
+    - /tmp
+
+services:
+  app:
+    << : *app_common
+    environment:
+      VIRTUAL_HOST: demarches-simplifiees.syn
+      VIRTUAL_PORT: 3000
+  webpack:
+    << : *app_common
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - RAILS_ENV=${RAILS_ENV:-development}
+      - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
+    ports:
+      - '3035:3035'
+    command: ./bin/webpack-dev-server
+  delayed_job:
+    << : *app_common
+    command: rake jobs:work
+
+volumes:
+  app_data:
+    driver_opts:
+      type: none
+      device: "${PWD}/../../"
+      o: bind
+
+x-mutagen:
+  sync:
+    defaults:
+      ignore:
+        vcs: true
+    code:
+      alpha: "${PWD}/../.."
+      beta: "volume://app_data"
+      mode: "two-way-resolved"
+      ignore:
+        paths:
+          - "tmp/*"
+          - "tmp/**/*"
+          - "node_modules/*"
+          - "node_modules/**/*"
+
+networks:
+  default:
+    name: plungy_default

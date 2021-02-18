@@ -1,0 +1,231 @@
+app:
+  domainName: __ENV_NAME__-demarches-simplifiees.staging.plunge.cloud
+  image: __CI_REGISTRY_IMAGE__/app:__COMMIT_TAG__
+  initContainers: false
+  extraEnvCustomAssets:
+    DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x38.svg"
+    WATERMARK_FILE: "images/watermark-adullact_1149x67.png"
+    FAVICON_16PX_SRC: "images/16x16.png"
+    FAVICON_32PX_SRC: "images/32x32.png"
+    FAVICON_96PX_SRC: "images/96x96.png"
+    FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
+    HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
+    MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
+    MAILER_FOOTER_LOGO_SRC: "images/logo-mail-footer-adullact_200x71.png"
+    PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
+  extraEnv:
+    AGENT_CONNECT_BASE_URL: ""
+    AGENT_CONNECT_ENABLED: "disabled"
+    AGENT_CONNECT_ID: ""
+    AGENT_CONNECT_JWKS: ""
+    AGENT_CONNECT_REDIRECT: ""
+    AGENT_CONNECT_SECRET: ""
+    API_ADRESSE_URL: "https://api-adresse.data.gouv.fr"
+    API_EDUCATION_URL: "https://data.education.gouv.fr/api/records/1.0"
+    API_GEO_URL: "https://geo.api.gouv.fr"
+    APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
+    APP_NAME: "tps_dev"
+    BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
+    BOOTSTRAP_ADMIN_ENABLED: 1
+    BOOTSTRAP_ADMIN_PASSWORD: PasswordDemarche0Simplifie!
+    BOOTSTRAP_SUPERADMIN_EMAIL: superadmin@synbioz.com
+    BOOTSTRAP_SUPERADMIN_ENABLED: 1
+    CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
+    CLAMAV_ENABLED: disabled
+    CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
+    CONTACT_EMAIL: "contact-ds@synbioz.com"
+    CONTACT_PHONE: "01 76 42 02 87"
+    DB_DATABASE: demarches-simplifiees-__ENV_NAME__
+    DB_POOL: 5
+    DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
+    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+    DS_PROXY_URL: ""
+    EQUIPE_EMAIL: "equipe-ds@synbioz.com"
+    HEADER_LOGO_ALT: ""
+    HEADER_LOGO_HEIGHT: "56"
+    HEADER_LOGO_WIDTH: "65"
+    LANDING_TESTIMONIALS_ENABLED: "disabled"
+    LANDING_USERS_ENABLED: "disabled"
+    LOGRAGE_ENABLED: "disabled"
+    LOGRAGE_SOURCE: "tps_staging"
+    MAILCATCHER_ENABLED: "enabled"
+    MAILCATCHER_HOST: "mailcatcher-common-app-app"
+    MAILCATCHER_PORT: "1025"
+    MATOMO_COOKIE_DOMAIN: "*.demarches-simplifiees.syn"
+    MATOMO_DOMAIN: "*.demarches-simplifiees.syn"
+    MATOMO_ENABLED: "enabled"
+    MATOMO_HOST: "matomo.customers.plunge.cloud"
+    MATOMO_ID: "2"
+    MATOMO_IFRAME_URL: "https://matomo.customers.plunge.cloud/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
+    MENTIONS_LEGALES_URL: "https://faq.adullact.org/logiciels/119-mentions-legales-demarches-simplifiees-adullact"
+    NO_REPLY_EMAIL: "no-reply-ds@synbioz.com"
+    OLD_CONTACT_EMAIL: "old-contact-ds@synbioz.com"
+    RAILS_ENV: production
+    RAILS_LOG_TO_STDOUT: 1
+    RAILS_MAX_THREADS: 1
+    RAILS_QUEUE_ADAPTER: delayed_job
+    REDIS_NAMESPACE: demarches-simplifiees-__ENV_NAME__
+    S3_BUCKET: com.addullact.demarches-simplifiees-staging
+    S3_REGION: eu-west-3
+    SECRET_KEY_BASE: 6997JJgfdxZyFHNFbEPEoGfNJaYHdp7mT62sdtqcD9WePcr42cYRE4Bcuqaz9oYcHzmGzZAS
+    SENTRY_CURRENT_ENV: __ENV_NAME__
+    SENTRY_DSN_JS: ""
+    SENTRY_DSN_RAILS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
+    SENTRY_ENABLED: "enabled"
+    SMTP_HOST: mailcatcher-common-app-app
+    SMTP_PORT: "1025"
+    SOURCE: "tps_dev"
+    STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
+    ACTIVE_STORAGE_SERVICE: amazon
+    TECH_EMAIL: "tech-ds@synbioz.com"
+    TRUSTED_NETWORKS: ""
+    WEB_CONCURRENCY: 5
+  extraSecretEnv:
+    - fromSecret:
+        name: stack-postgresql-13
+        data:
+          DB_HOST: postgresql-host
+          DB_PASSWORD: postgresql-password
+          DB_USERNAME: postgresql-username
+    - fromSecret:
+        name: stack-redis
+        data:
+          REDIS_URL: redis-full-host
+    - fromSecret:
+        name: aws-s3
+        data:
+          S3_ACCESS_KEY_ID: aws_access_key_id
+          S3_SECRET_ACCESS_KEY: aws_secret_access_key
+    - fromSecret:
+        name: common
+        data:
+          OTP_SECRET_KEY: otp_secret_key
+          PIPEDRIVE_KEY: pipedrive_key
+          SIGNING_KEY: signing_key
+          SKYLIGHT_AUTHENTICATION_KEY: skylight_authentication_key
+          ENCRYPTION_SERVICE_SALT: encryption_service_salt
+          API_ENTREPRISE_KEY: api_entreprise_key
+          INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
+    - fromSecret:
+        name: saml
+        data:
+          SAML_IDP_CERTIFICATE: idp_certificate
+          SAML_IDP_ENABLED: enabled
+          SAML_IDP_SECRET_KEY: idp_secret_key
+    - fromSecret:
+        name: universign
+        data:
+          UNIVERSIGN_API_URL: api_url
+          UNIVERSIGN_USERPWD: user_password
+    - fromSecret:
+        name: mailtrap
+        data:
+          MAILTRAP_PASSWORD: password
+          MAILTRAP_USERNAME: username
+          MAILTRAP_ENABLED: enabled
+    - fromSecret:
+        name: mailjet
+        data:
+          MAILJET_API_KEY: api_key
+          MAILJET_SECRET_KEY: secret_key
+    - fromSecret:
+        name: helpscout
+        data:
+          HELPSCOUT_CLIENT_ID: client_id
+          HELPSCOUT_CLIENT_SECRET: client_secret
+          HELPSCOUT_MAILBOX_ID: mailbox_id
+          HELPSCOUT_WEBHOOK_SECRET: webhook_secret
+    - fromSecret:
+        name: fog-openstack
+        data:
+          FOG_OPENSTACK_API_KEY: api_key
+          FOG_OPENSTACK_AUTH_URL: auth_url
+          FOG_OPENSTACK_REGION: region
+          FOG_OPENSTACK_URL: url
+          FOG_OPENSTACK_USERNAME: username
+    - fromSecret:
+        name: fc-particulier
+        data:
+          FC_PARTICULIER_BASE_URL: base_url
+          FC_PARTICULIER_ID: id
+          FC_PARTICULIER_SECRET: secret
+    - fromSecret:
+        name: api-particulier
+        data:
+          API_PARTICULIER_URL: base_url
+    - fromSecret:
+        name: crisp
+        data:
+          CRISP_CLIENT_KEY: client_key
+          CRISP_ENABLED: enabled
+    - fromSecret:
+        name: basic-auth-ds
+        data:
+          BASIC_AUTH_ENABLED: enabled
+          BASIC_AUTH_PASSWORD: password
+          BASIC_AUTH_USERNAME: username
+    - fromSecret:
+        name: sendinblue
+        data:
+          SENDINBLUE_API_V3_KEY: api_v3_key
+          SENDINBLUE_BALANCING_VALUE: balancing_value
+          SENDINBLUE_BALANCING: balancing
+          SENDINBLUE_CLIENT_KEY: client_key
+          SENDINBLUE_ENABLED: enabled
+          SENDINBLUE_SMTP_KEY: smtp_key
+          SENDINBLUE_USER_NAME: user_name
+  releaseTasks:
+    - name: db-schema-load
+      command: ["/bin/bash"]
+      weight: "-6"
+      steps: "pre-install"
+      args:
+        - "-c"
+        - "rake db:schema:load"
+      extraEnv: []
+    - name: db-migrate
+      command: ["/bin/bash"]
+      weight: "-5"
+      steps: "pre-install,pre-upgrade"
+      args:
+        - "-c"
+        - "rake db:migrate"
+      extraEnv: []
+    - name: after-party
+      command: ["/bin/bash"]
+      weight: "-4"
+      steps: "pre-install,pre-upgrade"
+      args:
+        - "-c"
+        - "rake after_party:run"
+      extraEnv: []
+    - name: jobs-schedule
+      command: ["/bin/bash"]
+      weight: "-3"
+      steps: "pre-install,pre-upgrade"
+      args:
+        - "-c"
+        - "rake jobs:schedule"
+      extraEnv: []
+    - name: bootstrap-admin
+      command: ["/bin/bash"]
+      weight: "-4"
+      steps: "pre-install"
+      args:
+        - "-c"
+        - "rake bootstrap:all"
+      extraEnv: []
+delayed_job:
+  command: rake jobs:work
+assets:
+  image: __CI_REGISTRY_IMAGE__/assets:__COMMIT_TAG__
+  extraEnv:
+    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+custom_assets:
+  enabled: "true"
+  image: build.synbioz.com/addullact/custom-assets/app:adullact-0.2.0
+  extraEnv:
+    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+ingress:
+  tls:
+    secretName: wildcard-staging-plunge-cloud-crt

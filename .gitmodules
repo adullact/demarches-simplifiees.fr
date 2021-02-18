@@ -1,0 +1,3 @@
+[submodule "scripts/version"]
+	path = scripts/version
+	url = ../../synbioz//version.git

@@ -1,0 +1,39 @@
+# Ignore config.
+.bundle
+.byebug_history
+.powenv
+.git/**/*
+dump.rdb
+
+# Ignore the default SQLite database.
+/db/*.sqlite3
+/db/*.sqlite3-journal
+
+# Ignore all logfiles and tempfiles.
+log/*
+log/**/*
+tmp
+tmp/*
+tmp/**/*
+doc
+helm
+deploy
+
+# Ignore dump for development
+ops/dev/data
+
+# Ignore Docs
+doc/**/*
+
+node_modules/*
+node_modules/**/*
+
+# Ignore vendor
+vendor/**/*
+!vendor/assets/**/*
+
+.yarn-error.log
+storage/*
+storage/**
+.storybook/
+.eslintcache

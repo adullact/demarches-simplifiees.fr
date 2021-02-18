@@ -1,0 +1,33 @@
+version: '3.7'
+x-app_common:
+  &app_common
+  build:
+    context: ../../
+    dockerfile: ops/test/Dockerfile
+    cache_from:
+      - demarchessimplifieesdev_app
+  env_file:
+    - app_env
+    - app_env.secrets
+  stdin_open: true
+  tty: true
+  volumes:
+    - app_data:/app:cached
+    - /app/node_modules
+  tmpfs:
+    - /tmp
+  command: sh -c "rails db:environment:set && rails db:migrate && rake lint && rake zeitwerk:check && rake spec"
+
+services:
+  app:
+    << : *app_common
+volumes:
+  app_data:
+    driver_opts:
+      type: none
+      device: "${PWD}/../../"
+      o: bind
+
+networks:
+  default:
+    name: plungy_default

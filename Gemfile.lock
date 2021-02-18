@@ -115,6 +115,22 @@ GEM
       ruby-next-core (~> 1.0)
     ast (2.4.2)
     attr_required (1.0.2)
+    aws-eventstream (1.1.0)
+    aws-partitions (1.427.0)
+    aws-sdk-core (3.112.0)
+      aws-eventstream (~> 1, >= 1.0.2)
+      aws-partitions (~> 1, >= 1.239.0)
+      aws-sigv4 (~> 1.1)
+      jmespath (~> 1.0)
+    aws-sdk-kms (1.42.0)
+      aws-sdk-core (~> 3, >= 3.112.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-s3 (1.88.1)
+      aws-sdk-core (~> 3, >= 3.112.0)
+      aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.1)
+    aws-sigv4 (1.2.2)
+      aws-eventstream (~> 1, >= 1.0.2)
     axe-core-api (4.8.2)
       dumb_delegator
       virtus
@@ -122,6 +138,9 @@ GEM
       axe-core-api
       dumb_delegator
       virtus
+    axe-matchers (2.6.1)
+      dumb_delegator (~> 0.8)
+      virtus (~> 1.0)
     axiom-types (0.1.1)
       descendants_tracker (~> 0.0.4)
       ice_nine (~> 0.11.0)
@@ -356,6 +375,7 @@ GEM
       reline (>= 0.4.2)
     job-iteration (1.4.1)
       activejob (>= 5.2)
+    jmespath (1.4.0)
     jquery-rails (4.6.0)
       rails-dom-testing (>= 1, < 3)
       railties (>= 4.2.0)
@@ -900,7 +920,10 @@ DEPENDENCIES
   after_party
   ancestry
   anchored
+  annotate
+  aws-sdk-s3
   axe-core-rspec
+  axe-matchers
   bcrypt
   benchmark-ips
   bootsnap (>= 1.4.4)

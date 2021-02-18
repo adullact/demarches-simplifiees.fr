@@ -14,6 +14,7 @@ gem 'after_commit_everywhere'
 gem 'after_party'
 gem 'ancestry'
 gem 'anchored'
+gem 'aws-sdk-s3'
 gem 'bcrypt'
 gem 'bootsnap', '>= 1.4.4', require: false # Reduces boot times through caching; required in config/boot.rb
 gem 'browser'

@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: __JOB_NAME__
+  labels:
+    type: restore-database
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: migrate
+        image: build.synbioz.com/synbioz/docker-images/postgresql-aws-s3/app:0.6.0-postgres-13.2
+        command: [ "/scripts/restore" ]
+        env:
+        - name: S3_RESTORE
+          value: "databases/customers-production-postgres-13-db.cparyxa5u8t9.eu-west-3.rds.amazonaws.com/adullact-ds-db"
+        - name: POSTGRES_DB
+          value: "demarches-simplifiees-__ENV_NAME__"
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: stack-postgresql-13
+              key: postgresql-host
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: stack-postgresql
+              key: postgresql-username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: stack-postgresql
+              key: postgresql-password
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-s3-plunge-backup
+              key: aws_access_key_id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-s3-plunge-backup
+              key: aws_secret_access_key
+        - name: S3_RESTORE
+          value: "databases/customers-production-postgres-13-db.cparyxa5u8t9.eu-west-3.rds.amazonaws.com/adullact-ds-db"
+      imagePullSecrets:
+      - name: synbioz

@@ -28,8 +28,8 @@ Rails.application.configure do
   end
 
   config.lograge.keep_original_rails_log = true
-  config.lograge.logger = ActiveSupport::Logger.new(Rails.root.join('log', "logstash_#{Rails.env}.log"))
-  config.lograge.ignore_actions = ['PingController#index']
+  # config.lograge.logger = ActiveSupport::Logger.new(Rails.root.join('log', "logstash_#{Rails.env}.log"))
+  config.lograge.logger = ActiveSupport::Logger.new(STDOUT)
 end
 
 Rails.application.config.after_initialize do |app|
