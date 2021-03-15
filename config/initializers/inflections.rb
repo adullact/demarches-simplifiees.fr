@@ -10,8 +10,11 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   #  inflect.uncountable %w( fish sheep )
   inflect.acronym 'API'
   inflect.acronym 'ASN1'
+  inflect.acronym 'CAF'
+  inflect.acronym 'DGFIP'
   inflect.acronym 'IP'
   inflect.acronym 'JSON'
+  inflect.acronym 'MESRI'
   inflect.acronym 'RNA'
   inflect.acronym 'URL'
   inflect.irregular 'type_de_champ', 'types_de_champ'
