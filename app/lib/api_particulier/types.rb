@@ -45,5 +45,10 @@ module APIParticulier
 
     REGIMES_ETUDIANT = ["formation initiale", "formation continue"].freeze
     RegimeEtudiant = Types::List.new(REGIMES_ETUDIANT).freeze
+
+    SCOPES = %w[dgfip_avis_imposition dgfip_adresse
+                cnaf_allocataires cnaf_enfants cnaf_adresse cnaf_quotient_familial
+                mesri_statut_etudiant].freeze
+    Scope = Types::List.new(SCOPES).freeze
   end
 end

@@ -368,6 +368,48 @@ describe NewAdministrateur::ProceduresController, type: :controller do
     end
   end
 
+  describe "GET #jeton_particulier" do
+    let(:procedure) { create(:procedure, administrateur: admin) }
+
+    subject { get :jeton_particulier, params: { id: procedure.id } }
+
+    it { is_expected.to have_http_status(:success) }
+  end
+
+  describe "PATCH #jeton_particulier" do
+    let(:procedure) { create(:procedure, administrateur: admin) }
+    let(:token) { "d7e9c9f4c3ca00caadde31f50fd4521a" }
+    let(:params) { { id: procedure.id, procedure: { api_particulier_token: token } } }
+
+    subject { patch :update_jeton_particulier, params: params }
+
+    context "when jeton is valid" do
+      before do
+        VCR.use_cassette("api_particulier/success/introspect") do
+          subject
+        end
+      end
+
+      it { expect(flash.alert).to be_nil }
+      it { expect(flash.notice).to eql("Le jeton a bien été mis à jour") }
+      it { expect(procedure.reload.api_particulier_token).to eql(token) }
+    end
+
+    context "when jeton is invalid" do
+      let(:token_is_valid) { false }
+
+      before do
+        VCR.use_cassette("api_particulier/not_found/introspect") do
+          subject
+        end
+      end
+
+      it { expect(flash.alert).to eql("Mise à jour impossible : le jeton n'est pas valide") }
+      it { expect(flash.notice).to be_nil }
+      it { expect(procedure.reload.api_entreprise_token).not_to eql(token) }
+    end
+  end
+
   describe 'PUT #publish' do
     let(:procedure) { create(:procedure, administrateur: admin, lien_site_web: lien_site_web) }
     let(:procedure2) { create(:procedure, :published, administrateur: admin, lien_site_web: lien_site_web) }

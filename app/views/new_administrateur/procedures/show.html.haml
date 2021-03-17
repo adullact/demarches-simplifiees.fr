@@ -191,10 +191,25 @@
           %span.icon.clock
           %p.card-admin-status-todo À configurer
       %div
-        %p.card-admin-title Jeton
-        %p.card-admin-subtitle Configurer le jeton API entreprise
+        %p.card-admin-title Jeton Entreprise
+        %p.card-admin-subtitle Configurer le jeton API Entreprise
       .card-admin-action
         = link_to 'Modifier', jeton_admin_procedure_path(@procedure), class: 'button'
+
+    .card-admin
+      - if @procedure.api_particulier_token.present?
+        %div
+          %span.icon.accept
+          %p.card-admin-status-accept Validé
+      - else
+        %div
+          %span.icon.clock
+          %p.card-admin-status-todo À configurer
+      %div
+        %p.card-admin-title Jeton Particulier
+        %p.card-admin-subtitle Configurer le jeton API Particulier
+      .card-admin-action
+        = link_to 'Modifier', jeton_particulier_admin_procedure_path(@procedure), class: 'button'
 
     .card-admin
       - if @procedure.monavis_embed.present?

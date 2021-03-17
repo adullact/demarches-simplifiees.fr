@@ -377,6 +377,7 @@ class Procedure < ApplicationRecord
     if is_different_admin
       procedure.administrateurs = [admin]
       procedure.api_entreprise_token = nil
+      procedure.api_particulier_token = nil
     else
       procedure.administrateurs = administrateurs
     end
@@ -619,8 +620,19 @@ class Procedure < ApplicationRecord
     APIEntrepriseToken.new(api_entreprise_token).role?(role)
   end
 
+  def api_particulier_scope?(api_scope)
+    scopes = APIParticulier::API.new(token: api_particulier_token).introspect.scopes
+    scopes.include?(APIParticulier::Types::Scope[api_scope])
+  rescue APIParticulier::Error::HttpError
+    false
+  end
+
   def api_entreprise_token
     self[:api_entreprise_token].presence || Rails.application.secrets.api_entreprise[:key]
+  end
+
+  def api_particulier_token
+    @api_particulier_token.presence || Rails.application.secrets.api_particulier[:key]
   end
 
   def api_entreprise_token_expired?
