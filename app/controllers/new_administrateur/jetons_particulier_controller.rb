@@ -32,7 +32,8 @@ module NewAdministrateur
         flash.now.alert = "Veuillez renseignez un jeton API particulier valide pour définir les sources de données"
         render :index
       else
-        @procedure_sources = @procedure.api_particulier_sources.presence || APIParticulier::Entities::ProcedureSources.new(@procedure).sources
+        @procedure_sources = @procedure.api_particulier_sources.presence
+        @procedure_sources ||= APIParticulier::Services::BuildProcedureMask.new.call(@procedure)
       end
     end
 

@@ -2,7 +2,7 @@
 
 module APIParticulier
   module Entities
-    class ProcedureSources
+    class Procedure
       def initialize(procedure)
         @procedure = procedure
       end
@@ -10,20 +10,20 @@ module APIParticulier
       def sources
         {
           dgfip: {
-            avis_imposition: dgfip_avis_imposition(),
-            foyer_fiscal: dgfip_foyer_fiscal()
+            avis_imposition: dgfip_avis_imposition,
+            foyer_fiscal: dgfip_foyer_fiscal
           },
           caf: {
-            allocataires: caf_allocataires(),
-            enfants: caf_enfants(),
-            adresse: caf_adresse(),
-            quotient_familial: caf_quotient_familial()
+            allocataires: caf_allocataires,
+            enfants: caf_enfants,
+            adresse: caf_adresse,
+            quotient_familial: caf_quotient_familial
           },
           pole_emploi: {
-            situation: pole_emploi_situation()
+            situation: pole_emploi_situation
           },
           mesri: {
-            statut_etudiant: mesri_statut_etudiant()
+            statut_etudiant: mesri_statut_etudiant
           }
         }.with_indifferent_access
       end

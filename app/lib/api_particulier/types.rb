@@ -3,7 +3,7 @@ module APIParticulier
     List = Struct.new(:items) do
       def [](item)
         item.to_s.tap do |i|
-          raise ArgumentError unless items.include?(i)
+          raise ArgumentError, "item: '#{i}' invalid" unless items.include?(i)
         end
       end
 
@@ -15,14 +15,14 @@ module APIParticulier
     Enum = Struct.new(:pairs) do
       def [](key)
         k = key.to_s.to_sym
-        raise ArgumentError unless pairs.keys.include?(k)
+        raise ArgumentError, "key: '#{k}' invalid" unless pairs.keys.include?(k)
 
         pairs[k]
       end
 
       def key(value)
         val = value.to_i
-        raise ArgumentError unless pairs.values.include?(val)
+        raise ArgumentError, "value: '#{val}' invalid" unless pairs.values.include?(val)
 
         pairs.key(val)
       end
@@ -46,13 +46,13 @@ module APIParticulier
     REGIMES_ETUDIANT = ["formation initiale", "formation continue"].freeze
     RegimeEtudiant = Types::List.new(REGIMES_ETUDIANT).freeze
 
-    SCOPES = %w[dgfip_avis_imposition dgfip_adresse
-                cnaf_allocataires cnaf_enfants cnaf_adresse cnaf_quotient_familial
-                mesri_statut_etudiant].freeze
-    DGFIP_SCOPES = %w[dgfip_avis_imposition dgfip_adresse]
-    CAF_SCOPES = %w[cnaf_enfants cnaf_adresse cnaf_quotient_familial]
-    ETUDIANT_SCOPES = %w[mesri_statut_etudiant]
-    POLE_EMPLOI_SCOPES = %w[inconnu]
+    SCOPES = [
+      DGFIP_SCOPES = %w[dgfip_avis_imposition dgfip_adresse],
+      CAF_SCOPES = %w[cnaf_allocataires cnaf_enfants cnaf_adresse cnaf_quotient_familial],
+      ETUDIANT_SCOPES = %w[mesri_statut_etudiant],
+      POLE_EMPLOI_SCOPES = %w[inconnu]
+    ].flatten.freeze
+
     Scope = Types::List.new(SCOPES).freeze
   end
 end

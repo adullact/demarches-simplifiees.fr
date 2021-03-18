@@ -1,0 +1,53 @@
+- if dossier.procedure.api_particulier_dgfip_scope?
+  .card
+    .card-title DGFIP
+    %table.table.vertical.dossier-champs
+      %tbody
+        %tr
+          %th.libelle Numéro fiscal :
+          %td= individual.api_particulier_dgfip_numero_fiscal
+        %tr
+          %th.libelle Référence de l'avis :
+          %td= individual.api_particulier_dgfip_reference_de_l_avis
+
+        - if donnees[:dgfip]
+          = render partial: "shared/dossiers/identite_particulier/dgfip", locals: { dgfip: donnees[:dgfip] }
+
+- if dossier.procedure.api_particulier_caf_scope?
+  .card
+    .card-title CAF
+    %table.table.vertical.dossier-champs
+      %tbody
+        %tr
+          %th.libelle Numéro d'allocataire :
+          %td= individual.api_particulier_caf_numero_d_allocataire
+        %tr
+          %th.libelle Code postal :
+          %td= individual.api_particulier_caf_code_postal
+
+        - if donnees[:caf]
+          = render partial: "shared/dossiers/identite_particulier/caf", locals: { famille: donnees[:caf] }
+
+- if dossier.procedure.api_particulier_pole_emploi_scope?
+  .card
+    .card-title Pôle Emploi
+    %table.table.vertical.dossier-champs
+      %tbody
+        %tr
+          %th.libelle Identifiant Pôle Emploi :
+          %td= individual.api_particulier_pole_emploi_identifiant
+
+        - if donnees[:pole_emploi]
+          = render partial: "shared/dossiers/identite_particulier/pole_emploi", locals: { situation: donnees[:pole_emploi] }
+
+- if dossier.procedure.api_particulier_etudiant_scope?
+  .card
+    .card-title Statut Étudiant
+    %table.table.vertical.dossier-champs
+      %tbody
+        %tr
+          %th.libelle INE :
+          %td= individual.api_particulier_mesri_ine
+
+        - if donnees[:mesri]
+          = render partial: "shared/dossiers/identite_particulier/mesri", locals: { etudiant: donnees[:mesri] }

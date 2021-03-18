@@ -34,4 +34,26 @@ describe Individual do
       end
     end
   end
+
+  describe "#api_particulier_donnees?" do
+    subject { individual.api_particulier_donnees? }
+
+    context "without data" do
+      let(:individual) { Individual.new }
+
+      it { expect(subject).to be false }
+    end
+
+    context "with empty data" do
+      let(:individual) { Individual.new(api_particulier_donnees: { dgfip: {}, caf: {} }) }
+
+      it { expect(subject).to be false }
+    end
+
+    context "with data" do
+      let(:individual) { Individual.new(api_particulier_donnees: { dgfip: {}, caf: { quotient_familial: 1848 } }) }
+
+      it { expect(subject).to be true }
+    end
+  end
 end

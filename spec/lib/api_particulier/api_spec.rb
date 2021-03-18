@@ -29,7 +29,7 @@ describe APIParticulier::API do
 
           expect(subject.date_de_recouvrement).to eql(Date.new(2020, 10, 9))
           expect(subject.date_d_etablissement).to eql(Date.new(2020, 7, 7))
-          expect(subject.nombre_de_parts).to equal(0.0)
+          expect(subject.nombre_de_parts).to equal(1.0)
           expect(subject.situation_familiale).to be_nil
           expect(subject.nombre_de_personnes_a_charge).to equal(0)
           expect(subject.revenu_brut_global).to equal(38814)

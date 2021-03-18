@@ -4,6 +4,13 @@
       = render partial: "shared/dossiers/infos_generales", locals: { dossier: dossier }
 
   .tab-title Identité du demandeur
+
+  - if profile != 'usager' && feature_enabled?(:api_particulier) && dossier.procedure&.api_particulier_validated?
+    - if dossier.individual&.api_particulier_donnees?
+      = render partial: "shared/dossiers/identite_particulier", locals: { dossier: dossier, individual: dossier.individual, donnees: APIParticulier::Services::BuildData.new.call(**dossier.individual.api_particulier_donnees) }
+    - else
+      = render partial: "shared/dossiers/identite_particulier_absente", locals: { dossier: dossier }
+
   .card
     - if dossier.france_connect_information.present?
       = render partial: "shared/dossiers/france_connect_informations", locals: { user_information: dossier.france_connect_information }

@@ -32,22 +32,29 @@
 
     - if @procedure.api_particulier_dgfip_scope?
       %h2.tab-title Données DGFIP
-      = api_particulier_sources_checkbox(@procedure_sources, "dgfip", "avis_imposition")
-      = api_particulier_sources_checkbox(@procedure_sources, "dgfip", "foyer_fiscal")
+      %ul.procedure-admin-api-particulier-sources
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :dgfip, :foyer_fiscal)
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :dgfip, :avis_imposition)
 
     - if @procedure.api_particulier_caf_scope?
       %h2.tab-title Données CAF
-      = api_particulier_sources_checkbox(@procedure_sources, "caf", "allocataires")
-      = api_particulier_sources_checkbox(@procedure_sources, "caf", "enfants")
-      = api_particulier_sources_checkbox(@procedure_sources, "caf", "adresse")
-      = api_particulier_sources_checkbox(@procedure_sources, "caf", "quotient_familial")
+      %ul.procedure-admin-api-particulier-sources
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :caf, :allocataires)
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :caf, :enfants)
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :caf, :adresse)
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :caf, :quotient_familial)
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :caf, :annee)
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :caf, :mois)
 
-    %h2.tab-title Données Pôle Emploi
-    = api_particulier_sources_checkbox(@procedure_sources, "pole_emploi", "situation")
+    - if @procedure.api_particulier_pole_emploi_scope?
+      %h2.tab-title Données Pôle Emploi
+      %ul.procedure-admin-api-particulier-sources
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :pole_emploi, :situation)
 
     - if @procedure.api_particulier_scope?("mesri_statut_etudiant")
       %h2.tab-title Données étudiant
-      = api_particulier_sources_checkbox(@procedure_sources, "mesri", "statut_etudiant")
+      %ul.procedure-admin-api-particulier-sources
+        %li= api_particulier_sources_checkboxes(@procedure_sources, :mesri, :statut_etudiant)
 
     .text-right
       = f.button 'Enregistrer', class: 'button primary send'

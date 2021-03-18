@@ -8,12 +8,10 @@ class APIParticulier::Job < ApplicationJob
   # - bdf: erreur interne
   # so we retry every day for 5 days
   # same logic for ServiceUnavailable
-  rescue_from(APIParticulier::Error::ServiceUnavailable) do |exception|
-    retry_or_discard(exception)
-  end
-  rescue_from(APIParticulier::Error::BadGateway) do |exception|
-    retry_or_discard(exception)
-  end
+  rescue_from APIParticulier::Error::ServiceUnavailable, APIParticulier::Error::BadGateway, with: :retry_or_discard
+
+  rescue_from APIParticulier::Error::NotFound, APIParticulier::Error::BadFormatRequest, with: :log_job_exception
+  rescue_from EncryptionService::Error, with: :log_job_exception
 
   # We guess the backend is slow but not broken
   # and the information we are looking for is available
@@ -23,31 +21,20 @@ class APIParticulier::Job < ApplicationJob
   # If by the time the job runs the Procedure has been deleted
   discard_on ActiveRecord::RecordNotFound
 
-  rescue_from(APIParticulier::Error::NotFound) do |exception|
-    error(self, exception)
-  end
-
-  rescue_from(APIParticulier::Error::BadFormatRequest) do |exception|
-    error(self, exception)
-  end
-
+  alias_method :application_job_error, :error
   def error(job, exception)
     # override ApplicationJob#error to avoid reporting to sentry
   end
 
   def log_job_exception(exception)
-    if etablissement.present?
-      if etablissement.dossier.present?
-        etablissement.dossier.log_api_entreprise_job_exception(exception)
-      elsif etablissement.champ.present?
-        etablissement.champ.log_fetch_external_data_exception(exception)
-      end
-    end
+    return application_job_error(self, exception) if dossier.nil?
+
+    dossier.log_api_particulier_job_exception(exception)
   end
 
   def retry_or_discard(exception)
     if executions < max_attempts
-      retry_job wait: 2.seconds
+      retry_job wait: 1.day
     else
       log_job_exception(exception)
     end
@@ -57,9 +44,9 @@ class APIParticulier::Job < ApplicationJob
     ENV.fetch("MAX_ATTEMPTS_API_PARTICULIER_JOBS", DEFAULT_MAX_ATTEMPTS_API_PARTICULIER_JOBS).to_i
   end
 
-  attr_reader :procedure
+  private
 
-  def find_procedure(procedure_id)
-    @procedure = Procedure.find(procedure_id)
+  def dossier
+    @dossier ||= Dossier.find(arguments.first) if is_a?(APIParticulier::DossierJob)
   end
 end

@@ -255,6 +255,7 @@ ActiveRecord::Schema.define(version: 2021_04_27_120002) do
     t.datetime "last_avis_updated_at"
     t.datetime "last_commentaire_updated_at"
     t.string "api_entreprise_job_exceptions", array: true
+    t.string "api_particulier_job_exceptions", array: true
     t.index "to_tsvector('french'::regconfig, (search_terms || private_search_terms))", name: "index_dossiers_on_search_terms_private_search_terms", using: :gin
     t.index "to_tsvector('french'::regconfig, search_terms)", name: "index_dossiers_on_search_terms", using: :gin
     t.index ["archived"], name: "index_dossiers_on_archived"
@@ -446,6 +447,14 @@ ActiveRecord::Schema.define(version: 2021_04_27_120002) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.date "birthdate"
+    t.string "api_particulier_dgfip_numero_fiscal"
+    t.string "api_particulier_dgfip_reference_de_l_avis"
+    t.string "api_particulier_caf_numero_d_allocataire"
+    t.string "api_particulier_caf_code_postal"
+    t.string "api_particulier_pole_emploi_identifiant"
+    t.string "api_particulier_mesri_ine"
+    t.jsonb "api_particulier_donnees", default: {}
+    t.index ["api_particulier_donnees"], name: "index_individuals_on_api_particulier_donnees", using: :gin
     t.index ["dossier_id"], name: "index_individuals_on_dossier_id", unique: true
   end
 

@@ -61,6 +61,113 @@ feature 'Creating a new dossier:' do
       end
     end
 
+    context 'when the procedure has identification by individual' do
+      let(:procedure) { create(:procedure, :published, :for_individual, :with_service, api_particulier_scopes: scopes) }
+
+      context 'when API Particulier is enabled' do
+        before do
+          Flipper.enable(:api_particulier)
+          visit commencer_path(path: procedure.path)
+          click_on 'Commencer la démarche'
+
+          expect(page).to have_current_path identite_dossier_path(user.reload.dossiers.last)
+          expect(page).to have_procedure_description(procedure)
+        end
+
+        context "when DGFIP scopes are present" do
+          let(:scopes) { APIParticulier::Types::DGFIP_SCOPES }
+
+          it "must display DGFIP fields only" do
+            expect(page).to have_content("Numéro fiscal")
+            expect(page).to have_content("Référence de l'avis fiscal")
+
+            expect(page).not_to have_content("Numéro d'allocataire CAF")
+            expect(page).not_to have_content("Code postal")
+            expect(page).not_to have_content("Identifiant pôle emploi")
+            expect(page).not_to have_content("INE étudiant")
+          end
+        end
+
+        context "when CAF scopes are present" do
+          let(:scopes) { APIParticulier::Types::CAF_SCOPES }
+
+          it "must display CAF fields only" do
+            expect(page).to have_content("Numéro d'allocataire CAF")
+            expect(page).to have_content("Code postal")
+
+            expect(page).not_to have_content("Numéro fiscal")
+            expect(page).not_to have_content("Référence de l'avis fiscal")
+            expect(page).not_to have_content("Identifiant pôle emploi")
+            expect(page).not_to have_content("INE étudiant")
+          end
+        end
+
+        context "when Pole Emploi scopes are present" do
+          let(:scopes) { APIParticulier::Types::POLE_EMPLOI_SCOPES }
+
+          it "must display Pole Emploi fields only" do
+            expect(page).to have_content("Identifiant pôle emploi")
+
+            expect(page).not_to have_content("Numéro fiscal")
+            expect(page).not_to have_content("Référence de l'avis fiscal")
+            expect(page).not_to have_content("Numéro d'allocataire CAF")
+            expect(page).not_to have_content("Code postal")
+            expect(page).not_to have_content("INE étudiant")
+          end
+        end
+
+        context "when MESRI scopes are present" do
+          let(:scopes) { APIParticulier::Types::ETUDIANT_SCOPES }
+
+          it "must display MESRI fields only" do
+            expect(page).to have_content("INE étudiant")
+
+            expect(page).not_to have_content("Numéro fiscal")
+            expect(page).not_to have_content("Référence de l'avis fiscal")
+            expect(page).not_to have_content("Numéro d'allocataire CAF")
+            expect(page).not_to have_content("Code postal")
+            expect(page).not_to have_content("Identifiant pôle emploi")
+          end
+        end
+
+        context "when CAF & MESRI scopes are present" do
+          let(:scopes) { APIParticulier::Types::ETUDIANT_SCOPES + APIParticulier::Types::CAF_SCOPES }
+
+          it "must display CAF & MESRI fields" do
+            expect(page).to have_content("Numéro d'allocataire CAF")
+            expect(page).to have_content("Code postal")
+            expect(page).to have_content("INE étudiant")
+
+            expect(page).not_to have_content("Numéro fiscal")
+            expect(page).not_to have_content("Référence de l'avis fiscal")
+            expect(page).not_to have_content("Identifiant pôle emploi")
+          end
+        end
+      end
+
+      context 'when API Particulier is disabled' do
+        before do
+          Flipper.disable(:api_particulier)
+          visit commencer_path(path: procedure.path)
+          click_on 'Commencer la démarche'
+
+          expect(page).to have_current_path identite_dossier_path(user.reload.dossiers.last)
+          expect(page).to have_procedure_description(procedure)
+        end
+
+        let(:scopes) { APIParticulier::Types::SCOPES }
+
+        it "wont display any API Partucilier fields" do
+          expect(page).not_to have_content("Numéro fiscal")
+          expect(page).not_to have_content("Référence de l'avis fiscal")
+          expect(page).not_to have_content("Numéro d'allocataire CAF")
+          expect(page).not_to have_content("Code postal")
+          expect(page).not_to have_content("Identifiant pôle emploi")
+          expect(page).not_to have_content("INE étudiant")
+        end
+      end
+    end
+
     context 'when identifying through SIRET' do
       let(:procedure) { create(:procedure, :published, :with_service, :with_type_de_champ) }
       let(:dossier) { procedure.dossiers.last }

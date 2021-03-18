@@ -5,17 +5,15 @@ module EncryptableConcern
     def attr_encrypted(*attributes)
       attributes.each do |attribute|
         define_method("#{attribute}=".to_sym) do |value|
-          return if value.nil?
-
           self.public_send(
             "encrypted_#{attribute}=".to_sym,
-            EncryptionService.encrypt(value)
+            EncryptionService.new.encrypt(value)
           )
         end
 
         define_method(attribute) do
           value = self.public_send("encrypted_#{attribute}".to_sym)
-          EncryptionService.decrypt(value) if value.present?
+          EncryptionService.new.decrypt(value) if value.present?
         end
       end
     end

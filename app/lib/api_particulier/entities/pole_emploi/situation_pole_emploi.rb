@@ -1,23 +1,45 @@
 # frozen_string_literal: true
 
+require_relative '../sanitizable'
+
 module APIParticulier
   module Entities
     module PoleEmploi
       class SituationPoleEmploi
+        include Sanitizable
+
+        class Mapper
+          def self.from_api(**kwargs)
+            kwargs.transform_keys do |k|
+              case k.to_sym
+              when :nomUsage then :nom_d_usage
+              when :dateNaissance then :date_de_naissance
+              when :dateInscription then :date_d_inscription
+              when :dateRadiation then :date_de_radiation
+              when :dateProchaineConvocation then :date_de_la_prochaine_convocation
+              when :categorieInscription then :categorie_d_inscription
+              when :codeCertificationCNAV then :code_de_certification_cnav
+              else
+                k.to_sym
+              end
+            end
+          end
+        end
+
         def initialize(**kwargs)
-          attrs = kwargs.symbolize_keys
+          attrs = Mapper.from_api(**kwargs)
           @email = attrs[:email]
           @nom = attrs[:nom]
-          @nom_d_usage = attrs[:nomUsage]
+          @nom_d_usage = attrs[:nom_d_usage]
           @prenom = attrs[:prenom]
           @identifiant = attrs[:identifiant]
           @sexe = attrs[:sexe]
-          @date_de_naissance = attrs[:dateNaissance]
-          @date_d_inscription = attrs[:dateInscription]
-          @date_de_radiation = attrs[:dateRadiation]
-          @date_de_la_prochaine_convocation = attrs[:dateProchaineConvocation]
-          @categorie_d_inscription = attrs[:categorieInscription]
-          @code_de_certification_cnav = attrs[:codeCertificationCNAV]
+          @date_de_naissance = attrs[:date_de_naissance]
+          @date_d_inscription = attrs[:date_d_inscription]
+          @date_de_radiation = attrs[:date_de_radiation]
+          @date_de_la_prochaine_convocation = attrs[:date_de_la_prochaine_convocation]
+          @categorie_d_inscription = attrs[:categorie_d_inscription]
+          @code_de_certification_cnav = attrs[:code_de_certification_cnav]
           @telephone = attrs[:telephone]
           @telephone2 = attrs[:telephone2]
           @civilite = attrs[:civilite]
@@ -35,25 +57,25 @@ module APIParticulier
 
         def date_de_naissance
           DateTime.parse(@date_de_naissance)
-        rescue Date::Error
+        rescue Date::Error, TypeError
           nil
         end
 
         def date_d_inscription
           DateTime.parse(@date_d_inscription)
-        rescue Date::Error
+        rescue Date::Error, TypeError
           nil
         end
 
         def date_de_radiation
           DateTime.parse(@date_de_radiation)
-        rescue Date::Error
+        rescue Date::Error, TypeError
           nil
         end
 
         def date_de_la_prochaine_convocation
           DateTime.parse(@date_de_la_prochaine_convocation)
-        rescue Date::Error
+        rescue Date::Error, TypeError
           nil
         end
 
@@ -63,6 +85,24 @@ module APIParticulier
 
         def adresse
           Adresse.new(**Hash(@adresse))
+        end
+
+        def adresse?
+          Hash(@adresse).compact.any?
+        end
+
+        def as_json(*)
+          super.tap do |situation|
+            situation["adresse"] = adresse.as_json
+          end
+        end
+
+        def as_sanitized_json(mask = nil)
+          mask ||= {}
+
+          super.tap do |situation|
+            situation[:adresse] = adresse.as_sanitized_json(mask[:adresse]) if situation.key?(:adresse)
+          end
         end
       end
     end

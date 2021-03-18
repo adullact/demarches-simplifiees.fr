@@ -27,6 +27,7 @@ end
 features = [
   :administrateur_routage,
   :administrateur_web_hook,
+  :api_particulier,
   :carte_ign,
   :dossier_pdf_vide,
   :expert_not_allowed_to_invite,

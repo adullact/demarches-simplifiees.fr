@@ -37,6 +37,7 @@ Rails.application.reloader.to_prepare do
 
     module ApiParticulier
       Job = APIParticulier::Job
+      DossierJob = APIParticulier::DossierJob
     end
   end
 end

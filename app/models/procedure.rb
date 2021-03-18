@@ -638,23 +638,23 @@ class Procedure < ApplicationRecord
   end
 
   def api_particulier_dgfip_scope?
-    (api_particulier_scopes & APIParticulier::Types::DGFIP_SCOPES).present?
+    (api_particulier_scopes & APIParticulier::Types::DGFIP_SCOPES).any?
   end
 
   def api_particulier_caf_scope?
-    (api_particulier_scopes & APIParticulier::Types::CAF_SCOPES).present?
+    (api_particulier_scopes & APIParticulier::Types::CAF_SCOPES).any?
   end
 
   def api_particulier_etudiant_scope?
-    (api_particulier_scopes & APIParticulier::Types::ETUDIANT_SCOPES).present?
+    (api_particulier_scopes & APIParticulier::Types::ETUDIANT_SCOPES).any?
   end
 
   def api_particulier_pole_emploi_scope?
-    (api_particulier_scopes & APIParticulier::Types::POLE_EMPLOI_SCOPES).present?
+    (api_particulier_scopes & APIParticulier::Types::POLE_EMPLOI_SCOPES).any?
   end
 
   def api_particulier_validated?
-    api_particulier_token.presence && api_particulier_sources.presence
+    api_particulier_token.present? && api_particulier_sources.present?
   end
 
   def api_entreprise_token

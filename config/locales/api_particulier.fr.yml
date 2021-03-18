@@ -8,17 +8,18 @@ fr:
           prenoms: prénoms
           date_de_naissance: date de naissance
         foyer_fiscal: &foyer_fiscal
-          libelle: Foyer fiscal
+          libelle: foyer fiscal
           annee: année
           adresse: adresse fiscale de l'année passée
         avis_imposition:
-          libelle: Avis d'imposition
-          declarant1: *declarant
-          declarant1_libelle: déclarant 1
-          declarant2: *declarant
-          declarant2_libelle: déclarant 2
+          libelle: avis d'imposition
+          declarant1:
+            <<: *declarant
+            libelle: déclarant 1
+          declarant2:
+            <<: *declarant
+            libelle: déclarant 2
           foyer_fiscal: *foyer_fiscal
-          foyer_fiscal_libelle: foyer fiscal
           date_de_recouvrement: date de recouvrement
           date_d_etablissement: date d'établissement
           nombre_de_parts: nombre de parts
@@ -47,20 +48,18 @@ fr:
           code_postal_et_ville: code postal et ville
           pays: pays
         allocataires:
-          libelle: Allocataires
+          libelle: allocataires
           <<: *personne
           adresse: *poste_adresse
         enfants:
-          libelle: Enfants
+          libelle: enfants
           <<: *personne
         adresse:
-          libelle: Adresse
+          libelle: adresse
           <<: *poste_adresse
-        quotient_familial:
-          libelle: Quotient familial
-          quotient_familial: quotient familial
-          annee: année
-          mois: mois
+        quotient_familial: quotient familial
+        annee: année
+        mois: mois
       pole_emploi:
         adresse: &adresse
           code_postal: code postal
@@ -72,7 +71,7 @@ fr:
           ligne_complement_de_distribution: complément de distribution
           ligne_nom_du_detinataire: nom du destinataire
         situation:
-          libelle: Situation
+          libelle: situation
           email: courriel
           nom: nom
           nom_d_usage: nom d'usage
@@ -88,8 +87,9 @@ fr:
           telephone: téléphone
           telephone2: téléphone 2
           civilite: civilté
-          adresse: *adresse
-          adresse_libelle: adresse
+          adresse:
+            <<: *adresse
+            libelle: adresse
       mesri:
         etablissement: &etablissement
           uai: UAI
@@ -100,13 +100,15 @@ fr:
           statut: statut
           regime: régime
           code_commune: code de la commune
-          etablissement: *etablissement
-          etablissement_libelle: établissement
+          etablissement:
+            <<: *etablissement
+            libelle: établissement
         statut_etudiant:
-          inscriptions_libelle: Inscriptions
+          libelle: statut étudiant
           ine: INE
           nom: nom
           prenom: prénom
           date_de_naissance: date de naissance
-          inscriptions: *inscription
-
+          inscriptions:
+            <<: *inscription
+            libelle: inscriptions
