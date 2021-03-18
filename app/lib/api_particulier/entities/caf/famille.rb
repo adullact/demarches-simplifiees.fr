@@ -15,15 +15,15 @@ module APIParticulier
         end
 
         def allocataires
-          Array(@allocataires).map { |kwargs| Personne.new(**kwargs) }
+          Array(@allocataires).map { |kwargs| Personne.new(**Hash(kwargs)) }
         end
 
         def enfants
-          Array(@enfants).map { |kwargs| Personne.new(**kwargs) }
+          Array(@enfants).map { |kwargs| Personne.new(**Hash(kwargs)) }
         end
 
         def adresse
-          PosteAdresse.new(**@adresse)
+          PosteAdresse.new(**Hash(@adresse))
         end
 
         def quotient_familial

@@ -402,10 +402,18 @@ Rails.application.routes.draw do
         patch 'update_monavis'
         get 'jeton'
         patch 'update_jeton'
-        get 'jeton_particulier'
-        patch 'update_jeton_particulier'
         put :allow_expert_review
         put :experts_require_administrateur_invitation
+      end
+
+      resources :jetons_particulier, only: [:index] do
+        collection do
+          get 'jeton'
+          patch 'update_jeton'
+          get 'sources'
+          patch 'update_sources'
+          post 'update_sources'
+        end
       end
 
       get 'publication' => 'procedures#publication', as: :publication

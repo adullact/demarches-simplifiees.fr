@@ -49,6 +49,10 @@ module APIParticulier
     SCOPES = %w[dgfip_avis_imposition dgfip_adresse
                 cnaf_allocataires cnaf_enfants cnaf_adresse cnaf_quotient_familial
                 mesri_statut_etudiant].freeze
+    DGFIP_SCOPES = %w[dgfip_avis_imposition dgfip_adresse]
+    CAF_SCOPES = %w[cnaf_enfants cnaf_adresse cnaf_quotient_familial]
+    ETUDIANT_SCOPES = %w[mesri_statut_etudiant]
+    POLE_EMPLOI_SCOPES = %w[inconnu]
     Scope = Types::List.new(SCOPES).freeze
   end
 end

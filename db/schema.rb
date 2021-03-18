@@ -556,7 +556,10 @@ ActiveRecord::Schema.define(version: 2021_04_27_120002) do
     t.bigint "published_revision_id"
     t.boolean "allow_expert_review", default: true, null: false
     t.boolean "experts_require_administrateur_invitation", default: false
-    t.string "api_particulier_token"
+    t.string "encrypted_api_particulier_token"
+    t.jsonb "api_particulier_sources", default: {}
+    t.text "api_particulier_scopes", default: [], array: true
+    t.index ["api_particulier_sources"], name: "index_procedures_on_api_particulier_sources", using: :gin
     t.index ["declarative_with_state"], name: "index_procedures_on_declarative_with_state"
     t.index ["draft_revision_id"], name: "index_procedures_on_draft_revision_id"
     t.index ["hidden_at"], name: "index_procedures_on_hidden_at"

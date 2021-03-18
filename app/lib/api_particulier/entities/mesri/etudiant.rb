@@ -22,7 +22,7 @@ module APIParticulier
         end
 
         def inscriptions
-          Array(@inscriptions).map { |kwargs| Inscription.new(**kwargs) }
+          Array(@inscriptions).map { |kwargs| Inscription.new(**Hash(kwargs)) }
         end
       end
     end

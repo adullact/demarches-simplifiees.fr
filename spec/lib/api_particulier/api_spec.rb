@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 describe APIParticulier::API do
-  let(:token) { Rails.application.secrets.api_particulier[:key] }
+  let(:token) { "d7e9c9f4c3ca00caadde31f50fd4521a" }
   let(:api) { APIParticulier::API.new(token: token) }
 
   describe "avis d'imposition" do

@@ -41,7 +41,7 @@ module APIParticulier
         end
 
         def etablissement
-          Etablissement.new(**@etablissement)
+          Etablissement.new(**Hash(@etablissement))
         end
       end
     end

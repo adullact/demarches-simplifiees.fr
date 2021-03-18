@@ -1,6 +1,6 @@
 module NewAdministrateur
   class ProceduresController < AdministrateurController
-    before_action :retrieve_procedure, only: [:champs, :annotations, :edit, :monavis, :update_monavis, :jeton, :update_jeton, :jeton_particulier, :update_jeton_particulier, :publication, :publish, :transfert, :allow_expert_review, :experts_require_administrateur_invitation]
+    before_action :retrieve_procedure, only: [:champs, :annotations, :edit, :monavis, :update_monavis, :jeton, :update_jeton, :publication, :publish, :transfert, :allow_expert_review, :experts_require_administrateur_invitation]
     before_action :procedure_locked?, only: [:champs, :annotations]
 
     ITEMS_PER_PAGE = 25
@@ -141,26 +141,6 @@ module NewAdministrateur
       end
     end
 
-    def jeton_particulier
-      render "jeton_particulier", locals: { procedure: @procedure }
-    end
-
-    def update_jeton_particulier
-      token = update_jeton_particulier_params[:api_particulier_token]
-      @procedure.api_particulier_token = token
-
-      if @procedure.valid? && jeton_particulier_valide?(token)
-        @procedure.save
-
-        redirect_to jeton_particulier_admin_procedure_path(procedure_id: params[:procedure_id]),
-          notice: "Le jeton a bien été mis à jour"
-      else
-
-        flash.now.alert = "Mise à jour impossible : le jeton n'est pas valide"
-        render "jeton_particulier", locals: { procedure: @procedure }
-      end
-    end
-
     def publication
       if @procedure.brouillon?
         @procedure_lien = commencer_test_url(path: @procedure.path)
@@ -221,13 +201,6 @@ module NewAdministrateur
       Procedure.find(params[:id])
     end
 
-    def jeton_particulier_valide?(token)
-      @jeton_particulier_valide ||= {}
-      @jeton_particulier_valide[token] ||= APIParticulier::API.new(token: token).introspect.scopes.any?
-    rescue APIParticulier::Error::HttpError
-      false
-    end
-
     def procedure_params
       editable_params = [:libelle, :description, :organisation, :direction, :lien_site_web, :cadre_juridique, :deliberation, :notice, :web_hook_url, :declarative_with_state, :euro_flag, :logo, :auto_archive_on, :monavis_embed, :api_entreprise_token]
       permited_params = if @procedure&.locked?
@@ -247,10 +220,6 @@ module NewAdministrateur
 
     def allow_decision_access_params
       params.require(:experts_procedure).permit(:allow_decision_access)
-    end
-
-    def update_jeton_particulier_params
-      params.require(:procedure).permit(:api_particulier_token)
     end
   end
 end

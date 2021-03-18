@@ -28,15 +28,15 @@ module APIParticulier
         attr_reader :situation_familiale, :erreur_correctif, :situation_partielle
 
         def declarant1
-          Declarant.new(**@declarant1)
+          Declarant.new(**Hash(@declarant1))
         end
 
         def declarant2
-          Declarant.new(**@declarant2)
+          Declarant.new(**Hash(@declarant2))
         end
 
         def foyer_fiscal
-          FoyerFiscal.new(**@foyer_fiscal)
+          FoyerFiscal.new(**Hash(@foyer_fiscal))
         end
 
         def date_de_recouvrement

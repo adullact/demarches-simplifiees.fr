@@ -197,7 +197,7 @@
         = link_to 'Modifier', jeton_admin_procedure_path(@procedure), class: 'button'
 
     .card-admin
-      - if @procedure.api_particulier_token.present?
+      - if @procedure.api_particulier_validated?
         %div
           %span.icon.accept
           %p.card-admin-status-accept Validé
@@ -209,7 +209,7 @@
         %p.card-admin-title Jeton Particulier
         %p.card-admin-subtitle Configurer le jeton API Particulier
       .card-admin-action
-        = link_to 'Modifier', jeton_particulier_admin_procedure_path(@procedure), class: 'button'
+        = link_to 'Modifier', admin_procedure_jetons_particulier_path(@procedure), class: 'button'
 
     .card-admin
       - if @procedure.monavis_embed.present?

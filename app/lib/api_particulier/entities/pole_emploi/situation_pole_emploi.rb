@@ -62,7 +62,7 @@ module APIParticulier
         end
 
         def adresse
-          Adresse.new(**@adresse)
+          Adresse.new(**Hash(@adresse))
         end
       end
     end

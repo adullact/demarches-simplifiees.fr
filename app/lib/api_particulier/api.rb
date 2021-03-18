@@ -96,10 +96,16 @@ module APIParticulier
           return yield response
         elsif response.timed_out?
           raise Error::TimedOut.new(response)
+        elsif response.code == 400
+          raise Error::BadFormatRequest.new(response)
         elsif response.code == 401
           raise Error::Unauthorized.new(response)
         elsif response.code == 404
           raise Error::NotFound.new(response)
+        elsif response.code == 502
+          raise	Error::BadGateway.new(response)
+        elsif response.code == 503
+          raise Error::ServiceUnavailable.new(response)
         else
           raise Error::RequestFailed.new(response)
         end

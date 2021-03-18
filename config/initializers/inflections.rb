@@ -17,6 +17,7 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.acronym 'MESRI'
   inflect.acronym 'RNA'
   inflect.acronym 'URL'
+  inflect.irregular 'jeton_particulier', 'jetons_particulier'
   inflect.irregular 'type_de_champ', 'types_de_champ'
   inflect.irregular 'type_de_champ_private', 'types_de_champ_private'
   inflect.irregular 'procedure_revision_type_de_champ', 'procedure_revision_types_de_champ'
