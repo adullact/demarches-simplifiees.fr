@@ -40,17 +40,17 @@ module APIParticulier
 
     Sexe = Types::Enum.new(SEXES).freeze
 
-    STATUTS_ETUDIANT = %w[admis inscrit].freeze
+    STATUTS_ETUDIANT = ['admis', 'inscrit'].freeze
     StatutEtudiant = Types::List.new(STATUTS_ETUDIANT).freeze
 
     REGIMES_ETUDIANT = ["formation initiale", "formation continue"].freeze
     RegimeEtudiant = Types::List.new(REGIMES_ETUDIANT).freeze
 
     SCOPES = [
-      DGFIP_SCOPES = %w[dgfip_avis_imposition dgfip_adresse],
-      CAF_SCOPES = %w[cnaf_allocataires cnaf_enfants cnaf_adresse cnaf_quotient_familial],
-      ETUDIANT_SCOPES = %w[mesri_statut_etudiant],
-      POLE_EMPLOI_SCOPES = %w[inconnu]
+      DGFIP_SCOPES = ['dgfip_avis_imposition', 'dgfip_adresse'],
+      CAF_SCOPES = ['cnaf_allocataires', 'cnaf_enfants', 'cnaf_adresse', 'cnaf_quotient_familial'],
+      ETUDIANT_SCOPES = ['mesri_statut_etudiant'],
+      POLE_EMPLOI_SCOPES = ['inconnu']
     ].flatten.freeze
 
     Scope = Types::List.new(SCOPES).freeze

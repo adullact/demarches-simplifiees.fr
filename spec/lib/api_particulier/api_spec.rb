@@ -56,16 +56,16 @@ describe APIParticulier::API do
       end
     end
 
-     context "avec un numéro fiscal inconnu" do
-       let(:numero_fiscal) { "0000000000000" }
+    context "avec un numéro fiscal inconnu" do
+      let(:numero_fiscal) { "0000000000000" }
       let(:reference_de_l_avis) { "2097699999077" }
 
-       it "doit retourner une erreur" do
-         VCR.use_cassette("api_particulier/not_found/avis_imposition") do
-           expect { subject }.to raise_error(APIParticulier::Error::NotFound)
-         end
-       end
-     end
+      it "doit retourner une erreur" do
+        VCR.use_cassette("api_particulier/not_found/avis_imposition") do
+          expect { subject }.to raise_error(APIParticulier::Error::NotFound)
+        end
+      end
+    end
   end
 
   describe "composition familiale" do
@@ -112,8 +112,8 @@ describe APIParticulier::API do
     end
 
     context "avec un numéro d'allocataire inconnu" do
-      let(:numero_d_allocataire) { "0000000" }
-      let(:code_postal) { "99148" }
+       let(:numero_d_allocataire) { "0000000" }
+       let(:code_postal) { "99148" }
 
        it "doit retourner une erreur" do
          VCR.use_cassette("api_particulier/not_found/composition_familiale") do
@@ -224,9 +224,7 @@ describe APIParticulier::API do
         expect(subject.name).to eql("Application de sandbox")
         expect(subject.email).to be_nil
         expect(subject.scopes).to be_instance_of(Array)
-        expect(subject.scopes).to match_array(%w[dgfip_avis_imposition dgfip_adresse cnaf_allocataires
-                                                 cnaf_enfants cnaf_adresse cnaf_quotient_familial
-                                                 mesri_statut_etudiant])
+        expect(subject.scopes).to match_array(['dgfip_avis_imposition', 'dgfip_adresse', 'cnaf_allocataires', 'cnaf_enfants', 'cnaf_adresse', 'cnaf_quotient_familial', 'mesri_statut_etudiant'])
       end
     end
   end

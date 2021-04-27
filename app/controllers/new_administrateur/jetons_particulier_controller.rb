@@ -2,7 +2,7 @@
 
 module NewAdministrateur
   class JetonsParticulierController < AdministrateurController
-    before_action :retrieve_procedure, only: %i[index jeton update_jeton sources update_sources]
+    before_action :retrieve_procedure, only: [:index, :jeton, :update_jeton, :sources, :update_sources]
 
     def index
     end

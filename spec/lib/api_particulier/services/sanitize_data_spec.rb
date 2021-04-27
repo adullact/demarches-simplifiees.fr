@@ -49,9 +49,11 @@ describe APIParticulier::Services::SanitizeData do
         }
       ],
       enfants: [
-        { noms_et_prenoms: "LUCIE DUPONT",
+        {
+          noms_et_prenoms: "LUCIE DUPONT",
           date_de_naissance: "11122016",
-          sexe: "F" }
+          sexe: "F"
+        }
       ],
       quotient_familial: 1754,
       annee: 2020,
@@ -260,7 +262,7 @@ describe APIParticulier::Services::SanitizeData do
         email: "georges@moustaki.fr",
         identifiant: "georges_moustaki_77",
         adresse: {
-          insee_commune: "75118",
+          insee_commune: "75118"
         }
       }
     end
@@ -296,7 +298,7 @@ describe APIParticulier::Services::SanitizeData do
   context "quand on ne veut récupérer que le quotient familial" do
     let(:mask) do
       {
-        caf: { quotient_familial: 1 },
+        caf: { quotient_familial: 1 }
       }
     end
 

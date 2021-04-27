@@ -46,7 +46,7 @@ module APIParticulier
         {
           allocataires: caf_allocataires(data, mask).presence,
           enfants: caf_enfants(data, mask).presence,
-          adresse: caf_adresse(data, mask).presence,
+          adresse: caf_adresse(data, mask).presence
         }.merge(caf_quotient_familial(data, mask)).compact
       end
 

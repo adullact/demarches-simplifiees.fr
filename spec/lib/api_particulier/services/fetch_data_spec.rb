@@ -196,17 +196,23 @@ describe APIParticulier::Services::FetchData do
           pays: "FRANCE"
         },
         allocataires: [
-          { noms_et_prenoms: "MARIE DUPONT",
+          {
+            noms_et_prenoms: "MARIE DUPONT",
             date_de_naissance: "12111971",
-            sexe: "F" },
-          { noms_et_prenoms: "JEAN DUPONT",
+            sexe: "F"
+          },
+          {
+            noms_et_prenoms: "JEAN DUPONT",
             date_de_naissance: "18101969",
-            sexe: "M" }
+            sexe: "M"
+          }
         ],
         enfants: [
-          { noms_et_prenoms: "LUCIE DUPONT",
+          {
+            noms_et_prenoms: "LUCIE DUPONT",
             date_de_naissance: "11122016",
-            sexe: "F" }
+            sexe: "F"
+          }
         ],
         quotient_familial: 1754,
         annee: 2020,
@@ -275,7 +281,7 @@ describe APIParticulier::Services::FetchData do
     let(:data) do
       {
         dgfip: {},
-        caf: { },
+        caf: {},
         pole_emploi: { situation: situation },
         mesri: {}
       }
@@ -298,23 +304,23 @@ describe APIParticulier::Services::FetchData do
 
     let(:etudiant) do
       APIParticulier::Entities::MESRI::Etudiant.new(
-       ine: ine,
-       nom: "Dupont",
-       prenom: "Gaëtan",
-       date_de_naissance: "1999-10-12T00:00:00",
-       inscriptions: [
-         {
-           date_de_debut_d_inscription: "2019-09-01T00:00:00",
-           date_de_fin_d_inscription: "2020-08-31T00:00:00",
-           statut: "admis",
-           regime: "formation initiale",
-           code_commune: "44000",
-           etablissement: {
-             uai: "0011402U",
-             nom: "EGC AIN BOURG EN BRESSE EC GESTION ET COMMERCE (01000)"
-           }
-         }
-       ]
+        ine: ine,
+        nom: "Dupont",
+        prenom: "Gaëtan",
+        date_de_naissance: "1999-10-12T00:00:00",
+        inscriptions: [
+          {
+            date_de_debut_d_inscription: "2019-09-01T00:00:00",
+            date_de_fin_d_inscription: "2020-08-31T00:00:00",
+            statut: "admis",
+            regime: "formation initiale",
+            code_commune: "44000",
+            etablissement: {
+              uai: "0011402U",
+              nom: "EGC AIN BOURG EN BRESSE EC GESTION ET COMMERCE (01000)"
+            }
+          }
+        ]
       )
     end
 

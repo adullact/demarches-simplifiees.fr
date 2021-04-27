@@ -80,7 +80,7 @@ module APIParticulier
         end
 
         def telephones
-         [@telephone, @telephone2].compact
+          [@telephone, @telephone2].compact
         end
 
         def adresse
