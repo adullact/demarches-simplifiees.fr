@@ -55,7 +55,7 @@ module APIParticulier
         return if allocataires_data.nil?
 
         allocataires_mask = Hash(mask.dig(:caf, :allocataires))
-        allocataires_data.map { |a| a.as_sanitized_json(allocataires_mask).presence }.compact
+        allocataires_data.filter_map { |a| a.as_sanitized_json(allocataires_mask).presence }
       end
 
       def caf_enfants(data, mask)
@@ -63,7 +63,7 @@ module APIParticulier
         return if enfants_data.nil?
 
         enfants_mask = Hash(mask.dig(:caf, :enfants))
-        enfants_data.map { |e| e.as_sanitized_json(enfants_mask).presence }.compact
+        enfants_data.filter_map { |e| e.as_sanitized_json(enfants_mask).presence }
       end
 
       def caf_adresse(data, mask)
