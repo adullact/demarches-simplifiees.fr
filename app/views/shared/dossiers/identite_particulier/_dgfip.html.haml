@@ -1,16 +1,16 @@
 - if dgfip.declarant1?
   %tr.section
-    %th(colspan=2)= t("api_particulier.entities.dgfip.avis_imposition.declarant1.libelle")
+    %th{ colspan: 2 }= t("api_particulier.entities.dgfip.avis_imposition.declarant1.libelle")
   = render partial: "shared/dossiers/identite_particulier/dgfip/declarant", locals: { declarant: dgfip.declarant1 }
 
 - if dgfip.declarant2?
   %tr.section
-    %th(colspan=2)= t("api_particulier.entities.dgfip.avis_imposition.declarant2.libelle")
+    %th{ colspan: 2 }= t("api_particulier.entities.dgfip.avis_imposition.declarant2.libelle")
   = render partial: "shared/dossiers/identite_particulier/dgfip/declarant", locals: { declarant: dgfip.declarant2 }
 
 - if dgfip.foyer_fiscal?
   %tr.section
-    %th(colspan=2)= t("api_particulier.entities.dgfip.foyer_fiscal.libelle")
+    %th{ colspan: 2 }= t("api_particulier.entities.dgfip.foyer_fiscal.libelle")
   = render partial: "shared/dossiers/identite_particulier/dgfip/foyer_fiscal", locals: { foyer_fiscal: dgfip.foyer_fiscal }
 
 - if dgfip.date_de_recouvrement

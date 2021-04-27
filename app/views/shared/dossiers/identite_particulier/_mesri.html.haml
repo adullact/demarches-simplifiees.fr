@@ -20,6 +20,6 @@
 
 - if etudiant.inscriptions?
   %tr.section
-    %th(colspan=2)= t("api_particulier.entities.mesri.statut_etudiant.inscriptions.libelle")
+    %th{ colspan: 2 }= t("api_particulier.entities.mesri.statut_etudiant.inscriptions.libelle")
   - etudiant.inscriptions.each do |inscription|
     = render partial: "shared/dossiers/identite_particulier/mesri/inscription", locals: { inscription: inscription }

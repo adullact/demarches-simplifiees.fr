@@ -75,5 +75,5 @@
 
 - if situation.adresse?
   %tr.section
-    %th(colspan=2)= t("api_particulier.entities.pole_emploi.adresse.libelle")
+    %th{ colspan: 2 }= t("api_particulier.entities.pole_emploi.adresse.libelle")
   = render partial: "shared/dossiers/identite_particulier/pole_emploi/adresse", locals: { adresse: situation.adresse }
