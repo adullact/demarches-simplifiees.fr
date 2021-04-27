@@ -38,6 +38,7 @@ class DossierProjectionService
       end
     end
 
+    # rubocop:disable Style/HashTransformValues
     other_fields.each do |field|
       field[:id_value_h] = case field[TABLE]
       when 'self'
@@ -77,6 +78,7 @@ class DossierProjectionService
           .to_h { |dossier_id, dossier_id_emails| [dossier_id, dossier_id_emails.map { |_, email| email }&.join(', ')] }
       end
     end
+    # rubocop:enable Style/HashTransformValues
 
     Dossier
       .select(:id, :state, :archived) # the dossier object is needed in the view
