@@ -47,6 +47,9 @@ feature "procedure filters" do
     end
 
     remove_column(type_de_champ.libelle)
+    # NOTE: Ensure the page is fully reloaded
+    expect(page).to have_current_path(instructeur_procedure_path(procedure))
+
     within ".dossiers-table" do
       expect(page).not_to have_link(type_de_champ.libelle)
       expect(page).not_to have_link(champ.value)
