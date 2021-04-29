@@ -350,7 +350,7 @@ class Dossier < ApplicationRecord
   after_create_commit :send_draft_notification_email
 
   validates :user, presence: true, if: -> { deleted_user_email_never_send.nil? }
-  validates :individual, presence: true, if: -> { revision.procedure.for_individual? }
+  validates :individual, presence: true, if: -> { revision&.procedure&.for_individual? }
   validates :groupe_instructeur, presence: true, if: -> { !brouillon? }
 
   def user_deleted?
