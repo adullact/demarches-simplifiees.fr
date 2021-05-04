@@ -88,17 +88,13 @@ Rails.application.configure do
     }
   else
     config.action_mailer.delivery_method = :letter_opener_web
-    config.action_mailer.default_url_options = {
-      host: 'localhost',
-      port: 3000
-    }
-
-    config.action_mailer.asset_host = "http://" + ENV['APP_HOST']
+    config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "localhost:3000") }
+    config.action_mailer.asset_host = "http://" + ENV.fetch("APP_HOST", "localhost:3000")
   end
 
   Rails.application.routes.default_url_options = {
-    host: 'localhost',
-    port: 3000
+    host: ENV.fetch("APP_HOST", "localhost:3000"),
+    protocol: :http
   }
 
   # Use Content-Security-Policy-Report-Only headers
