@@ -2,6 +2,9 @@ require 'capybara/rspec'
 require 'capybara-screenshot/rspec'
 require 'capybara/email/rspec'
 require 'selenium/webdriver'
+require 'capybara/mechanize'
+
+Capybara::Mechanize.local_hosts = ["test.host", "www.example.com"]
 
 def setup_driver(app, download_path, options)
   Capybara::Selenium::Driver.new(app, browser: :chrome, options:).tap do |driver|

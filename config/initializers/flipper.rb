@@ -21,6 +21,7 @@ features = [
   :api_particulier,
   :attestation_v2,
   :blocking_pending_correction,
+  :france_connect,
   :cojo_type_de_champ,
   :dossier_pdf_vide,
   :engagement_juridique_type_de_champ,
