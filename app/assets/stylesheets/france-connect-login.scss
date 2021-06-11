@@ -1,0 +1,30 @@
+@import "colors";
+@import "constants";
+
+.france-connect-login-separator {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  color: $black;
+  text-transform: uppercase;
+  padding-bottom: $default-spacer;
+  padding-top: $default-spacer;
+
+  &::before,
+  &::after {
+    content: "";
+    flex-grow: 1;
+    background: $dark-grey;
+    height: 1px;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  &::before {
+    margin-right: $default-spacer;
+  }
+
+  &::after {
+    margin-left: $default-spacer;
+  }
+}

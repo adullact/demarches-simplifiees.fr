@@ -53,7 +53,8 @@ class Users::SessionsController < Devise::SessionsController
       sign_out :user
 
       if connected_with_france_connect == User.loged_in_with_france_connects.fetch(:particulier)
-        return redirect_to FRANCE_CONNECT[:particulier][:logout_endpoint], allow_other_host: true
+        # return redirect_to FRANCE_CONNECT[:particulier][:logout_endpoint], allow_other_host: true
+        return redirect_to Rails.configuration.x.fcp.logout_endpoint, allow_other_host: true
       end
 
       if agent_connect_id_token.present?

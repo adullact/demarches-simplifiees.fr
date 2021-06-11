@@ -914,11 +914,6 @@ class Procedure < ApplicationRecord
                 dossiers_count_computed_at: now)
     end
   end
-  def fc_particulier_validated?
-    fc_particulier_id.present? && fc_particulier_secret.present?
-  end
-
-  private
 
   def move_new_children_to_new_parent_coordinate(new_draft)
     children = new_draft.revision_types_de_champ
@@ -1028,6 +1023,10 @@ class Procedure < ApplicationRecord
 
   def monavis_embed_html_source(source)
     monavis_embed.gsub('nd_source=button', "nd_source=#{source}").gsub('<a ', '<a target="_blank" rel="noopener noreferrer" ')
+  end
+
+  def fc_particulier_validated?
+    fc_particulier_id.present? && fc_particulier_secret.present?
   end
 
   private
