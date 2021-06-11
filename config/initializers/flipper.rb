@@ -15,6 +15,7 @@ features = [
   :administrateur_web_hook,
   :api_particulier,
   :dossier_pdf_vide,
+  :france_connect,
   :hide_instructeur_email,
   :procedure_routage_api,
   :groupe_instructeur_api_hack,
