@@ -935,6 +935,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_16_091043) do
     t.datetime "published_at", precision: nil
     t.bigint "published_revision_id"
     t.bigint "replaced_by_procedure_id"
+    t.string "encrypted_fc_particulier_id"
+    t.string "encrypted_fc_particulier_secret"
     t.boolean "routing_enabled"
     t.bigint "service_id"
     t.jsonb "sva_svr", default: {}, null: false

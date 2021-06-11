@@ -590,6 +590,8 @@ Rails.application.routes.draw do
         patch 'update_accuse_lecture'
         get 'jeton'
         patch 'update_jeton'
+        get 'fc_particulier'
+        patch 'update_fc_particulier'
         put :allow_expert_review
         put :allow_expert_messaging
         put :experts_require_administrateur_invitation
