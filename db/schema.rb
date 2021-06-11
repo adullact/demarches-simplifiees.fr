@@ -648,6 +648,8 @@ ActiveRecord::Schema.define(version: 2022_03_02_101337) do
     t.bigint "published_revision_id"
     t.boolean "allow_expert_review", default: true, null: false
     t.boolean "experts_require_administrateur_invitation", default: false
+    t.string "encrypted_fc_particulier_id"
+    t.string "encrypted_fc_particulier_secret"
     t.string "encrypted_api_particulier_token"
     t.text "api_particulier_scopes", default: [], array: true
     t.jsonb "api_particulier_sources", default: {}
