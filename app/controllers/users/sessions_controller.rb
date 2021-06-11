@@ -42,8 +42,8 @@ class Users::SessionsController < Devise::SessionsController
       sign_out :user
 
       case connected_with_france_connect
-      when User.loged_in_with_france_connects.fetch(:particulier)
-        redirect_to FRANCE_CONNECT[:particulier][:logout_endpoint], allow_other_host: true
+      when User.loged_in_with_france_connect.fetch(:particulier)
+        redirect_to Rails.configuration.x.fcp.logout_endpoint, allow_other_host: true
         return
       end
     end

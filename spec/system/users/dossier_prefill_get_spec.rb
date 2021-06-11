@@ -168,7 +168,7 @@ describe 'Prefilling a dossier (with a GET request):', js: true, retry: 3 do
 
         before do
           allow_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_uri).and_return(france_connect_particulier_callback_path(code: "c0d3"))
-          allow(FranceConnectService).to receive(:retrieve_user_informations_particulier).and_return(build(:france_connect_information))
+          allow_any_instance_of(FranceConnectService).to receive(:find_or_retrieve_france_connect_information).and_return(build(:france_connect_information))
 
           page.find('.fr-connect').click
 
