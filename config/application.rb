@@ -85,6 +85,9 @@ module TPS
     # Custom Configuration
     # @see https://guides.rubyonrails.org/configuring.html#custom-configuration
     config.x.clamav.enabled = ENV.fetch("CLAMAV_ENABLED", "enabled") == "enabled"
+    config.x.france_connect.enabled = ENV.fetch("FRANCE_CONNECT_ENABLED", "enabled") == "enabled"
+    config.x.france_connect.particulier = config_for(:france_connect)
+    config.x.fcp = config.x.france_connect.particulier
 
     config.view_component.generate.sidecar = true
     config.view_component.generate.locale = true
