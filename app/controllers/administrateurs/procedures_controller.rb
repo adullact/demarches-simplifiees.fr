@@ -3,7 +3,7 @@ module Administrateurs
     layout 'all', only: [:all, :administrateurs]
     respond_to :html, :xlsx
 
-    before_action :retrieve_procedure, only: [:champs, :annotations, :modifications, :edit, :zones, :monavis, :update_monavis, :jeton, :update_jeton, :publication, :publish, :transfert, :close, :allow_expert_review, :allow_expert_messaging, :experts_require_administrateur_invitation, :reset_draft]
+    before_action :retrieve_procedure, only: [:champs, :annotations, :modifications, :edit, :zones, :monavis, :update_monavis, :jeton, :update_jeton, :publication, :publish, :transfert, :close, :allow_expert_review, :allow_expert_messaging, :experts_require_administrateur_invitation, :reset_draft, :fc_particulier, :update_fc_particulier]
     before_action :draft_valid?, only: [:apercu]
     after_action :reset_procedure, only: [:update]
 
@@ -231,6 +231,25 @@ module Administrateurs
         flash.notice = 'le champ MonAvis a bien été mis à jour'
       end
       render 'monavis'
+    end
+
+    def fc_particulier
+    end
+
+    def update_fc_particulier
+      client_id = update_fc_particulier_params[:fc_particulier_id]
+      client_secret = update_fc_particulier_params[:fc_particulier_secret]
+
+      @procedure.update!(
+        fc_particulier_id: client_id,
+        fc_particulier_secret: client_secret
+      )
+
+      redirect_to admin_procedure_path(procedure_id: params[:procedure_id]),
+        notice: "FranceConnect est correctement configuré"
+    rescue ActiveRecord::ActiveRecordError
+      flash.now.alert = "La validation a échoué : vos accréditations ne sont pas valides"
+      render "fc_particulier"
     end
 
     def jeton
@@ -506,6 +525,10 @@ module Administrateurs
 
     def cloned_from_library?
       params[:from_new_from_existing].present?
+    end
+
+    def update_fc_particulier_params
+      params.require(:procedure).permit(:fc_particulier_id, :fc_particulier_secret)
     end
   end
 end

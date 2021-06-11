@@ -813,6 +813,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_25_161609) do
     t.boolean "duree_conservation_etendue_par_ds", default: false, null: false
     t.boolean "durees_conservation_required", default: true
     t.string "encrypted_api_particulier_token"
+    t.string "encrypted_fc_particulier_id"
+    t.string "encrypted_fc_particulier_secret"
     t.integer "estimated_dossiers_count"
     t.boolean "estimated_duration_visible", default: true, null: false
     t.boolean "euro_flag", default: false

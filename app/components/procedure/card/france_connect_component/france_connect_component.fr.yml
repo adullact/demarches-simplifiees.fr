@@ -1,0 +1,6 @@
+---
+fr:
+  configure: "Configurer FranceConnect"
+  needs_configuration: "À configurer"
+  ready: "Validé"
+  title: "FranceConnect"

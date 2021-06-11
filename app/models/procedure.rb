@@ -26,6 +26,8 @@ class Procedure < ApplicationRecord
   DOSSIERS_COUNT_EXPIRING = 1.hour
 
   attr_encrypted :api_particulier_token
+  attr_encrypted :fc_particulier_id
+  attr_encrypted :fc_particulier_secret
 
   has_many :revisions, -> { order(:id) }, class_name: 'ProcedureRevision', inverse_of: :procedure
   belongs_to :draft_revision, class_name: 'ProcedureRevision', optional: false
@@ -308,6 +310,8 @@ class Procedure < ApplicationRecord
   validates :api_entreprise_token, jwt_token: true, allow_blank: true
   validates :api_particulier_token, format: { with: /\A[A-Za-z0-9\-_=.]{15,}\z/ }, allow_blank: true
   validate :validate_auto_archive_on_in_the_future, if: :will_save_change_to_auto_archive_on?
+  validates :fc_particulier_id, format: { with: /\A[[:alnum:]]{64}\z/, message: "n'est pas un identifiant valide" }, allow_blank: true
+  validates :fc_particulier_secret, format: { with: /\A[[:alnum:]]{64}\z/, message: "n'est pas un secret valide" }, allow_blank: true
 
   before_save :update_juridique_required
   after_initialize :ensure_path_exists
@@ -497,6 +501,8 @@ class Procedure < ApplicationRecord
       procedure.opendata = true
       procedure.api_particulier_scopes = []
       procedure.routing_enabled = false
+      procedure.encrypted_fc_particulier_id = nil
+      procedure.encrypted_fc_particulier_secret = nil
     else
       procedure.administrateurs = administrateurs
     end
@@ -817,6 +823,10 @@ class Procedure < ApplicationRecord
 
   def published_or_created_at
     published_at || created_at
+  end
+
+  def fc_particulier_validated?
+    fc_particulier_id.present? && fc_particulier_secret.present?
   end
 
   def publiee_or_close?
