@@ -6,11 +6,15 @@ class APIEntrepriseToken
   end
 
   def roles
-    decoded_token["roles"] if token.present?
+    return [] if token.blank?
+
+    Array(decoded_token["roles"])
   end
 
   def expired?
-    Time.zone.now.to_i >= decoded_token["exp"] if token.present?
+    return false if token.blank? || !decoded_token.key?("exp")
+
+    Time.zone.now.to_i >= decoded_token["exp"]
   end
 
   def role?(role)
@@ -20,6 +24,7 @@ class APIEntrepriseToken
   private
 
   def decoded_token
-    JWT.decode(token, nil, false)[0]
+    @decoded_token ||= {}
+    @decoded_token[token] ||= JWT.decode(token, nil, false)[0]
   end
 end
