@@ -6,8 +6,8 @@
 
     %h1.fr-h2= t('views.registrations.new.title', name: APPLICATION_NAME)
 
-    - if FranceConnectService.enabled?
-      = render partial: 'shared/france_connect_login', locals: { url: france_connect_particulier_path }
+    - if france_connect_enabled?
+      = render partial: 'shared/france_connect_login', locals: { url: france_connect_particulier_path, procedure: nil }
 
     %fieldset.fr-mb-0.fr-fieldset{ aria: { labelledby: 'create-account-legend' } }
       %legend.fr-fieldset__legend#create-account-legend
