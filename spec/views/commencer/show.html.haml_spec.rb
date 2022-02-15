@@ -33,9 +33,14 @@ RSpec.describe 'commencer/show', type: :view do
     let(:user) { nil }
 
     context 'and FranceConnect is enabled' do
-      before(:all) do
-        Rails.configuration.x.france_connect.enabled = true
+      before do
+        @fc_enabled = Flipper.enabled?(:france_connect)
+        Flipper.enable(:france_connect) if !@fc_enabled
         Rails.application.reload_routes!
+      end
+
+      after do
+        Flipper.disable(:france_connect) if !@fc_enabled
       end
 
       it 'renders sign-in and sign-up links' do
@@ -47,9 +52,14 @@ RSpec.describe 'commencer/show', type: :view do
     end
 
     context 'and FranceConnect is disabled' do
-      before(:all) do
-        Rails.configuration.x.france_connect.enabled = false
+      before do
+        @fc_enabled = Flipper.enabled?(:france_connect)
+        Flipper.disable(:france_connect) if @fc_enabled
         Rails.application.reload_routes!
+      end
+
+      after do
+        Flipper.enable(:france_connect) if @fc_enabled
       end
 
       it 'renders sign-in and sign-up links' do

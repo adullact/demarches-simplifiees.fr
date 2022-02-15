@@ -2,9 +2,14 @@ require "rails_helper"
 
 describe "FranceConnect routing", type: :routing do
   context "with FranceConnect disabled" do
-    before(:all) do
-      Rails.configuration.x.france_connect.enabled = false
+    before do
+      @fc_enabled = Flipper.enabled?(:france_connect)
+      Flipper.disable(:france_connect) if @fc_enabled
       Rails.application.reload_routes!
+    end
+
+    after do
+      Flipper.enable(:france_connect) if @fc_enabled
     end
 
     it { expect(get: "/france_connect/particulier").not_to be_routable }
@@ -13,9 +18,14 @@ describe "FranceConnect routing", type: :routing do
   end
 
   context "with FranceConnect enabled" do
-    before(:all) do
-      Rails.configuration.x.france_connect.enabled = true
+    before do
+      @fc_enabled = Flipper.enabled?(:france_connect)
+      Flipper.enable(:france_connect) if !@fc_enabled
       Rails.application.reload_routes!
+    end
+
+    after do
+      Flipper.disable(:france_connect) if !@fc_enabled
     end
 
     it { expect(get: "/france_connect/particulier").to route_to(controller: "france_connect/particulier", action: "login") }
