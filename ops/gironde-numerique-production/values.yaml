@@ -21,7 +21,7 @@ app:
     CONTACT_ADDRESS: "Gironde numérique"
     CONTACT_EMAIL: "services@girondenumerique.fr"
     CONTACT_PHONE: "00 00 00 00 00"
-    DB_DATABASE: gironde-numerique-db
+    DB_DATABASE: gironde-numerique-ds-db
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: ""
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
