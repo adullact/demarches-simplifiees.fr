@@ -1,0 +1,186 @@
+app:
+  domainName: demarches.girondenumerique.fr
+  image: __CI_REGISTRY_IMAGE__/app:__COMMIT_TAG__
+  replicaCount: 3
+  volume_claim_name: gironde-numerique-ds-attachments
+  initContainers: false
+  extraEnv:
+    AGENT_CONNECT_BASE_URL: ""
+    AGENT_CONNECT_ENABLED: "disabled"
+    AGENT_CONNECT_ID: ""
+    AGENT_CONNECT_JWKS: ""
+    AGENT_CONNECT_REDIRECT: ""
+    AGENT_CONNECT_SECRET: ""
+    API_ADRESSE_URL: "https://api-adresse.data.gouv.fr"
+    API_EDUCATION_URL: "https://data.education.gouv.fr/api/records/1.0"
+    API_GEO_URL: "https://geo.api.gouv.fr"
+    APPLICATION_SHORTNAME: ds.girondenumerique.fr
+    APP_NAME: "tps"
+    BOOTSTRAP_ADMIN_ENABLED: 0
+    CLAMAV_ENABLED: disabled
+    CONTACT_ADDRESS: "Gironde numérique"
+    CONTACT_EMAIL: "services@girondenumerique.fr"
+    CONTACT_PHONE: "00 00 00 00 00"
+    DB_DATABASE: gironde-numerique-db
+    DB_POOL: 5
+    DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: ""
+    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+    DS_PROXY_URL: ""
+    EQUIPE_EMAIL: "services@girondenumerique.fr"
+    HEADER_LOGO_ALT: ""
+    HEADER_LOGO_HEIGHT: "56"
+    HEADER_LOGO_WIDTH: "65"
+    LANDING_TESTIMONIALS_ENABLED: "disabled"
+    LANDING_USERS_ENABLED: "disabled"
+    LOGRAGE_ENABLED: "disabled"
+    LOGRAGE_SOURCE: "tps_prod"
+    MAILCATCHER_ENABLED: "disabled"
+    MAILCATCHER_HOST: ""
+    MATOMO_ENABLED: "disabled"
+    MENTIONS_LEGALES_URL: ""
+    NO_REPLY_EMAIL: "services@girondenumerique.fr"
+    OLD_CONTACT_EMAIL: "services@girondenumerique.fr"
+    RAILS_ENV: production
+    RAILS_LOG_TO_STDOUT: 1
+    RAILS_MAX_THREADS: 4
+    RAILS_QUEUE_ADAPTER: delayed_job
+    REDIS_NAMESPACE: gironde-numerique-ds
+    SECRET_KEY_BASE: e76759d7d78040213871e0a83a9d6701890f13b8c9335dee7edd0c801ac43c3eba2bb157777de9cdcf4f0cb377633f9bb254c28e08fe3a6e4dd283366c84d7ea
+    SENTRY_CURRENT_ENV: gironde-numerique-ds
+    SENTRY_DSN_JS: ""
+    SENTRY_DSN_RAILS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
+    SENTRY_ENABLED: "enabled"
+    SOURCE: "tps"
+    STATUS_PAGE_URL: ""
+    ACTIVE_STORAGE_SERVICE: local
+    TECH_EMAIL: "services@girondenumerique.fr"
+    TRUSTED_NETWORKS: ""
+    WEB_CONCURRENCY: 5
+  extraSecretEnv:
+    - fromSecret:
+        name: stack-postgresql
+        data:
+          DB_HOST: postgresql-host
+          DB_PASSWORD: postgresql-password
+          DB_USERNAME: postgresql-username
+    - fromSecret:
+        name: stack-redis
+        data:
+          REDIS_URL: redis-full-host
+    - fromSecret:
+        name: common
+        data:
+          OTP_SECRET_KEY: otp_secret_key
+          PIPEDRIVE_KEY: pipedrive_key
+          SIGNING_KEY: signing_key
+          SKYLIGHT_AUTHENTICATION_KEY: skylight_authentication_key
+          ENCRYPTION_SERVICE_SALT: encryption_service_salt
+          API_ENTREPRISE_KEY: api_entreprise_key
+          INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
+    - fromSecret:
+        name: saml
+        data:
+          SAML_IDP_CERTIFICATE: idp_certificate
+          SAML_IDP_ENABLED: enabled
+          SAML_IDP_SECRET_KEY: idp_secret_key
+    - fromSecret:
+        name: universign
+        data:
+          UNIVERSIGN_API_URL: api_url
+          UNIVERSIGN_USERPWD: user_password
+    - fromSecret:
+        name: mailtrap
+        data:
+          MAILTRAP_PASSWORD: password
+          MAILTRAP_USERNAME: username
+          MAILTRAP_ENABLED: enabled
+    - fromSecret:
+        name: mailjet
+        data:
+          MAILJET_API_KEY: api_key
+          MAILJET_SECRET_KEY: secret_key
+    - fromSecret:
+        name: helpscout
+        data:
+          HELPSCOUT_CLIENT_ID: client_id
+          HELPSCOUT_CLIENT_SECRET: client_secret
+          HELPSCOUT_MAILBOX_ID: mailbox_id
+          HELPSCOUT_WEBHOOK_SECRET: webhook_secret
+    - fromSecret:
+        name: fog-openstack
+        data:
+          FOG_OPENSTACK_API_KEY: api_key
+          FOG_OPENSTACK_AUTH_URL: auth_url
+          FOG_OPENSTACK_REGION: region
+          FOG_OPENSTACK_URL: url
+          FOG_OPENSTACK_USERNAME: username
+    - fromSecret:
+        name: fc-particulier
+        data:
+          FC_PARTICULIER_BASE_URL: base_url
+          FC_PARTICULIER_ID: id
+          FC_PARTICULIER_SECRET: secret
+    - fromSecret:
+        name: api-particulier
+        data:
+          API_PARTICULIER_URL: base_url
+    - fromSecret:
+        name: crisp
+        data:
+          CRISP_CLIENT_KEY: client_key
+          CRISP_ENABLED: enabled
+    - fromSecret:
+        name: basic-auth-ds
+        data:
+          BASIC_AUTH_ENABLED: enabled
+          BASIC_AUTH_PASSWORD: password
+          BASIC_AUTH_USERNAME: username
+    - fromSecret:
+        name: sendinblue
+        data:
+          SENDINBLUE_API_V3_KEY: api_v3_key
+          SENDINBLUE_BALANCING_VALUE: balancing_value
+          SENDINBLUE_BALANCING: balancing
+          SENDINBLUE_CLIENT_KEY: client_key
+          SENDINBLUE_ENABLED: enabled
+          SENDINBLUE_SMTP_KEY: smtp_key
+          SENDINBLUE_USER_NAME: user_name
+    - fromSecret:
+        name: github
+        data:
+          GITHUB_CLIENT_ID: github_client_id
+          GITHUB_CLIENT_SECRET: github_client_secret
+  releaseTasks:
+    - name: db-migrate
+      command: ["/bin/bash"]
+      weight: "-5"
+      steps: "pre-install,pre-upgrade"
+      args:
+        - "-c"
+        - "rake db:migrate"
+      extraEnv: []
+    - name: after-party
+      command: ["/bin/bash"]
+      weight: "-4"
+      steps: "pre-install,pre-upgrade"
+      args:
+        - "-c"
+        - "rake after_party:run"
+      extraEnv: []
+    - name: jobs-schedule
+      command: ["/bin/bash"]
+      weight: "-3"
+      steps: "pre-install,pre-upgrade"
+      args:
+        - "-c"
+        - "rake jobs:schedule"
+      extraEnv: []
+delayed_job:
+  command: rake jobs:work
+assets:
+  image: __CI_REGISTRY_IMAGE__/assets:__COMMIT_TAG__
+  extraEnv:
+    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+ingress:
+  tls:
+    secretName: adullact-ds-crt

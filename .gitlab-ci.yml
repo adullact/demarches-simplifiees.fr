@@ -47,3 +47,17 @@ adullact:
   script:
     - rancherv2_connect
     - rancherv2_update adullact-production
+
+# Gironde numerique
+gironde-numerique:
+  extends:
+    - .production
+  image: $RANCHERV2_CLI_IMAGE
+  environment:
+    name: gironde-numerique-production
+    url: https://demarches.girondenumerique.fr
+  variables:
+    RANCHERV2_CATALOG_APP_NAMESPACE: "gironde-numerique-ds"
+  script:
+    - rancherv2_connect
+    - rancherv2_update gironde-numerique-production
