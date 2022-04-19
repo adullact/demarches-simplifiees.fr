@@ -3,7 +3,6 @@ LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  libgeos-dev \
   libicu-dev \
   gsfonts \
   && rm -rf /var/lib/apt/lists/* \
