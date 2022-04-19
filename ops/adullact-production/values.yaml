@@ -31,7 +31,7 @@ app:
     CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
     CLAMAV_ENABLED: disabled
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
-    CONTACT_EMAIL: "demarches-simplifiees@adullact.org"
+    CONTACT_EMAIL: "ne-pas-repondre@adullact.org"
     CONTACT_PHONE: "04 67 65 05 88"
     DB_DATABASE: adullact-ds-db
     DB_POOL: 5
@@ -55,7 +55,7 @@ app:
     MATOMO_ID: "73"
     MATOMO_IFRAME_URL: "https://statistiques.adullact.org/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
     MENTIONS_LEGALES_URL: "https://faq.adullact.org/logiciels/119-mentions-legales-demarches-simplifiees-adullact"
-    NO_REPLY_EMAIL: "no-reply@adullact.org"
+    NO_REPLY_EMAIL: "ne-pas-repondre@adullact.org"
     OLD_CONTACT_EMAIL: "demarches-simplifiees@adullact.org"
     RAILS_ENV: production
     RAILS_LOG_TO_STDOUT: 1
