@@ -156,6 +156,14 @@ app:
           GITHUB_CLIENT_ID: github_client_id
           GITHUB_CLIENT_SECRET: github_client_secret
   releaseTasks:
+    - name: specific release tasks before migration
+      command: ["/bin/bash"]
+      weight: "-6"
+      steps: "pre-install"
+      args:
+        - "-c"
+        - "rake after_party:copy_user_association_to_user_related_models after_party:delete_roles_without_users"
+      extraEnv: []
     - name: db-migrate
       command: ["/bin/bash"]
       weight: "-5"

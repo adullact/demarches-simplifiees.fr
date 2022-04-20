@@ -175,13 +175,13 @@ app:
           SENDINBLUE_SMTP_KEY: smtp_key
           SENDINBLUE_USER_NAME: user_name
   releaseTasks:
-    - name: db-schema-load
+    - name: specific release tasks before migration
       command: ["/bin/bash"]
       weight: "-6"
       steps: "pre-install"
       args:
         - "-c"
-        - "rake db:schema:load"
+        - "rake after_party:copy_user_association_to_user_related_models after_party:delete_roles_without_users"
       extraEnv: []
     - name: db-migrate
       command: ["/bin/bash"]
