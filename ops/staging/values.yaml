@@ -175,7 +175,7 @@ app:
           SENDINBLUE_SMTP_KEY: smtp_key
           SENDINBLUE_USER_NAME: user_name
   releaseTasks:
-    - name: specific release tasks before migration
+    - name: specific-release-tasks
       command: ["/bin/bash"]
       weight: "-6"
       steps: "pre-install"

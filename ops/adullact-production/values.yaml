@@ -168,7 +168,7 @@ app:
           GITHUB_CLIENT_ID: github_client_id
           GITHUB_CLIENT_SECRET: github_client_secret
   releaseTasks:
-    - name: specific release tasks before migration
+    - name: specific-release-tasks
       command: ["/bin/bash"]
       weight: "-6"
       steps: "pre-install"
