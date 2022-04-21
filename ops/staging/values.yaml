@@ -40,7 +40,7 @@ app:
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
     DS_PROXY_URL: ""
-    EQUIPE_EMAIL: "equipe-ds@synbioz.com"
+    EQUIPE_EMAIL: "demarches-simplifiees@adullact.org"
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
