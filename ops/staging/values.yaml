@@ -4,15 +4,15 @@ app:
   initContainers: false
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x38.svg"
-    WATERMARK_FILE: "images/watermark-adullact_1149x67.png"
     FAVICON_16PX_SRC: "images/16x16.png"
     FAVICON_32PX_SRC: "images/32x32.png"
     FAVICON_96PX_SRC: "images/96x96.png"
     FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
     HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
-    MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
     MAILER_FOOTER_LOGO_SRC: "images/logo-mail-footer-adullact_200x71.png"
+    MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
     PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
+    WATERMARK_FILE: "images/watermark-adullact_1149x67.png"
   extraEnv:
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
@@ -33,8 +33,8 @@ app:
     CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
     CLAMAV_ENABLED: disabled
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
-    CONTACT_EMAIL: "contact-ds@synbioz.com"
-    CONTACT_PHONE: "01 76 42 02 87"
+    CONTACT_EMAIL: "ne-pas-repondre@adullact.org"
+    CONTACT_PHONE: "04 67 65 05 88"
     DB_DATABASE: demarches-simplifiees-__ENV_NAME__
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
@@ -58,7 +58,7 @@ app:
     MATOMO_ID: "2"
     MATOMO_IFRAME_URL: "https://matomo.customers.plunge.cloud/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
     MENTIONS_LEGALES_URL: "https://faq.adullact.org/logiciels/119-mentions-legales-demarches-simplifiees-adullact"
-    NO_REPLY_EMAIL: "no-reply-ds@synbioz.com"
+    NO_REPLY_EMAIL: "ne-pas-repondre@adullact.org"
     OLD_CONTACT_EMAIL: "old-contact-ds@synbioz.com"
     RAILS_ENV: production
     RAILS_LOG_TO_STDOUT: 1
