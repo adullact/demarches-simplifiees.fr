@@ -17,7 +17,7 @@ namespace :after_party do
       .where(procedure_id: procedure_ids)
       .where('procedure_revisions.id != procedures.draft_revision_id AND procedure_revisions.id != procedures.published_revision_id')
 
-    dossiers = Dossier.with_discarded.joins(:procedure).where(revision_id: revisions)
+    dossiers = Dossier.joins(:procedure).where(revision_id: revisions)
     progress = ProgressReport.new(dossiers.count)
     dossiers.find_each do |dossier|
       dossier.update_column(:revision_id, dossier.procedure.published_revision_id)
