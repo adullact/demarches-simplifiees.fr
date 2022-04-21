@@ -16,11 +16,42 @@ RSpec.describe 'commencer/show.html.haml', type: :view do
   context 'when no user is signed in' do
     let(:user) { nil }
 
-    it 'renders sign-in and sign-up links' do
-      subject
-      expect(rendered).to have_link('Créer un compte')
-      expect(rendered).to have_link('J’ai déjà un compte')
-      expect(rendered).to have_link('S’identifier avec FranceConnect')
+    context 'and FranceConnect is enabled' do
+      before(:all) do
+        @fc_enabled = Flipper.enabled?(:france_connect)
+        Flipper.enable(:france_connect) if !@fc_enabled
+        Rails.application.reload_routes!
+      end
+
+      after(:all) do
+        Flipper.disable(:france_connect) if !@fc_enabled
+      end
+
+      it 'renders sign-in and sign-up links' do
+        subject
+        expect(rendered).to have_link('Créer un compte')
+        expect(rendered).to have_link('J’ai déjà un compte')
+        expect(rendered).to have_link('S’identifier avec FranceConnect')
+      end
+    end
+
+    context 'and FranceConnect is disabled' do
+      before(:all) do
+        @fc_enabled = Flipper.enabled?(:france_connect)
+        Flipper.disable(:france_connect) if @fc_enabled
+        Rails.application.reload_routes!
+      end
+
+      after(:all) do
+        Flipper.enable(:france_connect) if @fc_enabled
+      end
+
+      it 'renders sign-in and sign-up links' do
+        subject
+        expect(rendered).to have_link('Créer un compte')
+        expect(rendered).to have_link('J’ai déjà un compte')
+        expect(rendered).not_to have_link('S’identifier avec FranceConnect')
+      end
     end
   end
 

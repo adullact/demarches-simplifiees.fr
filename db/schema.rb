@@ -655,6 +655,8 @@ ActiveRecord::Schema.define(version: 2022_04_07_081538) do
     t.datetime "published_at"
     t.bigint "published_revision_id"
     t.text "routing_criteria_name", default: "Votre ville"
+    t.string "encrypted_fc_particulier_id"
+    t.string "encrypted_fc_particulier_secret"
     t.boolean "routing_enabled"
     t.bigint "service_id"
     t.datetime "test_started_at"

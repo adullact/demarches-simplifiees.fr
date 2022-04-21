@@ -1,42 +1,87 @@
 describe FranceConnectService do
-  describe '.retrieve_user_informations_particulier' do
-    let(:code) { 'plop' }
-    let(:access_token) { 'my access_token' }
+  describe '.enabled?' do
+    subject { FranceConnectService.enabled? }
 
-    let(:given_name) { 'plop1' }
-    let(:family_name) { 'plop2' }
-    let(:birthdate) { '2012-12-31' }
-    let(:gender) { 'plop4' }
-    let(:birthplace) { 'plop5' }
-    let(:email) { 'plop@emaiL.com' }
-    let(:phone) { '012345678' }
-    let(:france_connect_particulier_id) { 'izhikziogjuziegj' }
+    context 'when FranceConnect is disabled' do
+      before(:all) do
+        @fc_enabled = Flipper.enabled?(:france_connect)
+        Flipper.disable(:france_connect) if @fc_enabled
+      end
 
-    let(:user_info_hash) { { sub: france_connect_particulier_id, given_name: given_name, family_name: family_name, birthdate: birthdate, gender: gender, birthplace: birthplace, email: email, phone: phone } }
-    let(:user_info) { instance_double('OpenIDConnect::ResponseObject::UserInfo', raw_attributes: user_info_hash) }
+      after(:all) do
+        Flipper.enable(:france_connect) if @fc_enabled
+      end
 
-    subject { described_class.find_or_retrieve_france_connect_information code }
-
-    before do
-      allow_any_instance_of(FranceConnectParticulierClient).to receive(:access_token!).and_return(access_token)
-      allow(access_token).to receive(:userinfo!).and_return(user_info)
+      it { expect(subject).to equal false }
     end
 
-    it 'set code for FranceConnectEntrepriseClient' do
-      expect_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_code=).with(code)
-      subject
+    context 'when FranceConnect is enabled' do
+      before(:all) do
+        @fc_enabled = Flipper.enabled?(:france_connect)
+        Flipper.enable(:france_connect) if !@fc_enabled
+      end
+
+      after(:all) do
+        Flipper.disable(:france_connect) if !@fc_enabled
+      end
+
+      it { expect(subject).to equal true }
+    end
+  end
+
+  describe '#authorization_uri' do
+    subject { described_class.new.authorization_uri }
+
+    it { expect { Rack::OAuth2::Util.parse_uri(subject) }.not_to raise_exception }
+
+    context 'with default scopes' do
+      it 'must contain profile & email scopes' do
+        expect(Rails.configuration.x.fcp.scopes).to contain_exactly(:profile, :email)
+        expect(subject).to match('profile%20email%20openid')
+      end
     end
 
-    it 'returns user informations' do
-      expect(subject).to have_attributes({
-        given_name: given_name,
-        family_name: family_name,
-        birthdate: Time.zone.parse(birthdate).to_date,
-        birthplace: birthplace,
-        gender: gender,
-        email_france_connect: email,
-        france_connect_particulier_id: france_connect_particulier_id
-      })
+    context 'with custom scopes' do
+      before(:all) do
+        @default_scopes = Rails.configuration.x.fcp.scopes
+        Rails.configuration.x.fcp.scopes = [:birthdate, :given_name, :family_name, :preferred_username]
+      end
+
+      after(:all) do
+        Rails.configuration.x.fcp.scopes = @default_scopes
+      end
+
+      it 'must contain all the custom scopes' do
+        expect(subject).to match('birthdate%20given_name%20family_name%20preferred_username%20openid')
+      end
+    end
+  end
+
+  describe '#find_or_retrieve_france_connect_information' do
+    let(:fci) { build(:france_connect_information) }
+
+    subject { described_class.new(code: code).find_or_retrieve_france_connect_information }
+
+    context 'when a code is given' do
+      let(:code) { "2401d211-67df-43a0-9d9d-4ec0e01be3f2" }
+
+      it 'returns user informations' do
+        VCR.use_cassette("france_connect/success/token", erb: { fc_code: code }) do
+          VCR.use_cassette("france_connect/success/userinfo") do
+            expect(subject).to have_attributes(fci.attributes.except("created_at", "updated_at"))
+          end
+        end
+      end
+    end
+
+    context 'when an invalid code is given' do
+      let(:code) { "invalid" }
+
+      it 'returns user informations' do
+        VCR.use_cassette("france_connect/error/token", erb: { fc_code: code }) do
+          expect { subject }.to raise_exception(Rack::OAuth2::Client::Error)
+        end
+      end
     end
   end
 end
