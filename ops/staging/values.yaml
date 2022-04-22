@@ -56,7 +56,7 @@ app:
     MATOMO_ENABLED: "enabled"
     MATOMO_HOST: "statistiques.adullact.org"
     MATOMO_ID: "12"
-    MATOMO_IFRAME_URL: "https://matomo.customers.plunge.cloud/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
+    MATOMO_IFRAME_URL: "https://statistiques.adullact.org/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
     MENTIONS_LEGALES_URL: "https://faq.adullact.org/logiciels/119-mentions-legales-demarches-simplifiees-adullact"
     NO_REPLY_EMAIL: "ne-pas-repondre@adullact.org"
     OLD_CONTACT_EMAIL: "old-contact-ds@synbioz.com"
