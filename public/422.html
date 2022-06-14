@@ -6,12 +6,12 @@
   <meta content='no-cache' name='turbolinks-cache-control'>
   <meta content='width=device-width, initial-scale=1' name='viewport'>
   <title>
-    Erreur 422 · demarches-simplifiees.fr
+    Erreur 422 · demarches.adullact.org
   </title>
   <style>
     html,body,div,span,h1,p,a,img,table,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline;}
     html,body{height:100%;}
-    body{line-height:1;font-family:"Muli";color:#333333;font-size:16px;line-height:1.42857143;}
+    body{line-height:1;font-family:"Muli", system-ui, -apple-system, sans-serif;color:#333333;font-size:16px;line-height:1.42857143;}
     html{box-sizing:border-box;}
     *,*::before,*::after{box-sizing:inherit;}
     a{text-decoration:none;}
@@ -22,10 +22,19 @@
     .header-inner-content{padding-left:16px;padding-right:16px;max-width:1072px;margin:0 auto;display:flex;justify-content:space-between;min-height:72px;}
     .new-header{background-color:#FFFFFF;}
     .new-header-with-border{border-bottom:1px solid #CCCCCC;}
-    .header-logo{display:inline-block;margin-right:32px;}
-    .header-logo img{height:34px;}
-    @media (max-width: 1040px){
-      .header-logo img{height:18px;}
+    .header-logo{
+      display:inline-block;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-right:32px;
+      color: #000091;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .header-logo img{
+      height:100%;
+      margin-right:0.5em;
     }
     .new-h1{color:#333333;text-align:center;font-weight:bold;margin-bottom:60px;font-size:41px;margin-top:60px;}
     .description{font-size: 18px; margin-bottom: 8px;}
@@ -38,7 +47,9 @@
     <div class='new-header new-header-with-border'>
       <div class='header-inner-content'>
         <div class='flex align-center'>
-          <a class="header-logo" href="/"><img alt='demarches-simplifiees.fr' src='/logo-ds.svg'>
+          <a class="header-logo" title="Aller à la page d’accueil" href="/">
+            <img alt="" src="/custom-assets/images/logo-header-adullact_65x56.png">
+            demarches.adullact.org
           </a>
         </div>
       </div>
