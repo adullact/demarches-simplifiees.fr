@@ -1,4 +1,4 @@
-FROM build.synbioz.com/docker-images/rails/app:ruby3.0.3-rails6.1.4.1
+FROM build.synbioz.com/docker-images/rails/app:ruby3.1.2-rails6.1.5
 LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 
 RUN apt-get update \
