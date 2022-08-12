@@ -20,7 +20,7 @@ services:
   app:
     << : *app_common
     environment:
-      VIRTUAL_HOST: demarches-simplifiees.syn
+      VIRTUAL_HOST: demarches-simplifiees.syn,localhost
       VIRTUAL_PORT: 3000
   webpack:
     << : *app_common
