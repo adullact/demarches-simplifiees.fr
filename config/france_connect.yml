@@ -10,7 +10,7 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  redirect_uri: <%= ENV.fetch('FC_PARTICULIER_REDIRECT_URI', "http://#{ENV['APP_HOST']}/france_connect/particulier/callback") %>
+  redirect_uri: <%= ENV.fetch('FC_PARTICULIER_REDIRECT_URI', "http://#{ENV['APP_HOST']}/callback") %>
 
 test:
   <<: *defaults
