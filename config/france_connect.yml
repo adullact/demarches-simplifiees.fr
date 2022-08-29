@@ -3,14 +3,14 @@ defaults: &defaults
   authorization_endpoint: <%= ENV['FC_PARTICULIER_BASE_URL'] %>/api/v1/authorize
   integration_base_url: <%= ENV.fetch('FC_PARTICULIER_INTEGRATION_BASE_URL', 'https://fcp.integ01.dev-franceconnect.fr') %>
   logout_endpoint: <%= ENV['FC_PARTICULIER_BASE_URL'] %>/api/v1/logout
-  redirect_uri: https://<%= ENV['APP_HOST'] %>/france_connect/particulier/callback
+  redirect_uri: https://<%= ENV['APP_HOST'] %>/callback
   scopes: <%= ENV.fetch('FC_PARTICULIER_SCOPES', 'profile,email') %>
   token_endpoint: <%= ENV['FC_PARTICULIER_BASE_URL'] %>/api/v1/token
   userinfo_endpoint: <%= ENV['FC_PARTICULIER_BASE_URL'] %>/api/v1/userinfo
 
 development:
   <<: *defaults
-  redirect_uri: <%= ENV.fetch('FC_PARTICULIER_REDIRECT_URI', "http://#{ENV['APP_HOST']}/callback") %>
+  redirect_uri: http://<%= ENV['APP_HOST'] %>/callback
 
 test:
   <<: *defaults

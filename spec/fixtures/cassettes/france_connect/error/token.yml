@@ -5,7 +5,7 @@ http_interactions:
     uri: https://fcp.integ01.dev-franceconnect.fr/api/v1/token
     body:
       encoding: UTF-8
-      string: grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Ffrance_connect%2Fparticulier%2Fcallback&code=<%= fc_code %>&client_id=france_connect_test_identifier&client_secret=france_connect_test_secret
+      string: grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fcallback&code=<%= fc_code %>&client_id=france_connect_test_identifier&client_secret=france_connect_test_secret
     headers:
       User-Agent:
       - Rack::OAuth2 (1.16.0) (2.8.3, ruby 2.7.3 (2021-04-05))
