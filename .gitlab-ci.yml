@@ -8,7 +8,7 @@ variables:
   PRODUCTION_RANCHERV2_CATALOG_APP_NAMESPACE: "demarches-simplifiees"
   RANCHERV2_CATALOG_APP_NAME: "demarches-simplifiees"
   RANCHERV2_CATALOG_APP_NAMESPACE: "demarches-simplifiees"
-  RANCHERV2_CATALOG_APP_VERSION: "0.3.0"
+  RANCHERV2_CATALOG_APP_VERSION: "0.2.0"
   REVIEW_DOMAIN: "demarches-simplifiees.staging.plunge.cloud"
   SENTRY_ORG: addullact
   SENTRY_PROJECT: demarches-simplifiees

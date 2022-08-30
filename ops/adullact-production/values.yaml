@@ -201,7 +201,7 @@ assets:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 custom_assets:
   enabled: "true"
-  image: build.synbioz.com/addullact/custom-assets/app:adullact-0.6.0
+  image: build.synbioz.com/addullact/custom-assets/app:adullact-0.5.0
   extraEnv:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 ingress:
