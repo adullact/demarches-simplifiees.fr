@@ -48,6 +48,7 @@ app:
     LOGRAGE_SOURCE: "tps_prod"
     MAILCATCHER_ENABLED: "disabled"
     MAILCATCHER_HOST: ""
+    MAILCATCHER_PORT: ""
     MATOMO_COOKIE_DOMAIN: "*.demarches.adullact.org"
     MATOMO_DOMAIN: "*.demarches.adullact.org"
     MATOMO_ENABLED: "enabled"
