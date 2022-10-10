@@ -53,7 +53,7 @@ app:
     REDIS_NAMESPACE: gironde-numerique-ds
     SECRET_KEY_BASE: e76759d7d78040213871e0a83a9d6701890f13b8c9335dee7edd0c801ac43c3eba2bb157777de9cdcf4f0cb377633f9bb254c28e08fe3a6e4dd283366c84d7ea
     SENTRY_CURRENT_ENV: gironde-numerique-ds
-    SENTRY_DSN_JS: ""
+    SENTRY_DSN_JS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
     SENTRY_DSN_RAILS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
     SENTRY_ENABLED: "enabled"
     SOURCE: "tps"
