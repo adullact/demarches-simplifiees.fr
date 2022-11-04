@@ -6,6 +6,7 @@ export AGENT_CONNECT_REDIRECT=
 export API_ADRESSE_URL=https://api-adresse.data.gouv.fr
 export API_EDUCATION_URL=https://data.education.gouv.fr/api/records/1.0
 export API_ENTREPRISE_KEY=
+export API_ENTREPRISE_DEFAULT_SIRET=
 export API_GEO_URL=https://geo.api.gouv.fr
 export API_PARTICULIER_URL=https://particulier-test.api.gouv.fr/api
 export APP_HOST=demarches-simplifiees.syn

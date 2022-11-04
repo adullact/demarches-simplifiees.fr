@@ -82,6 +82,7 @@ app:
           SKYLIGHT_AUTHENTICATION_KEY: skylight_authentication_key
           ENCRYPTION_SERVICE_SALT: encryption_service_salt
           API_ENTREPRISE_KEY: api_entreprise_key
+          API_ENTREPRISE_DEFAULT_SIRET: api_entreprise_default_siret
           INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
     - fromSecret:
         name: saml
