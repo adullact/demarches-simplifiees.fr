@@ -149,7 +149,6 @@ app:
           SENDINBLUE_BALANCING_VALUE: balancing_value
           SENDINBLUE_BALANCING: balancing
           SENDINBLUE_CLIENT_KEY: client_key
-          SENDINBLUE_ENABLED: enabled
           SENDINBLUE_SMTP_KEY: smtp_key
           SENDINBLUE_USER_NAME: user_name
     - fromSecret:
