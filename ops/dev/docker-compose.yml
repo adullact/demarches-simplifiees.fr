@@ -36,22 +36,6 @@ volumes:
       device: "${PWD}/../../"
       o: bind
 
-x-mutagen:
-  sync:
-    defaults:
-      ignore:
-        vcs: true
-    code:
-      alpha: "${PWD}/../.."
-      beta: "volume://app_data"
-      mode: "two-way-resolved"
-      ignore:
-        paths:
-          - "tmp/*"
-          - "tmp/**/*"
-          - "node_modules/*"
-          - "node_modules/**/*"
-
 networks:
   default:
     name: plungy_default
