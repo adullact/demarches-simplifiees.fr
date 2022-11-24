@@ -22,15 +22,9 @@ services:
     environment:
       VIRTUAL_HOST: demarches-simplifiees.syn,localhost
       VIRTUAL_PORT: 3000
-  webpack:
+  vite:
     << : *app_common
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - RAILS_ENV=${RAILS_ENV:-development}
-      - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
-    ports:
-      - '3035:3035'
-    command: ./bin/webpack-dev-server
+    command: ./bin/vite dev
   delayed_job:
     << : *app_common
     command: rake jobs:work

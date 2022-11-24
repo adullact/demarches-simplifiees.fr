@@ -15,6 +15,7 @@ RUN bundle install
 COPY package.json yarn.lock .yarnrc ./
 ENV PATH /node_modules/.bin:$PATH
 ENV NODE_PATH /node_modules/:$NODE_PATH
+ENV VITE_RUBY_VITE_BIN_PATH /node_modules/.bin/vite
 RUN yarn install
 
 CMD rm -f /app/tmp/pids/server.pid && rails s -b 0.0.0.0
