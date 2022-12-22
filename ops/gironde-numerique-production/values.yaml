@@ -147,7 +147,6 @@ app:
         data:
           SENDINBLUE_API_V3_KEY: api_v3_key
           SENDINBLUE_BALANCING_VALUE: balancing_value
-          SENDINBLUE_BALANCING: balancing
           SENDINBLUE_CLIENT_KEY: client_key
           SENDINBLUE_SMTP_KEY: smtp_key
           SENDINBLUE_USER_NAME: user_name
