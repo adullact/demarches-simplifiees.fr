@@ -11,22 +11,9 @@ namespace :bootstrap do
       rake_puts "Boostrap admin mode disabled."
     else
       rake_puts "Boostrap admin mode enabled…"
-
-      User.transaction do
-        user = User.create!(
-          email: admin_email,
-          password: admin_password,
-          confirmed_at: Time.zone.now
-        )
-        user.create_instructeur!
-        user.create_administrateur!
-      end
-
+      User.create_or_promote_to_administrateur(admin_email, admin_password)
       rake_puts "Admin #{admin_email} created."
     end
-  rescue ActiveRecord::RecordInvalid => e
-    rake_puts e.message
-    exit 1
   end
 
   desc "Create a new super-admin account"
