@@ -3,7 +3,7 @@ app:
   image: __CI_REGISTRY_IMAGE__/app:__COMMIT_TAG__
   initContainers: false
   extraEnvCustomAssets:
-    DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x38.svg"
+    DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
     FAVICON_16PX_SRC: "images/16x16.png"
     FAVICON_32PX_SRC: "images/32x32.png"
     FAVICON_96PX_SRC: "images/96x96.png"
