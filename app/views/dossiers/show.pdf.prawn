@@ -1,3 +1,4 @@
+require "open-uri"
 require 'prawn/measurement_extensions'
 
 def default_margin
@@ -311,6 +312,10 @@ def add_etats_dossier(pdf, dossier)
   end
 end
 
+def maybe_open(src)
+  URI(src).scheme.nil? ? src : URI.parse(src).open
+end
+
 prawn_document(page_size: "A4") do |pdf|
   pdf.font_families.update('marianne' => {
     normal: Rails.root.join('lib/prawn/fonts/marianne/marianne-regular.ttf'),
@@ -319,7 +324,7 @@ prawn_document(page_size: "A4") do |pdf|
   pdf.font 'marianne'
 
   pdf.pad_bottom(40) do
-    pdf.image DOSSIER_PDF_EXPORT_LOGO_SRC, width: 300, position: :center
+    pdf.image maybe_open(DOSSIER_PDF_EXPORT_LOGO_SRC), width: 300, position: :center
   end
 
   format_in_2_columns(pdf, 'Dossier Nº', @dossier.id.to_s)
