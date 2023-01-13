@@ -13,7 +13,8 @@ class DeletedDossier < ApplicationRecord
     procedure_removed: 'procedure_removed',
     expired:           'expired',
     instructeur_request: 'instructeur_request',
-    user_expired:      'user_expired'
+    user_expired:      'user_expired',
+    unknown: 'unknown'
   }
 
   enum state: {
@@ -24,7 +25,7 @@ class DeletedDossier < ApplicationRecord
     sans_suite:      'sans_suite'
   }
 
-  def self.create_from_dossier(dossier, reason)
+  def self.create_from_dossier(dossier, reason = :unknown)
     return if !dossier.log_operations?
 
     # We have some bad data because of partially deleted dossiers in the past.

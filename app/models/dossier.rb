@@ -1092,9 +1092,9 @@ class Dossier < ApplicationRecord
     user&.locale || I18n.default_locale
   end
 
-  def purge_discarded
+  def purge_discarded(default_reason: DeletedDossier.reasons[:unknown])
     transaction do
-      DeletedDossier.create_from_dossier(self, hidden_by_reason)
+      DeletedDossier.create_from_dossier(self, hidden_by_reason || default_reason)
       dossier_operation_logs.purge_discarded
       destroy
     rescue => e
@@ -1103,9 +1103,17 @@ class Dossier < ApplicationRecord
   end
 
   def self.purge_discarded
-    en_brouillon_expired_to_delete.find_each(&:purge_discarded)
-    en_construction_expired_to_delete.find_each(&:purge_discarded)
-    termine_expired_to_delete.find_each(&:purge_discarded)
+    en_brouillon_expired_to_delete.find_each do |dossier|
+      dossier.purge_discarded(default_reason: DeletedDossier.reasons[:expired])
+    end
+
+    en_construction_expired_to_delete.find_each do |dossier|
+      dossier.purge_discarded(default_reason: DeletedDossier.reasons[:expired])
+    end
+
+    termine_expired_to_delete.find_each do |dossier|
+      dossier.purge_discarded(default_reason: DeletedDossier.reasons[:expired])
+    end
   end
 
   def skip_user_notification_email?
