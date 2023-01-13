@@ -96,6 +96,11 @@ app:
           UNIVERSIGN_API_URL: api_url
           UNIVERSIGN_USERPWD: user_password
     - fromSecret:
+        name: certigna
+        data:
+          CERTIGNA_API_URL: api_url
+          CERTIGNA_USERPWD: user_password
+    - fromSecret:
         name: mailtrap
         data:
           MAILTRAP_PASSWORD: password
