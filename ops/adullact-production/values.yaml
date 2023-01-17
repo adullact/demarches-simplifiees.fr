@@ -212,3 +212,13 @@ custom_assets:
 ingress:
   tls:
     secretName: adullact-ds-crt
+redirections:
+  - path: /administration
+    destination: https://adullact.org/service-en-ligne-demarches-simplifiees
+    statusCode: 301
+  - path: /contact-admin
+    destination: https://faq.adullact.org/services-adullact/demarches-simplifiees/support/
+    statusCode: 301
+  - path: /contact
+    destination: https://faq.adullact.org/services-adullact/demarches-simplifiees/support/
+    statusCode: 301
