@@ -227,13 +227,12 @@ custom_assets:
 ingress:
   tls:
     secretName: wildcard-staging-plunge-cloud-crt
-redirections:
-  - path: /administration
-    destination: https://adullact.org/service-en-ligne-demarches-simplifiees
-    statusCode: 301
-  - path: /contact-admin
-    destination: https://faq.adullact.org/services-adullact/demarches-simplifiees/support/
-    statusCode: 301
-  - path: /contact
-    destination: https://faq.adullact.org/services-adullact/demarches-simplifiees/support/
-    statusCode: 301
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite /contact https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite /contact-admin https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite /administration https://adullact.org/service-en-ligne-demarches-simplifiees permanent;
