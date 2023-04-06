@@ -16,6 +16,7 @@ app:
     PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
     WATERMARK_FILE: "images/watermark-adullact_1149x67.png"
   extraEnv:
+    ARCHIVE_CREATION_DIR: "/app/storage"
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
     AGENT_CONNECT_ID: ""
