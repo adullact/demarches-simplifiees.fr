@@ -14,6 +14,10 @@ class ApplicationJob < ActiveJob::Base
     when Procedure
       Sentry.set_tags(procedure: arg.id)
     end
+
+    if Rails.application.config.active_storage.service == :local && ActiveStorage::Current.host.blank?
+      ActiveStorage::Current.host = "#{ENV.fetch("APP_HOST_SCHEME", "https")}://#{ENV['APP_HOST']}"
+    end
   end
 
   around_perform do |job, block|
