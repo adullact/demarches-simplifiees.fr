@@ -219,6 +219,6 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite /contact https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
-      rewrite /contact-admin https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
-      rewrite /administration https://adullact.org/service-en-ligne-demarches-simplifiees permanent;
+      rewrite ^/contact https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite ^/contact-admin https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite ^/administration https://adullact.org/service-en-ligne-demarches-simplifiees permanent;
