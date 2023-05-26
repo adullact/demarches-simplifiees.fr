@@ -30,7 +30,7 @@ app:
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
-    FC_PARTICULIER_BASE_URL: "https://auth.integ01.dev-franceconnect.fr"
+    FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
     LANDING_TESTIMONIALS_ENABLED: "disabled"
     LANDING_USERS_ENABLED: "disabled"
     LOGRAGE_ENABLED: "disabled"
