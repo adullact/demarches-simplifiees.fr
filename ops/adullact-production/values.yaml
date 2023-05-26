@@ -143,7 +143,6 @@ app:
     - fromSecret:
         name: fc-particulier
         data:
-          FC_PARTICULIER_BASE_URL: base_url
           FC_PARTICULIER_ID: id
           FC_PARTICULIER_SECRET: secret
     - fromSecret:
