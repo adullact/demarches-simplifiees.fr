@@ -2,6 +2,8 @@ class SupportController < ApplicationController
   invisible_captcha only: [:create], on_spam: :redirect_to_root
 
   def index
+    raise 'plop'
+
     setup_context
   end
 
