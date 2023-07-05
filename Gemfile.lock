@@ -173,8 +173,8 @@ GEM
     capybara-email (3.0.2)
       capybara (>= 2.4, < 4.0)
       mail
-    capybara-mechanize (1.12.1)
-      capybara (>= 3.0.0, < 3.37.0)
+    capybara-mechanize (1.13.0)
+      capybara (>= 3.0.0, < 4)
       mechanize (~> 2.8.5)
     capybara-screenshot (1.0.26)
       capybara (>= 1.0, < 4)
@@ -941,7 +941,7 @@ DEPENDENCIES
   bootsnap (>= 1.4.4)
   brakeman
   browser
-  capybara (~> 3.36.0)
+  capybara
   capybara-email
   capybara-mechanize (~> 1.12, >= 1.12.1)
   capybara-screenshot

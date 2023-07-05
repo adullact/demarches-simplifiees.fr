@@ -183,6 +183,12 @@ Rails.application.routes.draw do
   get '/stats' => 'stats#index'
   get '/stats/download' => 'stats#download'
 
+  namespace :agent_connect do
+    get '' => 'agent#index'
+    get 'login' => 'agent#login'
+    get 'callback' => 'agent#callback'
+  end
+
   constraints(lambda { |_request| FranceConnectService.enabled? }) do
     namespace :france_connect do
       get 'particulier' => 'particulier#login'
@@ -196,12 +202,6 @@ Rails.application.routes.draw do
     get '/callback', to: 'france_connect/particulier#callback'
     get '/login-callback', to: 'france_connect/particulier#callback'
     get '/data-callback', to: 'france_connect/particulier#callback'
-  end
-
-  namespace :agent_connect do
-    get '' => 'agent#index'
-    get 'login' => 'agent#login'
-    get 'callback' => 'agent#callback'
   end
 
   namespace :champs do
@@ -355,7 +355,7 @@ Rails.application.routes.draw do
       get '/:path/dossier_vide', action: 'dossier_vide_pdf', as: :dossier_vide
       get '/:path/sign_in', action: 'sign_in', as: :sign_in
       get '/:path/sign_up', action: 'sign_up', as: :sign_up
-      get '/:path/france_connect', action: 'france_connect', as: :france_connect, constraints: lambda { |_request| FranceConnectService.enabled? }
+      get '/:path/france_connect', action: 'france_connect', as: :france_connect
     end
 
     resources :dossiers, only: [:index, :show, :destroy, :new] do

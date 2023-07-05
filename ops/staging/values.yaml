@@ -22,7 +22,7 @@ app:
     AGENT_CONNECT_SECRET: ""
     API_ADRESSE_URL: "https://api-adresse.data.gouv.fr"
     API_EDUCATION_URL: "https://data.education.gouv.fr/api/records/1.0"
-    API_ENTREPRISE_URL: "https://staging.entreprise.api.gouv.fr/v2/"
+    API_ENTREPRISE_URL: "https://staging.entreprise.api.gouv.fr"
     API_GEO_URL: "https://geo.api.gouv.fr"
     APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
     APP_NAME: "tps_dev"
@@ -70,7 +70,7 @@ app:
     REDIS_NAMESPACE: demarches-simplifiees-__ENV_NAME__
     S3_BUCKET: com.addullact.demarches-simplifiees-staging
     S3_REGION: eu-west-3
-    SECRET_KEY_BASE: 6997JJgfdxZyFHNFbEPEoGfNJaYHdp7mT62sdtqcD9WePcr42cYRE4Bcuqaz9oYcHzmGzZAS
+    SECRET_KEY_BASE: e76759d7d78040213871e0a83a9d6701890f13b8c9335dee7edd0c801ac43c3eba2bb157777de9cdcf4f0cb377633f9bb254c28e08fe3a6e4dd283366c84d7ea
     SENTRY_CURRENT_ENV: __ENV_NAME__
     SENTRY_DSN_JS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
     SENTRY_DSN_RAILS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
@@ -110,6 +110,8 @@ app:
           API_ENTREPRISE_KEY: api_entreprise_key
           API_ENTREPRISE_DEFAULT_SIRET: api_entreprise_default_siret
           INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
+          AR_ENCRYPTION_PRIMARY_KEY: ar_encryption_primary_key
+          AR_ENCRYPTION_KEY_DERIVATION_SALT: ar_encryption__key_derivation_salt
     - fromSecret:
         name: saml
         data:

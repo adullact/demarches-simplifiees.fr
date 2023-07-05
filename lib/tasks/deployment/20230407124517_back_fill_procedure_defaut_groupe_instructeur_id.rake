@@ -9,10 +9,10 @@ namespace :after_party do
     # rubocop:disable DS/Unscoped
     progress = ProgressReport.new(Procedure.unscoped.where(defaut_groupe_instructeur_id: nil).count)
 
-    Procedure.unscoped.where(defaut_groupe_instructeur_id: nil).find_each do |p|
-      p.update_columns(defaut_groupe_instructeur_id: p.defaut_groupe_instructeur.id)
-      progress.inc
-    end
+    # Procedure.unscoped.where(defaut_groupe_instructeur_id: nil).find_each do |p|
+    #   p.update_columns(defaut_groupe_instructeur_id: p.defaut_groupe_instructeur.id)
+    #   progress.inc
+    # end
     # rubocop:enable DS/Unscoped
 
     progress.finish

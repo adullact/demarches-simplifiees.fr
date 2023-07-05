@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: get
-    uri: https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize?acr_values=eidas1&client_id=<FC_IDENTIFIER>&nonce=00000000000000000000000000000000&redirect_uri=http://www.example.com/callback&response_type=code&scope=profile%20email%20openid&state=00000000000000000000000000000000
+    uri: https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize?acr_values=eidas1&client_id=<FC_IDENTIFIER>&nonce=00000000000000000000000000000000&redirect_uri=http://www.example.com/france_connect/particulier/callback&response_type=code&scope=profile%20email%20openid&state=00000000000000000000000000000000
     body:
       encoding: US-ASCII
       string: ''

@@ -486,13 +486,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_16_091043) do
     t.datetime "processed_at", precision: nil
     t.datetime "re_instructed_at"
     t.bigint "revision_id"
-    t.string "search_terms"
+    t.text "search_terms"
     t.string "state"
     t.date "sva_svr_decision_on"
     t.datetime "sva_svr_decision_triggered_at"
     t.datetime "termine_close_to_expiration_notice_sent_at", precision: nil
     t.datetime "updated_at", precision: nil
     t.integer "user_id"
+    t.index "to_tsvector('french'::regconfig, (search_terms || private_search_terms))", name: "index_dossiers_on_search_terms_private_search_terms", using: :gin
+    t.index "to_tsvector('french'::regconfig, search_terms)", name: "index_dossiers_on_search_terms", using: :gin
     t.index ["archived"], name: "index_dossiers_on_archived"
     t.index ["batch_operation_id"], name: "index_dossiers_on_batch_operation_id"
     t.index ["dossier_transfer_id"], name: "index_dossiers_on_dossier_transfer_id"
@@ -907,6 +909,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_16_091043) do
     t.boolean "duree_conservation_etendue_par_ds", default: false, null: false
     t.boolean "durees_conservation_required", default: true
     t.string "encrypted_api_particulier_token"
+    t.string "encrypted_fc_particulier_id"
+    t.string "encrypted_fc_particulier_secret"
     t.integer "estimated_dossiers_count"
     t.boolean "estimated_duration_visible", default: true, null: false
     t.boolean "euro_flag", default: false
@@ -935,8 +939,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_16_091043) do
     t.datetime "published_at", precision: nil
     t.bigint "published_revision_id"
     t.bigint "replaced_by_procedure_id"
-    t.string "encrypted_fc_particulier_id"
-    t.string "encrypted_fc_particulier_secret"
     t.boolean "routing_enabled"
     t.bigint "service_id"
     t.jsonb "sva_svr", default: {}, null: false
@@ -1220,9 +1222,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_16_091043) do
   add_foreign_key "batch_operations", "instructeurs"
   add_foreign_key "bulk_messages", "procedures"
   add_foreign_key "champs", "champs", column: "parent_id"
-  add_foreign_key "champs", "dossiers"
-  add_foreign_key "champs", "etablissements"
-  add_foreign_key "champs", "types_de_champ"
   add_foreign_key "closed_mails", "procedures"
   add_foreign_key "commentaires", "dossiers"
   add_foreign_key "commentaires", "experts"
@@ -1241,7 +1240,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_16_091043) do
   add_foreign_key "dossiers", "groupe_instructeurs"
   add_foreign_key "dossiers", "procedure_revisions", column: "revision_id"
   add_foreign_key "dossiers", "users"
-  add_foreign_key "etablissements", "dossiers"
   add_foreign_key "experts", "users"
   add_foreign_key "experts_procedures", "experts"
   add_foreign_key "experts_procedures", "procedures"

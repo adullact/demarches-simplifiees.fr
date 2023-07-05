@@ -99,6 +99,8 @@ app:
           API_ENTREPRISE_KEY: api_entreprise_key
           API_ENTREPRISE_DEFAULT_SIRET: api_entreprise_default_siret
           INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
+          AR_ENCRYPTION_PRIMARY_KEY: ar_encryption_primary_key
+          AR_ENCRYPTION_KEY_DERIVATION_SALT: ar_encryption__key_derivation_salt
     - fromSecret:
         name: saml
         data:
