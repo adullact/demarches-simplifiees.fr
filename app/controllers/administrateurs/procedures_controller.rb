@@ -71,7 +71,7 @@ module Administrateurs
     end
 
     def new
-      @procedure ||= Procedure.new(for_individual: true)
+      @procedure ||= Procedure.new(for_individual: true, max_duree_conservation_dossiers_dans_ds: Procedure::NEW_MAX_DUREE_CONSERVATION)
     end
 
     SIGNIFICANT_DOSSIERS_THRESHOLD = 30
