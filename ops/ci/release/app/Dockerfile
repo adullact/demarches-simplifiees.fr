@@ -4,7 +4,7 @@ LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 
 WORKDIR /app
 
-COPY Gemfile* /app/
+COPY Gemfile* .ruby-version /app/
 RUN bundle install
 
 COPY package.json yarn.lock .yarnrc ./

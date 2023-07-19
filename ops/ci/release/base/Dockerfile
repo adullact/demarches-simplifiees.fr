@@ -1,4 +1,4 @@
-FROM build.synbioz.com/docker-images/rails/app:ruby3.1.2-rails6.1.6.1
+FROM build.synbioz.com/docker-images/rails/app:ruby-3.2.2:rails-7.0.4
 LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 
 RUN apt-get update \
@@ -9,7 +9,7 @@ RUN apt-get update \
   && apt-get clean
 
 WORKDIR /app
-COPY Gemfile* /app/
+COPY Gemfile* .ruby-version /app/
 RUN bundle install
 
 COPY package.json yarn.lock .yarnrc ./
