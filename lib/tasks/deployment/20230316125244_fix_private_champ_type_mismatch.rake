@@ -4,23 +4,24 @@ namespace :after_party do
     puts "Running deploy task 'fix_private_champ_type_mismatch'"
 
     champs = Champ.private_only
+    if champs.last.try(:id)
+      # count of large champs count is too slow, so we're using an progress approximation based on id
+      progress = ProgressReport.new(champs.last.try(:id))
 
-    # count of large champs count is too slow, so we're using an progress approximation based on id
-    progress = ProgressReport.new(champs.last.try(:id))
+      champs.includes(:type_de_champ).in_batches.each_record do |champ|
+        type_champ = champ.type_de_champ.type_champ
+        expected_type = "Champs::#{type_champ.classify}Champ"
 
-    champs.includes(:type_de_champ).in_batches.each_record do |champ|
-      type_champ = champ.type_de_champ.type_champ
-      expected_type = "Champs::#{type_champ.classify}Champ"
+        if champ.type != expected_type
+          puts "Fixing champ #{champ.id} (#{champ.type} -> #{expected_type})"
+          champ.update_column(:type, expected_type)
+        end
 
-      if champ.type != expected_type
-        puts "Fixing champ #{champ.id} (#{champ.type} -> #{expected_type})"
-        champ.update_column(:type, expected_type)
+        progress.set(champ.id)
       end
 
-      progress.set(champ.id)
+      progress.finish
     end
-
-    progress.finish
 
     AfterParty::TaskRecord
       .create version: AfterParty::TaskRecorder.new(__FILE__).timestamp
