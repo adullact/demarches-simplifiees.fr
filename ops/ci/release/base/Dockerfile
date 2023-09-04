@@ -1,4 +1,4 @@
-FROM build.synbioz.com/docker-images/rails/app:ruby3.2.2-rails7.0.4
+FROM build.synbioz.com/docker-images/rails/app:ruby3.2.2-rails7.0.5
 LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 
 RUN apt-get update \
