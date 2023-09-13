@@ -16,12 +16,13 @@ namespace :after_party do
       progress.inc
     end
     progress.finish
+    TypeDeChamp.ignored_columns -= ["parent_id", "order_place"]
 
-    children = TypeDeChamp.where.not(parent_id: nil).includes(:revision_types_de_champ, parent: :revision_types_de_champ)
+    children = TypeDeChamp.where.not(parent_id: nil).includes(:revision_types_de_champ)
     progress = ProgressReport.new(children.count)
 
     children.find_each do |type_de_champ|
-      prtdcs = type_de_champ.parent.revision_types_de_champ
+      prtdcs = TypeDeChamp.find(type_de_champ.parent_id).revision_types_de_champ
       rtdcs = type_de_champ.revision_types_de_champ
 
       if prtdcs.size > rtdcs.size
@@ -36,6 +37,8 @@ namespace :after_party do
       end
       progress.inc
     end
+    TypeDeChamp.ignored_columns += ["parent_id", "order_place"]
+
     progress.finish
 
     # Update task as completed.  If you remove the line below, the task will

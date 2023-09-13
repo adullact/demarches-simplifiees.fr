@@ -5,7 +5,7 @@ namespace :after_party do
 
     # Put your task implementation HERE.
     Procedure.all.filter do |p|
-      p.groupe_instructeurs.actif.count == 0
+      p.groupe_instructeurs.active.count == 0
     end.each do |p|
       p.groupe_instructeurs.first.update(closed: false)
     end

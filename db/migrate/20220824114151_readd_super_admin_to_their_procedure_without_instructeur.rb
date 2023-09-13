@@ -1,5 +1,6 @@
 class ReaddSuperAdminToTheirProcedureWithoutInstructeur < ActiveRecord::Migration[6.1]
   def change
+    Procedure.reset_column_information
     super_admin_emails = SuperAdmin.pluck(:email)
     # we want to re-assign each super admin being an admin of a procedure
     # to every procedure that lost all instructeur

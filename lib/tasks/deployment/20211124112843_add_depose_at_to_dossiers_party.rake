@@ -1,7 +1,7 @@
 namespace :after_party do
-  desc 'Deployment task: add_depose_at_to_dossiers'
-  task add_depose_at_to_dossiers: :environment do
-    puts "Running deploy task 'add_depose_at_to_dossiers'"
+  desc 'Deployment task: add_depose_at_to_dossiers_party'
+  task add_depose_at_to_dossiers_party: :environment do
+    puts "Running deploy task 'add_depose_at_to_dossiers_party'"
 
     dossiers = Dossier.includes(:traitements).where(depose_at: nil).where.not(en_construction_at: nil)
     progress = ProgressReport.new(dossiers.count)

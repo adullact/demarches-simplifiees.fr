@@ -5,7 +5,7 @@ namespace :after_party do
 
     # Put your task implementation HERE.
     Procedure.where(routing_enabled: nil).filter do |p|
-      p.groupe_instructeurs.actif.count > 1
+      p.groupe_instructeurs.active.count > 1
     end.each do |p|
       p.update(routing_enabled: true)
     end

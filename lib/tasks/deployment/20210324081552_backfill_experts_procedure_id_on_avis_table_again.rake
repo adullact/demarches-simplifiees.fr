@@ -1,5 +1,5 @@
 namespace :after_party do
-  desc 'Deployment task: backfill_experts_procedure_id_on_avis_table'
+  desc 'Deployment task: backfill_experts_procedure_id_on_avis_table_again'
   task backfill_experts_procedure_id_on_avis_table_again: :environment do
     puts "Running deploy task 'backfill_experts_procedure_id_on_avis_table_again'"
 
