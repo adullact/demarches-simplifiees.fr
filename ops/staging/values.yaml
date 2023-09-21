@@ -33,7 +33,7 @@ app:
     BOOTSTRAP_SUPERADMIN_EMAIL: superadmin@synbioz.com
     BOOTSTRAP_SUPERADMIN_ENABLED: 1
     CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
-    CLAMAV_ENABLED: disabled
+    CLAMAV_ENABLED: enabled
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
     CONTACT_EMAIL: "ne-pas-repondre@adullact.org"
     CONTACT_PHONE: "04 67 65 05 88"
