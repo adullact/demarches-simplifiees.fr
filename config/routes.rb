@@ -475,8 +475,13 @@ Rails.application.routes.draw do
     # Gestionnaire
     #
 
-    scope module: 'gestionnaires', as: 'gestionnaire' do
-      resources :groupe_gestionnaires, path: 'groupe_administrateurs', only: [:index, :create]
+    scope module: 'gestionnaires', path: 'gestionnaire', as: 'gestionnaire' do
+      resources :groupe_gestionnaires, path: 'groupes', only: [:index, :create, :show] do
+        # post 'create_gestionnaire'
+
+        resources :administrateurs, controller: 'groupe_gestionnaire_administrateurs', only: [:create, :destroy]
+      end
+
     end
   end
 

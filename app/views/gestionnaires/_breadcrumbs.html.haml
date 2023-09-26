@@ -14,3 +14,8 @@
                 %span.fr-breadcrumb__link= step[0]
             - else
               %li= link_to step[0], step[1], class: 'fr-breadcrumb__link'
+
+    - if defined?(metadatas)
+      .metadatas.pb-3
+        %h1.fr-h6.fr-mb-1w
+          = @groupe_gestionnaire.name
