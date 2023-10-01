@@ -7,7 +7,7 @@
 
 = render  NestedForms::FormOwnerComponent.new
 = form_for @groupe_gestionnaire,
-  url: url_for({ controller: 'gestionnaires/groupe_gestionnaires', action: :update, id: @groupe_gestionnaire.id }), 
+  url: url_for({ controller: 'gestionnaires/groupe_gestionnaires', action: :update, id: @groupe_gestionnaire.id }),
   html: { class: 'form', multipart: true } do |f|
   .fr-container
     .fr-grid-row

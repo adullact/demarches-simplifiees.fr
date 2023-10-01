@@ -1,12 +1,10 @@
 class GroupeGestionnaire < ApplicationRecord
-  belongs_to :groupe_gestionnaire, optional: true # parent
-  has_many :children, class_name: "GroupeGestionnaire", inverse_of: :groupe_gestionnaire
+  # belongs_to :groupe_gestionnaire, optional: true # parent
+  # has_many :children, class_name: "GroupeGestionnaire", inverse_of: :groupe_gestionnaire
   has_many :administrateurs
   has_and_belongs_to_many :gestionnaires
 
-  def root_groupe_gestionnaire?
-    groupe_gestionnaire.nil?
-  end
+  has_ancestry
 
   def add(gestionnaire)
     return if gestionnaire.nil?
@@ -16,7 +14,7 @@ class GroupeGestionnaire < ApplicationRecord
   end
 
   def remove(gestionnaire_id, current_user)
-    if !self.root_groupe_gestionnaire? || self.gestionnaires.one?
+    if !self.is_root? || self.gestionnaires.one?
       alert = "Suppression impossible : il doit y avoir au moins un gestionnaire dans le groupe racine"
     else
       gestionnaire = Gestionnaire.find(gestionnaire_id)
@@ -65,11 +63,11 @@ class GroupeGestionnaire < ApplicationRecord
     if gestionnaires_duplicate.present?
       alert = I18n.t('activerecord.errors.duplicate_email',
         count: invalid_emails.size,
-        emails: gestionnaires_duplicate.map{ |gestionnaire| gestionnaire.email })
+        emails: gestionnaires_duplicate.map(&:email))
     end
 
     if gestionnaires_to_add.present?
-      notice = "Les gestionnaires ont bien été affectés au groupe d'administrateurs"
+      notice = "Les gestionnaires ont bien été affectés au groupe gestionnaire"
 
       GroupeGestionnaireMailer
         .notify_added_gestionnaires(self, gestionnaires_to_add, current_user.email)
@@ -80,6 +78,6 @@ class GroupeGestionnaire < ApplicationRecord
   end
 
   def can_be_deleted?(current_user)
-    (gestionnaires.empty? || (gestionnaires == [current_user]))&& administrateurs.empty? && children.empty?
+    (gestionnaires.empty? || (gestionnaires == [current_user])) && administrateurs.empty? && children.empty?
   end
 end
