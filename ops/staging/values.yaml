@@ -73,8 +73,8 @@ app:
     S3_REGION: eu-west-3
     SECRET_KEY_BASE: e76759d7d78040213871e0a83a9d6701890f13b8c9335dee7edd0c801ac43c3eba2bb157777de9cdcf4f0cb377633f9bb254c28e08fe3a6e4dd283366c84d7ea
     SENTRY_CURRENT_ENV: __ENV_NAME__
-    SENTRY_DSN_JS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/11"
-    SENTRY_DSN_RAILS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/11"
+    SENTRY_DSN_JS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/13"
+    SENTRY_DSN_RAILS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/13"
     SENTRY_ENABLED: "enabled"
     SMTP_HOST: mailcatcher-common-app-app
     SMTP_PORT: "1025"

@@ -70,8 +70,8 @@ app:
     S3_REGION: eu-west-3
     SECRET_KEY_BASE: 6997JJgfdxZyFHNFbEPEoGfNJaYHdp7mT62sdtqcD9WePcr42cYRE4Bcuqaz9oYcHzmGzZAS
     SENTRY_CURRENT_ENV: __ENV_NAME__
-    SENTRY_DSN_JS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
-    SENTRY_DSN_RAILS: "https://916ed04fb1e54077bd7d56eb173dc4c8@sentry.prod.plunge.cloud/55"
+    SENTRY_DSN_JS: "https://34e18f8ed331122e03b4b3b4cb8cf437@sentry.critical.tech.ouidou.fr/13"
+    SENTRY_DSN_RAILS: "https://34e18f8ed331122e03b4b3b4cb8cf437@sentry.critical.tech.ouidou.fr/13"
     SENTRY_ENABLED: "enabled"
     SMTP_HOST: mailcatcher-common-app-app
     SMTP_PORT: "1025"
