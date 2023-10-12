@@ -30,6 +30,7 @@ app:
     APPLICATION_SHORTNAME: ds.adullact.org
     APP_NAME: "tps"
     BOOTSTRAP_ADMIN_ENABLED: 0
+    CERTIGNA_ENABLED: "disabled"
     CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
     CLAMAV_ENABLED: enabled
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"

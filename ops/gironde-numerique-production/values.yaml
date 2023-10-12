@@ -19,6 +19,7 @@ app:
     APPLICATION_SHORTNAME: ds.girondenumerique.fr
     APP_NAME: "tps"
     BOOTSTRAP_ADMIN_ENABLED: 0
+    CERTIGNA_ENABLED: "disabled"
     CLAMAV_ENABLED: disabled
     CONTACT_ADDRESS: "Gironde numérique"
     CONTACT_EMAIL: "services@girondenumerique.fr"

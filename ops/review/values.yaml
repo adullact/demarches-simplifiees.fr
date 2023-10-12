@@ -28,6 +28,7 @@ app:
     APP_NAME: "tps_dev"
     BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
     BOOTSTRAP_ADMIN_ENABLED: 1
+    CERTIGNA_ENABLED: "disabled"
     BOOTSTRAP_ADMIN_PASSWORD: PasswordDemarche0Simplifie!
     BOOTSTRAP_SUPERADMIN_EMAIL: superadmin@synbioz.com
     BOOTSTRAP_SUPERADMIN_ENABLED: 1
