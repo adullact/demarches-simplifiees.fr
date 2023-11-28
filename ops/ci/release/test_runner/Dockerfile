@@ -1,5 +1,5 @@
 ARG BASE_IMAGE_TAG=latest
-FROM build.synbioz.com/addullact/demarches-simplifiees.fr/base:${BASE_IMAGE_TAG}
+FROM build.ouidou.fr/nord/adullact/demarches-simplifiees.fr/base:${BASE_IMAGE_TAG}
 LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 ENV BUNDLE_WITH=development:test:production
 
@@ -8,6 +8,7 @@ RUN apt-get update \
   wget \
   chromium \
   chromium-driver \
+  gsfonts \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get clean
 

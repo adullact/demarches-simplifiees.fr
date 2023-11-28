@@ -7,12 +7,12 @@ app:
     FAVICON_16PX_SRC: "images/16x16.png"
     FAVICON_32PX_SRC: "images/32x32.png"
     FAVICON_96PX_SRC: "images/96x96.png"
+    FAVICON_APPLE_TOUCH_152PX_SRC: "images/apple-touch-icon_adullact.png"
     FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
     HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
     MAILER_FOOTER_LOGO_SRC: "images/logo-mail-footer-adullact_200x71.png"
     MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
     PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
-    WATERMARK_FILE: "images/watermark-adullact_1149x67.png"
   extraEnv:
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
@@ -34,7 +34,7 @@ app:
     BOOTSTRAP_SUPERADMIN_EMAIL: superadmin@synbioz.com
     BOOTSTRAP_SUPERADMIN_ENABLED: 1
     CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
-    CLAMAV_ENABLED: enabled
+    CLAMAV_ENABLED: disabled
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
     CONTACT_EMAIL: "ne-pas-repondre@adullact.org"
     CONTACT_PHONE: "04 67 65 05 88"
@@ -224,7 +224,7 @@ assets:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 custom_assets:
   enabled: "true"
-  image: build.synbioz.com/addullact/custom-assets/app:adullact-0.8.2.rc9
+  image: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc18
   extraEnv:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 ingress:

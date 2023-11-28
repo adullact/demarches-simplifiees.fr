@@ -4,18 +4,19 @@ namespace :after_party do
     puts "Running deploy task 'replay_routing_engine_for_a_cloned_procedure'"
 
     # Put your task implementation HERE.
-    dossiers = Procedure
-      .find(76266)
-      .dossiers
-      .en_construction
+    if (procedure = Procedure.where(id: 76266).first)
+      dossiers = procedure
+        .dossiers
+        .en_construction
 
-    progress = ProgressReport.new(dossiers.count)
+      progress = ProgressReport.new(dossiers.count)
 
-    dossiers.find_each do |dossier|
-      RoutingEngine.compute(dossier)
-      progress.inc
+      dossiers.find_each do |dossier|
+        RoutingEngine.compute(dossier)
+        progress.inc
+      end
+      progress.finish
     end
-    progress.finish
 
     # Update task as completed.  If you remove the line below, the task will
     # run with every deploy (or every time you call after_party:run).

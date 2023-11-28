@@ -1,5 +1,4 @@
-ARG BASE_IMAGE_TAG=develop-latest
-FROM build.synbioz.com/addullact/demarches-simplifiees.fr/base:${BASE_IMAGE_TAG}
+FROM build.synbioz.com/docker-images/rails/app:ruby3.2.2-rails7.0.5
 LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 ENV BUNDLE_WITHOUT=production \
     BUNDLE_WITH=development:test
@@ -9,6 +8,8 @@ RUN apt-get update \
   wget \
   chromium \
   chromium-driver \
+  libicu-dev \
+  gsfonts \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get clean
 

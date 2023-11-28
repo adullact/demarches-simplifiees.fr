@@ -4,10 +4,10 @@ app:
   initContainers: false
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
-    WATERMARK_FILE: "images/watermark-adullact_1149x67.png"
     FAVICON_16PX_SRC: "images/16x16.png"
     FAVICON_32PX_SRC: "images/32x32.png"
     FAVICON_96PX_SRC: "images/96x96.png"
+    FAVICON_APPLE_TOUCH_152PX_SRC: "images/apple-touch-icon_adullact.png"
     FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
     HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
     MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
@@ -228,7 +228,7 @@ assets:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 custom_assets:
   enabled: "true"
-  image: build.synbioz.com/addullact/custom-assets/app:adullact-0.8.2.rc9
+  image: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc18
   extraEnv:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 ingress:

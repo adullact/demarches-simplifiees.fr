@@ -61,7 +61,7 @@ describe FranceConnect::ParticulierController, type: :controller do
           it 'signs in with the fci associated user' do
             subject
             expect(controller.current_user).to eq(fc_user)
-            expect(fc_user.reload.loged_in_with_france_connect).to eq(User.loged_in_with_france_connects.fetch(:particulier))
+            expect(fc_user.reload.loged_in_with_france_connect).to eq(User.loged_in_with_france_connect.fetch(:particulier))
           end
 
           context 'and the user has a stored location' do
