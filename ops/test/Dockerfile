@@ -13,6 +13,9 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get clean
 
+#cf https://imagetragick.com/
+ADD ./ops/ci/release/base/image_magick_policy.xml /etc/ImageMagick-6/policy.xml
+
 WORKDIR /app
 COPY Gemfile* /app/
 RUN bundle install
