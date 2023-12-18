@@ -62,6 +62,7 @@ app:
     MATOMO_ID: "12"
     MATOMO_IFRAME_URL: "https://statistiques.adullact.org/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
     MENTIONS_LEGALES_URL: "https://faq.adullact.org/logiciels/119-mentions-legales-demarches-simplifiees-adullact"
+    MIGRATE_PJS: "disabled" # TO BE REMOVED WHEN MIGRATION IS REMOVED pull/9857
     NEW_MAX_DUREE_CONSERVATION: 18
     NO_REPLY_EMAIL: "ne-pas-repondre@adullact.org"
     OLD_CONTACT_EMAIL: "old-contact-ds@synbioz.com"
@@ -224,7 +225,7 @@ assets:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 custom_assets:
   enabled: "true"
-  image: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc18
+  image: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc19
   extraEnv:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 ingress:

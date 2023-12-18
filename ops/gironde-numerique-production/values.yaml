@@ -48,6 +48,7 @@ app:
     MATOMO_ID: ""
     MATOMO_IFRAME_URL: ""
     MENTIONS_LEGALES_URL: ""
+    MIGRATE_PJS: "disabled" # TO BE REMOVED WHEN MIGRATION IS REMOVED pull/9857
     NEW_MAX_DUREE_CONSERVATION: 18
     NO_REPLY_EMAIL: "services@girondenumerique.fr"
     OLD_CONTACT_EMAIL: "services@girondenumerique.fr"
