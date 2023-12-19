@@ -1,0 +1,3 @@
+libgeos-dev
+libicu-dev
+gsfonts

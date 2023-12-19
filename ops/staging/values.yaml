@@ -1,6 +1,6 @@
 app:
-  domainName: __ENV_NAME__-demarches-simplifiees.staging.plunge.cloud
-  image: __CI_REGISTRY_IMAGE__/app:__COMMIT_TAG__
+  domainName: __URL_STAGING__
+  image: __CI_REGISTRY_IMAGE__/app:__TAG__
   initContainers: false
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
@@ -14,6 +14,7 @@ app:
     MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
     PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
   extraEnv:
+    ACTIVE_STORAGE_SERVICE: amazon
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
     AGENT_CONNECT_ID: ""
@@ -27,6 +28,7 @@ app:
     API_GEO_URL: "https://geo.api.gouv.fr"
     APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
     APP_NAME: "tps_dev"
+    APP_HOST: __URL_STAGING__
     BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
     BOOTSTRAP_ADMIN_ENABLED: 1
     CERTIGNA_ENABLED: "disabled"
@@ -38,7 +40,7 @@ app:
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
     CONTACT_EMAIL: "ne-pas-repondre@adullact.org"
     CONTACT_PHONE: "04 67 65 05 88"
-    DB_DATABASE: demarches-simplifiees-__ENV_NAME__
+    DB_DATABASE: adullact-ds-__ENV_NAME__
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
@@ -78,11 +80,10 @@ app:
     SENTRY_DSN_JS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/13"
     SENTRY_DSN_RAILS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/13"
     SENTRY_ENABLED: "enabled"
-    SMTP_HOST: mailcatcher-common-app-app
-    SMTP_PORT: "1025"
+    SMTP_AUTHENTICATION: "plain"
+    SMTP_TLS: "true"
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
-    ACTIVE_STORAGE_SERVICE: amazon
     TECH_EMAIL: "tech-ds@synbioz.com"
     TRUSTED_NETWORKS: ""
     WEB_CONCURRENCY: 5
@@ -184,6 +185,13 @@ app:
           SENDINBLUE_CLIENT_KEY: client_key
           SENDINBLUE_SMTP_KEY: smtp_key
           SENDINBLUE_USER_NAME: user_name
+    - fromSecret:
+        name: smtp
+        data:
+          SMTP_HOST: host
+          SMTP_PASS: pass
+          SMTP_PORT: port
+          SMTP_USER: user
   releaseTasks:
     - name: db-migrate
       command: ["/bin/bash"]
@@ -219,18 +227,17 @@ app:
       extraEnv: []
 delayed_job:
   command: rake jobs:work
+
 assets:
-  image: __CI_REGISTRY_IMAGE__/assets:__COMMIT_TAG__
-  extraEnv:
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+  image: __CI_REGISTRY_IMAGE__/assets:__TAG__
+
 custom_assets:
   enabled: "true"
-  image: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc19
-  extraEnv:
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+  image: __CUSTOM_ASSETS_IMAGE__
+
 ingress:
   tls:
-    secretName: wildcard-staging-plunge-cloud-crt
+    secretName: __CI_COMMIT_REF_SLUG__-__ENV_NAME__-ds-crt
   annotations:
     ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "0"

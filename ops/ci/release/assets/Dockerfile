@@ -1,4 +1,4 @@
-FROM nginx:stable-alpine
+FROM build.ouidou.fr/docker-images/nginx/nginx:stable-alpine
 
 RUN mkdir -p /app/public
 WORKDIR /app/public

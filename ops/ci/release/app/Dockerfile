@@ -1,10 +1,12 @@
-ARG BASE_IMAGE_TAG=latest
-FROM build.ouidou.fr/nord/adullact/demarches-simplifiees.fr/base:${BASE_IMAGE_TAG}
-LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
+ARG CI_REGISTRY_IMAGE
+ARG CI_COMMIT_REF_SLUG
+ARG CI_COMMIT_TAG
+FROM ${CI_REGISTRY_IMAGE}/base:${CI_COMMIT_TAG:-$CI_COMMIT_REF_SLUG}
 
 WORKDIR /app
 
 COPY Gemfile* .ruby-version /app/
+
 RUN bundle install
 
 COPY package.json yarn.lock .yarnrc ./

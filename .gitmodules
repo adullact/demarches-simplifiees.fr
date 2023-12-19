@@ -1,3 +1,3 @@
 [submodule "scripts/version"]
 	path = scripts/version
-	url = ../../synbioz//version.git
+	url = https://gitlab.tech.ouidou.fr/ouidou/version.git

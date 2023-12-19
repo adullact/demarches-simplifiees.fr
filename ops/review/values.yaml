@@ -1,6 +1,6 @@
 app:
-  domainName: __ENV_NAME__-demarches-simplifiees.staging.plunge.cloud
-  image: __CI_REGISTRY_IMAGE__/app:__COMMIT_TAG__
+  domainName: __CI_COMMIT_REF_SLUG__-__REVIEW_DOMAIN__
+  image: __CI_REGISTRY_IMAGE__/app:__TAG__
   initContainers: false
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
@@ -26,6 +26,7 @@ app:
     API_GEO_URL: "https://geo.api.gouv.fr"
     APPLICATION_SHORTNAME: d-s.review.plunge.cloud
     APP_NAME: "tps_dev"
+    APP_HOST: __CI_COMMIT_REF_SLUG__-__REVIEW_DOMAIN__
     BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
     BOOTSTRAP_ADMIN_ENABLED: 1
     CERTIGNA_ENABLED: "disabled"
@@ -37,7 +38,7 @@ app:
     CONTACT_ADDRESS: "Synbioz SARL\n336 avenue de Dunkerque\n59130 Lambersart"
     CONTACT_EMAIL: "contact-ds@synbioz.com"
     CONTACT_PHONE: "01 76 42 02 87"
-    DB_DATABASE: demarches-simplifiees-__ENV_NAME__
+    DB_DATABASE: adullact-ds-__ENV_NAME__
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
@@ -75,8 +76,8 @@ app:
     SENTRY_DSN_JS: "https://34e18f8ed331122e03b4b3b4cb8cf437@sentry.critical.tech.ouidou.fr/13"
     SENTRY_DSN_RAILS: "https://34e18f8ed331122e03b4b3b4cb8cf437@sentry.critical.tech.ouidou.fr/13"
     SENTRY_ENABLED: "enabled"
-    SMTP_HOST: mailcatcher-common-app-app
-    SMTP_PORT: "1025"
+    SMTP_AUTHENTICATION: "plain"
+    SMTP_TLS: "true"
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
     ACTIVE_STORAGE_SERVICE: amazon
@@ -180,6 +181,13 @@ app:
           SENDINBLUE_CLIENT_KEY: client_key
           SENDINBLUE_SMTP_KEY: smtp_key
           SENDINBLUE_USER_NAME: user_name
+    - fromSecret:
+        name: smtp
+        data:
+          SMTP_HOST: host
+          SMTP_PASS: pass
+          SMTP_PORT: port
+          SMTP_USER: user
   releaseTasks:
     - name: db-schema-load
       command: ["/bin/bash"]
@@ -223,18 +231,17 @@ app:
       extraEnv: []
 delayed_job:
   command: rake jobs:work
+
 assets:
-  image: __CI_REGISTRY_IMAGE__/assets:__COMMIT_TAG__
-  extraEnv:
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+  image: __CI_REGISTRY_IMAGE__/assets:__TAG__
+
 custom_assets:
   enabled: "true"
-  image: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc19
-  extraEnv:
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+  image: __CUSTOM_ASSETS_IMAGE__
+
 ingress:
   tls:
-    secretName: wildcard-staging-plunge-cloud-crt
+    secretName: __CI_COMMIT_REF_SLUG__-__ENV_NAME__-ds-crt
   annotations:
     ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
