@@ -53,8 +53,6 @@ app:
     LOGRAGE_ENABLED: "disabled"
     LOGRAGE_SOURCE: "tps_staging"
     MAILCATCHER_ENABLED: "enabled"
-    MAILCATCHER_HOST: "mailcatcher-common-app-app"
-    MAILCATCHER_PORT: "1025"
     MATOMO_ENABLED: "enabled"
     MATOMO_HOST: "matomo.customers.plunge.cloud"
     MATOMO_ID: "2"
