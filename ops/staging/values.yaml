@@ -79,8 +79,6 @@ app:
     SENTRY_DSN_JS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/13"
     SENTRY_DSN_RAILS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/13"
     SENTRY_ENABLED: "enabled"
-    SMTP_HOST: mailcatcher-common-app-app
-    SMTP_PORT: "1025"
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
     ACTIVE_STORAGE_SERVICE: amazon
