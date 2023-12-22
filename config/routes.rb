@@ -167,7 +167,6 @@ Rails.application.routes.draw do
   constraints(lambda { |_request| FranceConnectService.enabled? }) do
     namespace :france_connect do
       get 'particulier' => 'particulier#login'
-      get 'particulier/callback' => 'particulier#callback'
       get 'particulier/merge/:merge_token' => 'particulier#merge', as: :particulier_merge
       get 'particulier/mail_merge_with_existing_account/:merge_token' => 'particulier#mail_merge_with_existing_account', as: :particulier_mail_merge_with_existing_account
       post 'particulier/resend_and_renew_merge_confirmation' => 'particulier#resend_and_renew_merge_confirmation', as: :particulier_resend_and_renew_merge_confirmation
@@ -175,11 +174,9 @@ Rails.application.routes.draw do
       post 'particulier/merge_with_new_account' => 'particulier#merge_with_new_account'
     end
 
-    constraints(-> { /^#{Rails.configuration.x.fcp.integration_base_url}/.match?(Rails.configuration.x.fcp.token_endpoint) }) do
-      get '/callback', to: 'france_connect/particulier#callback'
-      get '/login-callback', to: 'france_connect/particulier#callback'
-      get '/data-callback', to: 'france_connect/particulier#callback'
-    end
+    get '/callback', to: 'france_connect/particulier#callback'
+    get '/login-callback', to: 'france_connect/particulier#callback'
+    get '/data-callback', to: 'france_connect/particulier#callback'
   end
 
   namespace :champs do

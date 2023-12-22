@@ -118,8 +118,17 @@ describe 'Prefilling a dossier (with a POST request):', js: true, retry: 3 do
         it_behaves_like "the user has got a prefilled dossier, owned by themselves" do
           let(:user) { User.last }
 
+          before(:all) do
+            @fc_enabled = Flipper.enabled?(:france_connect)
+            Flipper.enable(:france_connect) if !@fc_enabled
+          end
+
+          after(:all) do
+            Flipper.disable(:france_connect) if !@fc_enabled
+          end
+
           before do
-            allow_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_uri).and_return(france_connect_particulier_callback_path(code: "c0d3"))
+            allow_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_uri).and_return(callback_path(code: "c0d3"))
             allow_any_instance_of(FranceConnectService).to receive(:find_or_retrieve_france_connect_information).and_return(build(:france_connect_information))
 
             page.find('.fr-connect').click

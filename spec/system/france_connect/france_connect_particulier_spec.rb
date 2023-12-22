@@ -41,7 +41,7 @@ describe 'France Connect Particulier Connexion' do
     context 'and click on france connect link' do
       context 'when authentification is ok' do
         before do
-          allow_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_uri).and_return(france_connect_particulier_callback_path(code: code))
+          allow_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_uri).and_return(callback_path(code: code))
           allow_any_instance_of(FranceConnectService).to receive(:find_or_retrieve_france_connect_information).and_return(france_connect_information)
         end
 
@@ -124,7 +124,7 @@ describe 'France Connect Particulier Connexion' do
 
       context 'when authentification is not ok' do
         before do
-          allow_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_uri).and_return(france_connect_particulier_callback_path(code: code))
+          allow_any_instance_of(FranceConnectParticulierClient).to receive(:authorization_uri).and_return(callback_path(code: code))
           allow_any_instance_of(FranceConnectService).to receive(:find_or_retrieve_france_connect_information) { raise Rack::OAuth2::Client::Error.new(500, error: 'Unknown') }
           page.find('.fr-connect').click
         end

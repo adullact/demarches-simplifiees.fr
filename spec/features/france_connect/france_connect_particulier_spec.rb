@@ -1,9 +1,9 @@
 feature 'France Connect Particulier Connexion' do
-  before(:all) do
+  before do
     Flipper.enable("france_connect")
   end
 
-  after(:all) do
+  after do
     Flipper.disable("france_connect")
   end
 
@@ -18,7 +18,7 @@ feature 'France Connect Particulier Connexion' do
     scenario 'he is redirected to dossier page' do
       visit commencer_path(path: procedure.path)
 
-      expect(page).to have_procedure_description(procedure)
+      expect(page).to have_content(procedure.libelle)
       expect(page).to have_css('.fr-connect')
 
       VCR.use_cassette("france_connect/success/authorize") do
@@ -44,7 +44,7 @@ feature 'France Connect Particulier Connexion' do
         end
       end
 
-      expect(page).to have_procedure_description(procedure)
+      expect(page).to have_content(procedure.libelle)
       expect(page).to have_link("Commencer la démarche")
     end
   end

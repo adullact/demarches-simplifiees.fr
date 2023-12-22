@@ -138,9 +138,9 @@ class FranceConnect::ParticulierController < ApplicationController
 
     sign_in user
 
-    user.update_attribute('loged_in_with_france_connect', User.loged_in_with_france_connects.fetch(:particulier))
+    user.update_attribute('loged_in_with_france_connect', User.loged_in_with_france_connect.fetch(:particulier))
 
-    redirect_to stored_location_for(current_user) || root_path(current_user)
+    redirect_to session.delete(:fc_user_procedure_path) || root_path(current_user)
   end
 
   def merge_token_params

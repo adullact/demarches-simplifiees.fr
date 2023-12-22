@@ -28,7 +28,7 @@ RSpec.describe 'commencer/show', type: :view do
     let(:user) { nil }
 
     context 'and FranceConnect is enabled' do
-      before(:all) do
+      before do
         @fc_enabled = Flipper.enabled?(:france_connect)
         Flipper.enable(:france_connect) if !@fc_enabled
         Rails.application.reload_routes!
@@ -47,7 +47,7 @@ RSpec.describe 'commencer/show', type: :view do
     end
 
     context 'and FranceConnect is disabled' do
-      before(:all) do
+      before do
         @fc_enabled = Flipper.enabled?(:france_connect)
         Flipper.disable(:france_connect) if @fc_enabled
         Rails.application.reload_routes!
