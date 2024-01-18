@@ -21,6 +21,6 @@ COPY Gemfile* /app/
 RUN bundle install
 
 COPY package.json yarn.lock .yarnrc ./
-ENV PATH /node_modules/.bin:$PATH
-ENV NODE_PATH /node_modules/:$NODE_PATH
+ENV PATH /app/node_modules/.bin:$PATH
+ENV NODE_PATH /app/node_modules/:$NODE_PATH
 RUN yarn install
