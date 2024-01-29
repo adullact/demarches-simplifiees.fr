@@ -19,3 +19,8 @@ amazon:
   secret_access_key: <%= ENV.fetch("S3_SECRET_ACCESS_KEY", "") %>
   region: <%= ENV.fetch("S3_REGION", "") %>
   bucket: <%= ENV.fetch("S3_BUCKET", "") %>
+mirror_local_to_amazon:
+  service: Mirror
+  primary: local
+  mirrors:
+    - amazon
