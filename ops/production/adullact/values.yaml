@@ -1,9 +1,20 @@
 app:
-  domainName: demarches.girondenumerique.fr
-  image: __CI_REGISTRY_IMAGE__/app:__COMMIT_TAG__
+  domainName: demarches.adullact.org
+  image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
   replicaCount: 3
-  volume_claim_name: gironde-numerique-ds-attachments
+  volume_claim_name: adullact-ds-attachments
   initContainers: false
+  extraEnvCustomAssets:
+    DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
+    FAVICON_16PX_SRC: "images/16x16.png"
+    FAVICON_32PX_SRC: "images/32x32.png"
+    FAVICON_96PX_SRC: "images/96x96.png"
+    FAVICON_APPLE_TOUCH_152PX_SRC: "images/apple-touch-icon_adullact.png"
+    FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
+    HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
+    MAILER_FOOTER_LOGO_SRC: "images/logo-mail-footer-adullact_200x71.png"
+    MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
+    PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
   extraEnv:
     ARCHIVE_CREATION_DIR: "/app/storage"
     AGENT_CONNECT_BASE_URL: ""
@@ -16,20 +27,21 @@ app:
     API_EDUCATION_URL: "https://data.education.gouv.fr/api/records/1.0"
     API_ENTREPRISE_DEFAULT_SIRET: "44378317000030"
     API_GEO_URL: "https://geo.api.gouv.fr"
-    APPLICATION_SHORTNAME: ds.girondenumerique.fr
+    APPLICATION_SHORTNAME: ds.adullact.org
     APP_NAME: "tps"
     BOOTSTRAP_ADMIN_ENABLED: 0
     CERTIGNA_ENABLED: "disabled"
+    CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
     CLAMAV_ENABLED: disabled
-    CONTACT_ADDRESS: "Gironde numérique"
-    CONTACT_EMAIL: "services@girondenumerique.fr"
-    CONTACT_PHONE: "00 00 00 00 00"
-    DB_DATABASE: gironde-numerique-ds-db
+    CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
+    CONTACT_EMAIL: "ne-pas-repondre@adullact.org"
+    CONTACT_PHONE: "04 67 65 05 88"
+    DB_DATABASE: adullact-ds-db
     DB_POOL: 5
-    DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: ""
+    DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
     DS_PROXY_URL: ""
-    EQUIPE_EMAIL: "services@girondenumerique.fr"
+    EQUIPE_EMAIL: "demarches-simplifiees@adullact.org"
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
@@ -41,31 +53,31 @@ app:
     MAILCATCHER_ENABLED: "disabled"
     MAILCATCHER_HOST: ""
     MAILCATCHER_PORT: ""
-    MATOMO_COOKIE_DOMAIN: "*.www.demarches-simplifiees.fr"
-    MATOMO_DOMAIN: "*.www.demarches-simplifiees.fr"
-    MATOMO_ENABLED: "disabled"
-    MATOMO_HOST: "matomo.example.org"
-    MATOMO_ID: ""
-    MATOMO_IFRAME_URL: ""
-    MENTIONS_LEGALES_URL: ""
+    MATOMO_COOKIE_DOMAIN: "*.demarches.adullact.org"
+    MATOMO_DOMAIN: "*.demarches.adullact.org"
+    MATOMO_ENABLED: "enabled"
+    MATOMO_HOST: "statistiques.adullact.org"
+    MATOMO_ID: "15"
+    MATOMO_IFRAME_URL: "https://statistiques.adullact.org/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
+    MENTIONS_LEGALES_URL: "https://faq.adullact.org/logiciels/119-mentions-legales-demarches-simplifiees-adullact"
     MIGRATE_PJS: "disabled" # TO BE REMOVED WHEN MIGRATION IS REMOVED pull/9857
     NEW_MAX_DUREE_CONSERVATION: 18
-    NO_REPLY_EMAIL: "services@girondenumerique.fr"
-    OLD_CONTACT_EMAIL: "services@girondenumerique.fr"
+    NO_REPLY_EMAIL: "ne-pas-repondre@adullact.org"
+    OLD_CONTACT_EMAIL: "demarches-simplifiees@adullact.org"
     RAILS_ENV: production
     RAILS_LOG_TO_STDOUT: 1
     RAILS_MAX_THREADS: 4
     RAILS_QUEUE_ADAPTER: delayed_job
-    REDIS_NAMESPACE: gironde-numerique-ds
+    REDIS_NAMESPACE: adullact-ds
     SECRET_KEY_BASE: e76759d7d78040213871e0a83a9d6701890f13b8c9335dee7edd0c801ac43c3eba2bb157777de9cdcf4f0cb377633f9bb254c28e08fe3a6e4dd283366c84d7ea
-    SENTRY_CURRENT_ENV: gironde-numerique-ds
+    SENTRY_CURRENT_ENV: adullact-ds
     SENTRY_DSN_JS: "https://34e18f8ed331122e03b4b3b4cb8cf437@sentry.critical.tech.ouidou.fr/13"
     SENTRY_DSN_RAILS: "https://34e18f8ed331122e03b4b3b4cb8cf437@sentry.critical.tech.ouidou.fr/13"
     SENTRY_ENABLED: "enabled"
     SOURCE: "tps"
-    STATUS_PAGE_URL: ""
+    STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
     ACTIVE_STORAGE_SERVICE: local
-    TECH_EMAIL: "services@girondenumerique.fr"
+    TECH_EMAIL: "demarches-simplifiees@adullact.org"
     TRUSTED_NETWORKS: ""
     WEB_CONCURRENCY: 5
   extraSecretEnv:
@@ -194,14 +206,24 @@ app:
 delayed_job:
   command: rake jobs:work
 assets:
-  image: __CI_REGISTRY_IMAGE__/assets:__COMMIT_TAG__
+  image: __CI_REGISTRY_IMAGE__/assets:__ASSETS_VERSION__
+  extraEnv:
+    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
+custom_assets:
+  enabled: "true"
+  image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
   extraEnv:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 ingress:
   tls:
-    secretName: gironde-numerique-ds-crt
+    secretName: adullact-ds-crt
   annotations:
     ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/contact/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite ^/contact-admin/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite ^/administration/?$ https://adullact.org/service-en-ligne-demarches-simplifiees permanent;

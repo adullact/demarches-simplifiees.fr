@@ -14,6 +14,7 @@ app:
     MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
     PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
   extraEnv:
+    ACTIVE_STORAGE_SERVICE: amazon
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
     AGENT_CONNECT_ID: ""
@@ -22,18 +23,18 @@ app:
     AGENT_CONNECT_SECRET: ""
     API_ADRESSE_URL: "https://api-adresse.data.gouv.fr"
     API_EDUCATION_URL: "https://data.education.gouv.fr/api/records/1.0"
-    API_ENTREPRISE_URL: "https://staging.entreprise.api.gouv.fr"
     API_ENTREPRISE_DEFAULT_SIRET: "44378317000030"
+    API_ENTREPRISE_URL: "https://staging.entreprise.api.gouv.fr"
     API_GEO_URL: "https://geo.api.gouv.fr"
     APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
+    # APP_HOST: __URL_STAGING__
     APP_NAME: "tps_dev"
-    APP_HOST: __URL_STAGING__
     BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
     BOOTSTRAP_ADMIN_ENABLED: 1
-    CERTIGNA_ENABLED: "disabled"
     BOOTSTRAP_ADMIN_PASSWORD: PasswordDemarche0Simplifie!
     BOOTSTRAP_SUPERADMIN_EMAIL: superadmin@synbioz.com
     BOOTSTRAP_SUPERADMIN_ENABLED: 1
+    CERTIGNA_ENABLED: "disabled"
     CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
     CLAMAV_ENABLED: disabled
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
@@ -45,17 +46,19 @@ app:
     DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "demarches-simplifiees@adullact.org"
+    FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
-    FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
     LANDING_TESTIMONIALS_ENABLED: "disabled"
     LANDING_USERS_ENABLED: "disabled"
     LOGRAGE_ENABLED: "disabled"
     LOGRAGE_SOURCE: "tps_staging"
     MAILCATCHER_ENABLED: "enabled"
-    MATOMO_COOKIE_DOMAIN: "*.staging.plunge.cloud"
-    MATOMO_DOMAIN: "*.staging.plunge.cloud"
+    MAILCATCHER_HOST: "mailcatcher-common-app-app"
+    MAILCATCHER_PORT: "1025"
+    # MATOMO_COOKIE_DOMAIN: "*.staging.plunge.cloud"
+    # MATOMO_DOMAIN: "*.staging.plunge.cloud"
     MATOMO_ENABLED: "enabled"
     MATOMO_HOST: "statistiques.adullact.org"
     MATOMO_ID: "12"
@@ -79,7 +82,6 @@ app:
     SENTRY_ENABLED: "enabled"
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
-    ACTIVE_STORAGE_SERVICE: amazon
     TECH_EMAIL: "tech-ds@synbioz.com"
     TRUSTED_NETWORKS: ""
     WEB_CONCURRENCY: 5
