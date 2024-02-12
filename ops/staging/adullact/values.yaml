@@ -27,7 +27,6 @@ app:
     API_ENTREPRISE_URL: "https://staging.entreprise.api.gouv.fr"
     API_GEO_URL: "https://geo.api.gouv.fr"
     APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
-    # APP_HOST: __URL_STAGING__
     APP_NAME: "tps_dev"
     BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
     BOOTSTRAP_ADMIN_ENABLED: 1
@@ -57,8 +56,6 @@ app:
     MAILCATCHER_ENABLED: "enabled"
     MAILCATCHER_HOST: "mailcatcher-common-app-app"
     MAILCATCHER_PORT: "1025"
-    # MATOMO_COOKIE_DOMAIN: "*.staging.plunge.cloud"
-    # MATOMO_DOMAIN: "*.staging.plunge.cloud"
     MATOMO_ENABLED: "enabled"
     MATOMO_HOST: "statistiques.adullact.org"
     MATOMO_ID: "12"
@@ -230,18 +227,8 @@ assets:
 
 custom_assets:
   enabled: "true"
-  image: __CUSTOM_ASSETS_IMAGE__
+  image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_IMAGE__
 
 ingress:
   tls:
     secretName: __CI_COMMIT_REF_SLUG__-__ENV_NAME__-ds-crt
-  annotations:
-    ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/contact/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
-      rewrite ^/contact-admin/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
-      rewrite ^/administration/?$ https://adullact.org/service-en-ligne-demarches-simplifiees permanent;

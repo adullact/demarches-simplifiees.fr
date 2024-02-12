@@ -185,14 +185,6 @@ app:
           SMTP_PORT: port
           SMTP_USER: user
   releaseTasks:
-    - name: db-schema-load
-      command: ["/bin/bash"]
-      weight: "-6"
-      steps: "pre-install"
-      args:
-        - "-c"
-        - "rake db:schema:load"
-      extraEnv: []
     - name: db-migrate
       command: ["/bin/bash"]
       weight: "-5"
@@ -233,18 +225,8 @@ assets:
 
 custom_assets:
   enabled: "true"
-  image: __CUSTOM_ASSETS_IMAGE__
+  image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_IMAGE__
 
 ingress:
   tls:
     secretName: __CI_COMMIT_REF_SLUG__-__ENV_NAME__-ds-crt
-  annotations:
-    ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/contact/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
-      rewrite ^/contact-admin/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
-      rewrite ^/administration/?$ https://adullact.org/service-en-ligne-demarches-simplifiees permanent;

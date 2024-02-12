@@ -1,5 +1,5 @@
 app:
-  domainName: preprod.demarches-hdf.fr
+  domainName: __URL_STAGING__
   image: build.ouidou.fr/nord/adullact/demarches-simplifiees.fr/app:__APP_VERSION__
   initContainers: false
   volume_claim_name: staging-sm-ds
@@ -200,14 +200,6 @@ app:
           SENDINBLUE_SMTP_KEY: smtp_key
           SENDINBLUE_USER_NAME: user_name
   releaseTasks:
-    # - name: db-schema-load
-    #   command: ["/bin/bash"]
-    #   weight: "-6"
-    #   steps: "pre-install"
-    #   args:
-    #     - "-c"
-    #     - "rake db:schema:load"
-    #   extraEnv: []
     - name: db-migrate
       command: ["/bin/bash"]
       weight: "-5"

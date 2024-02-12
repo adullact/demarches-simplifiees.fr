@@ -1,5 +1,5 @@
 app:
-  domainName: demarches.adullact.org
+  domainName: __URL_PRODUCTION__
   image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
   replicaCount: 3
   volume_claim_name: adullact-ds-attachments

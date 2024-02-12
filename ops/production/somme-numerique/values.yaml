@@ -1,5 +1,5 @@
 app:
-  domainName: demarches-hdf.fr
+  domainName: __URL_PRODUCTION__
   image: build.ouidou.fr/nord/adullact/demarches-simplifiees.fr/app:__APP_VERSION__
   initContainers: false
   volume_claim_name: production-sm-ds

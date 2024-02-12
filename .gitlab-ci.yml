@@ -13,6 +13,7 @@ variables:
   WITH_BUNDLE_AUDIT: "1"
   WITH_RAILS_BEST_PRACTICES: "1"
   WITH_REEK: "1"
+  WITH_REVIEW: "0"
   WITH_RUBOCOP: "1"
 
 default:
@@ -23,27 +24,10 @@ prepare:
     PACKAGE: ops/ci/base/packages.txt
     RAILS_VERSION: ruby3.2.2-rails7.0.5
 
-.review:
-  variables:
-    CUSTOM_ASSETS_IMAGE: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc19
-    ENV_NAME: review
-    HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.0
-    HELM_REPO_NAME: adullact
-    HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
-    K8S_NAMESPACE: adullact-ds-staging
-    PREFIX_APP_NAME: adullact-ds
-    REVIEW_DOMAIN: adullact-ds.review.ouidou.fr
-    SKIP_RESTORE_STAGE: "true"
-
 staging:adullact:
-  image: build.ouidou.fr/docker-images/auto-deploy-image/app:0.2.1
-  stage: deploy
-  environment:
-    name: staging
-    url: https://adullact-ds.staging.ouidou.fr
+  extends: [deploy_staging]
   variables:
-    CUSTOM_ASSETS_IMAGE: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc19
+    CUSTOM_ASSETS_IMAGE: adullact-0.8.2.rc19
     ENV_NAME: staging
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.2.0
@@ -54,39 +38,26 @@ staging:adullact:
     PREFIX_APP_NAME: adullact-ds
     SKIP_RESTORE_STAGE: "true"
     URL_STAGING: adullact-ds.staging.ouidou.fr
-  script:
-    - /apps/scripts/auto_deploy.sh staging
-  when: manual
 
-staging:sn:
-  image: build.ouidou.fr/docker-images/auto-deploy-image/app:0.2.1
-  stage: deploy
-  environment:
-    name: somme-numerique-staging
-    url: https://preprod.demarches-hdf.fr
+staging:somme-numerique:
+  extends: [deploy_staging]
   variables:
     APP_VERSION: 1.5.5
     ASSETS_VERSION: 1.5.5
     CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc21
-    ENV_NAME: staging
+    ENV_NAME: somme-numerique-staging
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.2.0
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-staging
     PATH_VALUE: somme-numerique/
-    RELEASE_NAME: sm-staging-demarches-simplifiees
+    RELEASE_NAME: sm-staging
     SKIP_RESTORE_STAGE: "true"
-  script:
-    - /apps/scripts/auto_deploy.sh staging
-  when: manual
+    URL_STAGING: preprod.demarches-hdf.fr
 
 production:adullact:
-  image: build.ouidou.fr/docker-images/auto-deploy-image/app:0.2.1
-  stage: deploy
-  environment:
-    name: adullact
-    url: https://demarches-simplifiees.com
+  extends: [deploy_production]
   variables:
     APP_VERSION: 1.5.5
     ASSETS_VERSION: 1.5.5
@@ -99,51 +70,38 @@ production:adullact:
     PATH_VALUE: adullact/
     RELEASE_NAME: adullact-production-demarches-simplifiees
     SKIP_RESTORE_STAGE: "true"
-  script:
-    - /apps/scripts/auto_deploy.sh production
-  when: manual
-production:gn:
-  image: build.ouidou.fr/docker-images/auto-deploy-image/app:0.2.1
-  stage: deploy
-  environment:
-    name: gironde-numerique
-    url: https://demarches.girondenumerique.fr
+    URL_PRODUCTION: demarches-simplifiees.com
+
+production:gironde-numerique:
+  extends: [deploy_production]
   variables:
     APP_VERSION: 1.5.5
     ASSETS_VERSION: 1.5.5
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc19
-    ENV_NAME: production
+    ENV_NAME: gironde-numerique
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.2.0
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: production
     PATH_VALUE: gironde-numerique/
-    RELEASE_NAME: gn-production-demarches-simplifiees
+    RELEASE_NAME: gn-production
     SKIP_RESTORE_STAGE: "true"
-  script:
-    - /apps/scripts/auto_deploy.sh production
-  when: manual
+    URL_PRODUCTION: demarches.girondenumerique.fr
 
-production:sn:
-  image: build.ouidou.fr/docker-images/auto-deploy-image/app:0.2.1
-  stage: deploy
-  environment:
-    name: somme-numerique
-    url: https://demarches-hdf.fr
+production:somme-numerique:
+  extends: [deploy_production]
   variables:
     APP_VERSION: 1.5.5
     ASSETS_VERSION: 1.5.5
     CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc21
-    ENV_NAME: production
+    ENV_NAME: somme-numerique
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.2.0
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-production
     PATH_VALUE: somme-numerique/
-    RELEASE_NAME: sm-production-demarches-simplifiees
+    RELEASE_NAME: sm-production
     SKIP_RESTORE_STAGE: "true"
-  script:
-    - /apps/scripts/auto_deploy.sh production
-  when: manual
+    URL_PRODUCTION: demarches-hdf.fr
