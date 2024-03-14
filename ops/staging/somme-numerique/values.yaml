@@ -71,7 +71,7 @@ app:
     MENTIONS_LEGALES_URL: "https://faq.adullact.org/logiciels/119-mentions-legales-demarches-simplifiees-adullact"
     MIGRATE_PJS: "disabled" # TO BE REMOVED WHEN MIGRATION IS REMOVED pull/9857
     NEW_MAX_DUREE_CONSERVATION: 18
-    NO_REPLY_EMAIL: "ne-pas-repondre@adullact.org"
+    NO_REPLY_EMAIL: "ne-pas-repondre@demarches-hdf.fr"
     OLD_CONTACT_EMAIL: "old-contact-ds@synbioz.com"
     RAILS_ENV: production
     RAILS_LOG_TO_STDOUT: 1
