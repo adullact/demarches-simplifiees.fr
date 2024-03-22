@@ -7,7 +7,7 @@ namespace :mirror_disk_to_s3 do
     puts "#{ActiveStorage::Blob.where(service_name: :local).count} Blobs to go..."
     ActiveStorage::Blob.where(service_name: :local).find_each do |blob|
       print '.'
-      blob.update(service_name: :mirror_local_to_amazon)
+      blob.update(service_name: :mirror_local_to_scaleway)
       begin
         blob.mirror_later
       rescue => e
@@ -23,6 +23,6 @@ namespace :mirror_disk_to_s3 do
     # should be run while fully switching for s3
   EOD
   task switch_for_s3: :environment do
-    ActiveStorage::Blob.update_all(service_name: :amazon)
+    ActiveStorage::Blob.update_all(service_name: :scaleway)
   end
 end

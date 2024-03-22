@@ -1,4 +1,4 @@
-FROM build.ouidou.fr/ouidou/docker-images/rails/app:ruby3.2.2-rails7.0.5
+FROM build.ouidou.fr/docker-images/rails/app:ruby3.2.2-rails7.0.5
 LABEL maintainer="Infrastructure Plunge <jfrancois@plunge.cloud>"
 ENV BUNDLE_WITHOUT=production \
     BUNDLE_WITH=development:test

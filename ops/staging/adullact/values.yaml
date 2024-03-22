@@ -70,8 +70,9 @@ app:
     RAILS_MAX_THREADS: 1
     RAILS_QUEUE_ADAPTER: delayed_job
     REDIS_NAMESPACE: demarches-simplifiees-__ENV_NAME__
-    S3_BUCKET: com.addullact.demarches-simplifiees-staging
-    S3_REGION: eu-west-3
+    S3_BUCKET: fr.ouidou.staging.adullact
+    S3_ENDPOINT: https://s3.fr-par.scw.cloud
+    S3_REGION: fr-par
     SECRET_KEY_BASE: e76759d7d78040213871e0a83a9d6701890f13b8c9335dee7edd0c801ac43c3eba2bb157777de9cdcf4f0cb377633f9bb254c28e08fe3a6e4dd283366c84d7ea
     SENTRY_CURRENT_ENV: __ENV_NAME__
     SENTRY_DSN_JS: "https://6a54d4835f93b09f680f2f8875b2edab@sentry.critical.tech.ouidou.fr/13"
@@ -94,10 +95,10 @@ app:
         data:
           REDIS_URL: redis-full-host
     - fromSecret:
-        name: aws-s3
+        name: scaleway
         data:
-          S3_ACCESS_KEY_ID: aws_access_key_id
-          S3_SECRET_ACCESS_KEY: aws_secret_access_key
+          S3_ACCESS_KEY_ID: scw_access_key_id
+          S3_SECRET_ACCESS_KEY: scw_secret_access_key
     - fromSecret:
         name: common
         data:
