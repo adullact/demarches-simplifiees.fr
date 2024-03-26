@@ -23,6 +23,7 @@ scaleway:
   region: <%= ENV.fetch("S3_REGION", "") %>
   bucket: <%= ENV.fetch("S3_BUCKET", "") %>
   endpoint: <%= ENV.fetch("S3_ENDPOINT", "") %>
+  force_path_style: true
 
 mirror_local_to_scaleway:
   service: Mirror

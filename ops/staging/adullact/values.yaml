@@ -14,7 +14,7 @@ app:
     MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
     PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
   extraEnv:
-    ACTIVE_STORAGE_SERVICE: amazon
+    ACTIVE_STORAGE_SERVICE: scaleway
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
     AGENT_CONNECT_ID: ""
