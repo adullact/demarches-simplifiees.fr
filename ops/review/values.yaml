@@ -76,7 +76,7 @@ app:
     SENTRY_ENABLED: "enabled"
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
-    ACTIVE_STORAGE_SERVICE: amazon
+    ACTIVE_STORAGE_SERVICE: scaleway
     TECH_EMAIL: "tech-ds@synbioz.com"
     TRUSTED_NETWORKS: ""
     WEB_CONCURRENCY: 5
