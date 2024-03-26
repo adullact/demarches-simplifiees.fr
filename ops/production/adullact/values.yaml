@@ -69,6 +69,9 @@ app:
     RAILS_MAX_THREADS: 4
     RAILS_QUEUE_ADAPTER: delayed_job
     REDIS_NAMESPACE: adullact-ds
+    S3_BUCKET: fr.ouidou.production.adullact
+    S3_ENDPOINT: https://s3.fr-par.scw.cloud
+    S3_REGION: fr-par
     SECRET_KEY_BASE: e76759d7d78040213871e0a83a9d6701890f13b8c9335dee7edd0c801ac43c3eba2bb157777de9cdcf4f0cb377633f9bb254c28e08fe3a6e4dd283366c84d7ea
     SENTRY_CURRENT_ENV: adullact-ds
     SENTRY_DSN_JS: "https://34e18f8ed331122e03b4b3b4cb8cf437@sentry.critical.tech.ouidou.fr/13"
@@ -91,6 +94,11 @@ app:
         name: stack-redis
         data:
           REDIS_URL: redis-full-host
+    - fromSecret:
+        name: scaleway
+        data:
+          S3_ACCESS_KEY_ID: scw_access_key_id
+          S3_SECRET_ACCESS_KEY: scw_secret_access_key
     - fromSecret:
         name: common
         data:
