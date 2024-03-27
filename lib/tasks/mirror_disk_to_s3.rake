@@ -34,7 +34,7 @@ namespace :mirror_disk_to_s3 do
           checksum = blob.checksum
           to_service.upload(blob.key, tf, checksum: checksum)
         end
-      rescue
+      rescue => e
         # rollback
         Sentry.capture_exception(e, extra: { blob_id: blob.id })
         blob.update(service_name: :local)
