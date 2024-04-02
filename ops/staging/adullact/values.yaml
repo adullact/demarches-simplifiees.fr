@@ -26,8 +26,8 @@ app:
     API_ENTREPRISE_DEFAULT_SIRET: "44378317000030"
     API_ENTREPRISE_URL: "https://staging.entreprise.api.gouv.fr"
     API_GEO_URL: "https://geo.api.gouv.fr"
-    APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
     APP_NAME: "tps_dev"
+    APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
     BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
     BOOTSTRAP_ADMIN_ENABLED: 1
     BOOTSTRAP_ADMIN_PASSWORD: PasswordDemarche0Simplifie!
@@ -42,7 +42,6 @@ app:
     DB_DATABASE: adullact-ds-__ENV_NAME__
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "demarches-simplifiees@adullact.org"
     FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
@@ -80,8 +79,11 @@ app:
     SENTRY_ENABLED: "enabled"
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
+    STRICT_EMAIL_VALIDATION_STARTS_ON: "2024-04-19"
     TECH_EMAIL: "tech-ds@synbioz.com"
     TRUSTED_NETWORKS: ""
+    ADMINS_GROUP_ENABLED: "enabled"
+    WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
   extraSecretEnv:
     - fromSecret:
@@ -233,3 +235,13 @@ custom_assets:
 ingress:
   tls:
     secretName: __CI_COMMIT_REF_SLUG__-__ENV_NAME__-ds-crt
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/contact/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite ^/contact-admin/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
+      rewrite ^/administration/?$ https://adullact.org/service-en-ligne-demarches-simplifiees permanent;

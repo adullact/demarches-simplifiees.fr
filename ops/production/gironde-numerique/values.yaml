@@ -27,7 +27,6 @@ app:
     DB_DATABASE: gironde-numerique-ds-db
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: ""
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "services@girondenumerique.fr"
     HEADER_LOGO_ALT: ""
@@ -65,8 +64,11 @@ app:
     SOURCE: "tps"
     STATUS_PAGE_URL: ""
     ACTIVE_STORAGE_SERVICE: local
+    STRICT_EMAIL_VALIDATION_STARTS_ON: "2024-04-19"
     TECH_EMAIL: "services@girondenumerique.fr"
     TRUSTED_NETWORKS: ""
+    ADMINS_GROUP_ENABLED: "enabled"
+    WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
   extraSecretEnv:
     - fromSecret:
@@ -195,8 +197,6 @@ delayed_job:
   command: rake jobs:work
 assets:
   image: __CI_REGISTRY_IMAGE__/assets:__ASSETS_VERSION__
-  extraEnv:
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 ingress:
   tls:
     secretName: gironde-numerique-ds-crt

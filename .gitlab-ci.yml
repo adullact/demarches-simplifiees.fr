@@ -1,6 +1,6 @@
 include:
   - project: ouidou/ci-templates
-    ref: 0.3.3
+    ref: 0.5.0
     file: rails/.gitlab-ci-template.yml
 
 variables:
@@ -15,6 +15,7 @@ variables:
   WITH_REEK: "1"
   WITH_REVIEW: "0"
   WITH_RUBOCOP: "1"
+  WITH_SONAR: "0"
 
 default:
   interruptible: true
@@ -22,15 +23,25 @@ default:
 prepare:
   variables:
     PACKAGE: ops/ci/base/packages.txt
-    RAILS_VERSION: ruby3.2.2-rails7.0.5
+    RAILS_VERSION: ruby3.3.0-rails7.0.8
 
+compile_assets:
+  script:
+    - bundle check # workaround for mimemagic not found
+    - set -a
+    - source ${CI_PROJECT_DIR}/ops/ci/release/assets/app_env
+    - yarn install
+    - echo "ASSETS_COMMAND is $ASSETS_COMMAND"
+    - eval "$ASSETS_COMMAND"
+
+# We look for values.yml in ${ENV_NAME}/${PATH_VALUE}
 staging:adullact:
   extends: [deploy_staging]
   variables:
-    CUSTOM_ASSETS_IMAGE: adullact-0.8.2.rc19
+    CUSTOM_ASSETS_IMAGE: adullact-0.8.2.rc23
     ENV_NAME: staging
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.0
+    HELM_CHART_VERSION: 0.2.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-staging
@@ -42,12 +53,10 @@ staging:adullact:
 staging:somme-numerique:
   extends: [deploy_staging]
   variables:
-    APP_VERSION: 1.5.5
-    ASSETS_VERSION: 1.5.5
-    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc21
-    ENV_NAME: somme-numerique-staging
+    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc23
+    ENV_NAME: staging
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.0
+    HELM_CHART_VERSION: 0.2.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-staging
@@ -59,27 +68,28 @@ staging:somme-numerique:
 production:adullact:
   extends: [deploy_production]
   variables:
-    APP_VERSION: 1.5.5
-    ASSETS_VERSION: 1.5.5
-    CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc19
+    APP_VERSION: 1.5.6.rc3
+    ASSETS_VERSION: 1.5.6.rc3
+    CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc23
+    ENV_NAME: adullact
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.0
+    HELM_CHART_VERSION: 0.2.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
-    K8S_NAMESPACE: adullact-ds-staging
+    K8S_NAMESPACE: adullact-ds-production
     PATH_VALUE: adullact/
-    RELEASE_NAME: adullact-production-demarches-simplifiees
+    RELEASE_NAME: production
     SKIP_RESTORE_STAGE: "true"
-    URL_PRODUCTION: demarches-simplifiees.com
+    URL_PRODUCTION: demarches.adullact.org
 
 production:gironde-numerique:
   extends: [deploy_production]
   variables:
     APP_VERSION: 1.1.0
     ASSETS_VERSION: 1.1.0
-    ENV_NAME: gironde-numerique
+    ENV_NAME: production
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.0
+    HELM_CHART_VERSION: 0.2.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: production
@@ -93,10 +103,10 @@ production:somme-numerique:
   variables:
     APP_VERSION: 1.5.5
     ASSETS_VERSION: 1.5.5
-    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc21
-    ENV_NAME: somme-numerique
+    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc23
+    ENV_NAME: production
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.0
+    HELM_CHART_VERSION: 0.2.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-production

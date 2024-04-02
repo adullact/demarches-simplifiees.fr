@@ -47,7 +47,6 @@ app:
     DB_DATABASE: production-db
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees" # TODO
-    DEPLOY_TIMESTAMP: 123
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "support@demarches-hdf.fr"
     FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
@@ -84,8 +83,11 @@ app:
     SMTP_TLS: 1
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: ""
+    STRICT_EMAIL_VALIDATION_STARTS_ON: "2024-04-19"
     TECH_EMAIL: "support@demarches-hdf.fr"
     TRUSTED_NETWORKS: ""
+    ADMINS_GROUP_ENABLED: "enabled"
+    WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
   extraSecretEnv:
     - fromSecret:
@@ -241,13 +243,9 @@ delayed_job:
   command: rake jobs:work
 assets:
   image: build.ouidou.fr/nord/adullact/demarches-simplifiees.fr/assets:__ASSETS_VERSION__
-  extraEnv:
-    DEPLOY_TIMESTAMP: 1234
 custom_assets:
   enabled: "true"
   image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
-  extraEnv:
-    DEPLOY_TIMESTAMP: 1234
 ingress:
   tls:
     secretName: sm-ds-production-cloud-crt

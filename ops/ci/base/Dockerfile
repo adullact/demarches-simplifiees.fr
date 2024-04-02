@@ -1,6 +1,6 @@
 ARG RAILS_VERSION
 
-FROM build.ouidou.fr/docker-images/rails/custom:${RAILS_VERSION}
+FROM build.ouidou.fr/docker-images/rails/app:${RAILS_VERSION}
 
 # Copy your packages list file into the image
 ARG PACKAGE

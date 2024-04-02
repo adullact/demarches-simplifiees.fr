@@ -41,7 +41,6 @@ app:
     DB_DATABASE: adullact-ds-__ENV_NAME__
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "equipe-ds@synbioz.com"
     HEADER_LOGO_ALT: ""
@@ -77,8 +76,11 @@ app:
     SOURCE: "tps_dev"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
     ACTIVE_STORAGE_SERVICE: scaleway
+    STRICT_EMAIL_VALIDATION_STARTS_ON: "2024-04-19"
     TECH_EMAIL: "tech-ds@synbioz.com"
     TRUSTED_NETWORKS: ""
+    ADMINS_GROUP_ENABLED: "enabled"
+    WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
   extraSecretEnv:
     - fromSecret:

@@ -2,7 +2,6 @@ app:
   domainName: __URL_PRODUCTION__
   image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
   replicaCount: 3
-  volume_claim_name: adullact-ds-attachments
   initContainers: false
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
@@ -16,7 +15,7 @@ app:
     MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
     PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
   extraEnv:
-    ARCHIVE_CREATION_DIR: "/app/storage"
+    ACTIVE_STORAGE_SERVICE: scaleway
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
     AGENT_CONNECT_ID: ""
@@ -27,8 +26,8 @@ app:
     API_EDUCATION_URL: "https://data.education.gouv.fr/api/records/1.0"
     API_ENTREPRISE_DEFAULT_SIRET: "44378317000030"
     API_GEO_URL: "https://geo.api.gouv.fr"
-    APPLICATION_SHORTNAME: ds.adullact.org
     APP_NAME: "tps"
+    APPLICATION_SHORTNAME: ds.adullact.org
     BOOTSTRAP_ADMIN_ENABLED: 0
     CERTIGNA_ENABLED: "disabled"
     CGU_URL: "https://faq.adullact.org/logiciels/117-cgu-demarches-simplifiees-adullact"
@@ -36,16 +35,15 @@ app:
     CONTACT_ADDRESS: "Association Adullact\n5 rue du Plan du Palais\n 34000 Montpellier"
     CONTACT_EMAIL: "ne-pas-repondre@adullact.org"
     CONTACT_PHONE: "04 67 65 05 88"
-    DB_DATABASE: adullact-ds-db
+    DB_DATABASE: adullact-ds-production
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "demarches-simplifiees@adullact.org"
+    FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
-    FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
     LANDING_TESTIMONIALS_ENABLED: "disabled"
     LANDING_USERS_ENABLED: "disabled"
     LOGRAGE_ENABLED: "disabled"
@@ -79,9 +77,12 @@ app:
     SENTRY_ENABLED: "enabled"
     SOURCE: "tps"
     STATUS_PAGE_URL: "https://stats.uptimerobot.com/L5O2LiPXR4"
-    ACTIVE_STORAGE_SERVICE: local
+    ACTIVE_STORAGE_SERVICE: scaleway
+    STRICT_EMAIL_VALIDATION_STARTS_ON: "2024-04-19"
     TECH_EMAIL: "demarches-simplifiees@adullact.org"
     TRUSTED_NETWORKS: ""
+    ADMINS_GROUP_ENABLED: "enabled"
+    WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
   extraSecretEnv:
     - fromSecret:
@@ -102,15 +103,15 @@ app:
     - fromSecret:
         name: common
         data:
+          API_ENTREPRISE_KEY: api_entreprise_key
+          AR_ENCRYPTION_KEY_DERIVATION_SALT: ar_encryption__key_derivation_salt
+          AR_ENCRYPTION_PRIMARY_KEY: ar_encryption_primary_key
+          ENCRYPTION_SERVICE_SALT: encryption_service_salt
+          INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
           OTP_SECRET_KEY: otp_secret_key
           PIPEDRIVE_KEY: pipedrive_key
           SIGNING_KEY: signing_key
           SKYLIGHT_AUTHENTICATION_KEY: skylight_authentication_key
-          ENCRYPTION_SERVICE_SALT: encryption_service_salt
-          API_ENTREPRISE_KEY: api_entreprise_key
-          INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
-          AR_ENCRYPTION_PRIMARY_KEY: ar_encryption_primary_key
-          AR_ENCRYPTION_KEY_DERIVATION_SALT: ar_encryption__key_derivation_salt
     - fromSecret:
         name: saml
         data:
@@ -215,13 +216,9 @@ delayed_job:
   command: rake jobs:work
 assets:
   image: __CI_REGISTRY_IMAGE__/assets:__ASSETS_VERSION__
-  extraEnv:
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 custom_assets:
   enabled: "true"
   image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
-  extraEnv:
-    DEPLOY_TIMESTAMP: __DEPLOY_TIMESTAMP__
 ingress:
   tls:
     secretName: adullact-ds-crt
@@ -231,6 +228,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
     nginx.ingress.kubernetes.io/use-regex: "true"
+    # nginx.ingress.kubernetes.io/configuration-snippet annotation cannot be used. Snippet directives are disabled by the Ingress administrator
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/contact/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;
       rewrite ^/contact-admin/?$ https://faq.adullact.org/services-adullact/demarches-simplifiees/support/ permanent;

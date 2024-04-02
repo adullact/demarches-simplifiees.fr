@@ -28,7 +28,7 @@ namespace :mirror_disk_to_s3 do
     ActiveStorage::Blob.service = from_service
 
     ActiveStorage::Blob.where(service_name: :local).find_each do |blob|
-      blob.update(service_name: :mirror_local_to_scaleway)
+      blob.update(service_name: :scaleway)
       begin
         blob.open do |tf|
           checksum = blob.checksum
