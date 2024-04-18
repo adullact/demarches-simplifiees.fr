@@ -68,8 +68,8 @@ staging:somme-numerique:
 production:adullact:
   extends: [deploy_production]
   variables:
-    APP_VERSION: 1.5.7
-    ASSETS_VERSION: 1.5.7
+    APP_VERSION: 1.5.7.rc2
+    ASSETS_VERSION: 1.5.7.rc2
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc23
     ENV_NAME: adullact
     HELM_CHART_NAME: demarches-simplifiees
