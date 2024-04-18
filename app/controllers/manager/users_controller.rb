@@ -97,6 +97,7 @@ module Manager
       @user = User.find(params[:id])
 
       email_services = [
+        Mailjet::API.new,
         Brevo::API.new,
         Scaleway::API.new,
       ].filter(&:properly_configured?)

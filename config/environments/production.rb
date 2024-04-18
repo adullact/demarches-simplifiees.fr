@@ -139,6 +139,7 @@ Rails.application.configure do
     config.action_mailer.balancer_settings = {
       brevo: brevo_weight,
       scaleway: scaleway_weight,
+      mailjet: 100 - (brevo_weight + scaleway_weight)
     }
     config.action_mailer.delivery_method = :balancer
   end
