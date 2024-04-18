@@ -485,6 +485,11 @@ GEM
       net-imap
       net-pop
       net-smtp
+    mailjet (1.8.3)
+      activesupport (>= 5.0.0)
+      faraday (~> 2.1)
+      rack (>= 1.4.0)
+      yajl-ruby
     maintenance_tasks (2.16.0)
       actionpack (>= 7.1)
       activejob (>= 7.1)
@@ -986,6 +991,7 @@ GEM
       anyway_config (>= 1.3, < 3)
       sidekiq
       yabeda (~> 0.6)
+    yajl-ruby (1.4.3)
     zeitwerk (2.8.2)
     zip_kit (6.3.3)
     zipline (2.2.0)
@@ -1076,6 +1082,7 @@ DEPENDENCIES
   listen
   lograge
   logstash-event
+  mailjet
   maintenance_tasks
   matrix
   memory_profiler

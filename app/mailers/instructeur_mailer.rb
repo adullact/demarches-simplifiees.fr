@@ -17,6 +17,7 @@ class InstructeurMailer < ApplicationMailer
     @overviews = instructeur.weekly_email_summary_data
 
     if @overviews.present?
+      headers['X-mailjet-campaign'] = 'last_week_overview'
       mail(to: email, subject: @subject, from: NO_REPLY_EMAIL, reply_to: NO_REPLY_EMAIL)
     end
   end
