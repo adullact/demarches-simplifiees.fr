@@ -28,6 +28,9 @@ services:
   delayed_job:
     << : *app_common
     command: rake jobs:work
+  sidekiq:
+    <<: *app_common
+    command: bundle exec sidekiq
 
 volumes:
   app_data:
