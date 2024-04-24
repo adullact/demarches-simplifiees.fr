@@ -40,8 +40,6 @@ app:
     MAILCATCHER_ENABLED: "disabled"
     MAILCATCHER_HOST: ""
     MAILCATCHER_PORT: ""
-    MATOMO_COOKIE_DOMAIN: "*.www.demarches-simplifiees.fr"
-    MATOMO_DOMAIN: "*.www.demarches-simplifiees.fr"
     MATOMO_ENABLED: "disabled"
     MATOMO_HOST: "matomo.example.org"
     MATOMO_ID: ""

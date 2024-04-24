@@ -41,7 +41,7 @@ staging:adullact:
     CUSTOM_ASSETS_IMAGE: adullact-0.8.2.rc23
     ENV_NAME: staging
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.1
+    HELM_CHART_VERSION: 0.4.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-staging
@@ -54,9 +54,9 @@ staging:somme-numerique:
   extends: [deploy_staging]
   variables:
     CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc23
-    ENV_NAME: staging
+    ENV_NAME: somme-numerique-staging
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.1
+    HELM_CHART_VERSION: 0.4.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-staging
@@ -68,12 +68,12 @@ staging:somme-numerique:
 production:adullact:
   extends: [deploy_production]
   variables:
-    APP_VERSION: 1.5.7.rc3
-    ASSETS_VERSION: 1.5.7.rc3
+    APP_VERSION: 1.5.7.rc8
+    ASSETS_VERSION: 1.5.7.rc8
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc23
     ENV_NAME: adullact
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.1
+    HELM_CHART_VERSION: 0.4.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-production

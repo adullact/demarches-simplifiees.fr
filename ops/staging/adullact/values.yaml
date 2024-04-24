@@ -44,7 +44,7 @@ app:
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "demarches-simplifiees@adullact.org"
-    FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
+    FC_PARTICULIER_BASE_URL: "https://fcp.integ01.dev-franceconnect.fr"
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
@@ -55,7 +55,7 @@ app:
     MAILCATCHER_ENABLED: "enabled"
     MAILCATCHER_HOST: "mailcatcher-common-app-app"
     MAILCATCHER_PORT: "1025"
-    MATOMO_ENABLED: "enabled"
+    MATOMO_ENABLED: "disabled"
     MATOMO_HOST: "statistiques.adullact.org"
     MATOMO_ID: "12"
     MATOMO_IFRAME_URL: "https://statistiques.adullact.org/index.php?module=CoreAdminHome&action=optOut&language=fr&&fontColor=333333&fontSize=16px&fontFamily=Muli"
@@ -223,8 +223,20 @@ app:
         - "-c"
         - "rake bootstrap:all"
       extraEnv: []
+
+  sides:
+    sidekiq:
+      include_app_env: "true"
+      image: __CI_REGISTRY_IMAGE__/app:__TAG__
+      internalPort: 80
+      command: ["/bin/bash"]
+      args:
+        - "-c"
+        - "bundle exec sidekiq -C config/sidekiq.yml"
+
 delayed_job:
   command: rake jobs:work
+
 assets:
   image: __CI_REGISTRY_IMAGE__/assets:__TAG__
 

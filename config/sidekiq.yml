@@ -1,0 +1,7 @@
+---
+:concurrency: 10
+
+:queues:
+  - default
+  - low_priority
+  - expires

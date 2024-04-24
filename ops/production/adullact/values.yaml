@@ -3,6 +3,7 @@ app:
   image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
   replicaCount: 3
   initContainers: false
+  with_redis_tls: true
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
     FAVICON_16PX_SRC: "images/16x16.png"
@@ -51,8 +52,6 @@ app:
     MAILCATCHER_ENABLED: "disabled"
     MAILCATCHER_HOST: ""
     MAILCATCHER_PORT: ""
-    MATOMO_COOKIE_DOMAIN: "*.demarches.adullact.org"
-    MATOMO_DOMAIN: "*.demarches.adullact.org"
     MATOMO_ENABLED: "enabled"
     MATOMO_HOST: "statistiques.adullact.org"
     MATOMO_ID: "15"
@@ -84,6 +83,7 @@ app:
     ADMINS_GROUP_ENABLED: "enabled"
     WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
+    REDIS_SSL_CA_FILE: "/app/config/tls/scw.pem"
   extraSecretEnv:
     - fromSecret:
         name: stack-postgresql
@@ -95,6 +95,10 @@ app:
         name: stack-redis
         data:
           REDIS_URL: redis-full-host
+          REDIS_USERNAME: user
+          REDIS_PASSWORD: password
+          REDIS_HOST: host
+          REDIS_PORT: port
     - fromSecret:
         name: scaleway
         data:
@@ -212,6 +216,15 @@ app:
         - "-c"
         - "rake jobs:schedule"
       extraEnv: []
+  sides:
+    sidekiq:
+      include_app_env: "true"
+      image: __CI_REGISTRY_IMAGE__/app:__TAG__
+      internalPort: 80
+      command: ["/bin/bash"]
+      args:
+        - "-c"
+        - "bundle exec sidekiq -C config/sidekiq.yml"
 delayed_job:
   command: rake jobs:work
 assets:

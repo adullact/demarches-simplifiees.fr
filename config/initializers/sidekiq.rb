@@ -33,6 +33,20 @@ Sidekiq.configure_server do |config|
   if ENV['SKIP_RELIABLE_FETCH'].blank?
     Sidekiq::ReliableFetch.setup_reliable_fetch!(config)
   end
+elsif ENV.has_key?('REDIS_URL') || ENV.has_key?('REDIS_SSL_CA_FILE')
+  if ENV.has_key?('REDIS_SSL_CA_FILE')
+    redis_config = { host: ENV.fetch('REDIS_HOST'), port: ENV.fetch('REDIS_PORT'), username: ENV.fetch('REDIS_USERNAME'), password: ENV.fetch('REDIS_PASSWORD'), ssl: true, ssl_params: { :ca_file => ENV.fetch('REDIS_SSL_CA_FILE') } }
+  else
+    redis_config = { url: ENV.fetch("REDIS_URL") }
+  end
+
+  Sidekiq.configure_server do |config|
+    config.redis = redis_config
+  end
+
+  Sidekiq.configure_client do |config|
+    config.redis = redis_config
+  end
 end
 
 Sidekiq.configure_client do |config|

@@ -52,7 +52,7 @@ app:
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "support@sommenumerique.fr"
-    FC_PARTICULIER_BASE_URL: "https://app.franceconnect.gouv.fr"
+    FC_PARTICULIER_BASE_URL: "https://fcp.integ01.dev-franceconnect.fr"
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
@@ -234,6 +234,15 @@ app:
         - "-c"
         - "rake bootstrap:all"
       extraEnv: []
+  sides:
+    sidekiq:
+      include_app_env: "true"
+      image: __CI_REGISTRY_IMAGE__/app:__TAG__
+      internalPort: 80
+      command: ["/bin/bash"]
+      args:
+        - "-c"
+        - "bundle exec sidekiq -C config/sidekiq.yml"
 delayed_job:
   command: rake jobs:work
 assets:
