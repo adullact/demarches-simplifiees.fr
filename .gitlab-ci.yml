@@ -101,12 +101,12 @@ production:gironde-numerique:
 production:somme-numerique:
   extends: [deploy_production]
   variables:
-    APP_VERSION: 1.5.5
-    ASSETS_VERSION: 1.5.5
+    APP_VERSION: 1.5.7.rc9
+    ASSETS_VERSION: 1.5.7.rc9
     CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc23
     ENV_NAME: production
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.1
+    HELM_CHART_VERSION: 0.4.1
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-production
