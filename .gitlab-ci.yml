@@ -87,7 +87,7 @@ production:gironde-numerique:
   variables:
     APP_VERSION: 1.1.0
     ASSETS_VERSION: 1.1.0
-    ENV_NAME: production
+    ENV_NAME: gironde-numerique
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.2.1
     HELM_REPO_NAME: adullact
@@ -104,7 +104,7 @@ production:somme-numerique:
     APP_VERSION: 1.5.7.rc9
     ASSETS_VERSION: 1.5.7.rc9
     CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc23
-    ENV_NAME: production
+    ENV_NAME: somme-numerique
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.4.1
     HELM_REPO_NAME: adullact
