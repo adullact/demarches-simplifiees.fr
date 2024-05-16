@@ -239,13 +239,26 @@ app:
         - "-c"
         - "rake bootstrap:all"
       extraEnv: []
+  sides:
+    sidekiq:
+      include_app_env: "true"
+      image: __CI_REGISTRY_IMAGE__/app:__TAG__
+      internalPort: 80
+      command: ["/bin/bash"]
+      args:
+        - "-c"
+        - "bundle exec sidekiq -C config/sidekiq.yml"
+
 delayed_job:
   command: rake jobs:work
+
 assets:
   image: build.ouidou.fr/nord/adullact/demarches-simplifiees.fr/assets:__ASSETS_VERSION__
+
 custom_assets:
   enabled: "true"
   image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
+
 ingress:
   tls:
     secretName: sm-ds-production-cloud-crt
