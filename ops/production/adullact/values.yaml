@@ -216,6 +216,29 @@ app:
         - "-c"
         - "rake jobs:schedule"
       extraEnv: []
+  backup:
+    extraEnv:
+      ENCRYPT_BACKUP: "true"
+      POSTGRES_DB: adullact-ds-production
+      S3_PREFIX: "adullact/ds/production"
+      SGBD_TYPE: "postgres"
+    extraSecretEnv:
+      - fromSecret:
+          name: aws-s3-backup
+          data:
+            AWS_ACCESS_KEY_ID: aws_access_key_id
+            AWS_SECRET_ACCESS_KEY: aws_secret_access_key
+      - fromSecret:
+          name: ansible-vault-s3
+          data:
+            ENCRYPT_BACKUP_KEY: backup-key
+      - fromSecret:
+          name: stack-postgresql
+          data:
+            PGPASSWORD: postgresql-password
+            POSTGRES_HOST: postgresql-host
+            POSTGRES_USER: postgresql-username
+
   sides:
     sidekiq:
       include_app_env: "true"
