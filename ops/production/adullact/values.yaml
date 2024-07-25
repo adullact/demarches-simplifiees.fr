@@ -217,6 +217,7 @@ app:
         - "rake jobs:schedule"
       extraEnv: []
   backup:
+    include_app_env: "true"
     extraEnv:
       ENCRYPT_BACKUP: "true"
       POSTGRES_DB: adullact-ds-production
