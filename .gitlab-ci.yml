@@ -30,7 +30,7 @@ compile_assets:
     - bundle check # workaround for mimemagic not found
     - set -a
     - source ${CI_PROJECT_DIR}/ops/ci/release/assets/app_env
-    - yarn install
+    - bun install
     - echo "ASSETS_COMMAND is $ASSETS_COMMAND"
     - eval "$ASSETS_COMMAND"
 
@@ -38,7 +38,7 @@ compile_assets:
 staging:adullact:
   extends: [deploy_staging]
   variables:
-    CUSTOM_ASSETS_IMAGE: adullact-0.8.2.rc23
+    CUSTOM_ASSETS_IMAGE: adullact-0.8.2.rc24
     ENV_NAME: staging
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.4.1
@@ -53,7 +53,7 @@ staging:adullact:
 staging:somme-numerique:
   extends: [deploy_staging]
   variables:
-    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc23
+    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc24
     ENV_NAME: somme-numerique-staging
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.4.1
@@ -70,7 +70,7 @@ production:adullact:
   variables:
     APP_VERSION: 1.5.7.rc8
     ASSETS_VERSION: 1.5.7.rc8
-    CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc23
+    CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc24
     ENV_NAME: adullact
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.4.1
@@ -103,7 +103,7 @@ production:somme-numerique:
   variables:
     APP_VERSION: 1.5.7.rc9
     ASSETS_VERSION: 1.5.7.rc9
-    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc23
+    CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc24
     ENV_NAME: somme-numerique
     HELM_CHART_NAME: demarches-simplifiees
     HELM_CHART_VERSION: 0.4.1

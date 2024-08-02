@@ -9,10 +9,10 @@ COPY Gemfile* .ruby-version /app/
 
 RUN bundle install
 
-COPY package.json yarn.lock .yarnrc ./
+COPY package.json bun.lockb ./
 ENV PATH /app/node_modules/.bin:$PATH
 ENV NODE_PATH /app/node_modules/:$NODE_PATH
-RUN yarn install
+RUN bun install
 
 ADD . /app/
 

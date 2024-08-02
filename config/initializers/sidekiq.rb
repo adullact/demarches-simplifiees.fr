@@ -1,4 +1,4 @@
-SIDEKIQ_ENABLED = ENV.key?('REDIS_SIDEKIQ_SENTINELS') || ENV.key?('REDIS_URL') || ENV['RAILS_QUEUE_ADAPTER'] == 'sidekiq'
+SIDEKIQ_ENABLED = ENV.key?('REDIS_SIDEKIQ_SENTINELS') || ENV.key?('REDIS_URL') || ENV['RAILS_QUEUE_ADAPTER'] == 'sidekiq' || ENV.has_key?('REDIS_SSL_CA_FILE')
 
 return if !SIDEKIQ_ENABLED
 
@@ -18,6 +18,12 @@ sidekiq_redis = if ENV.key?('REDIS_SIDEKIQ_SENTINELS')
     password:,
     role: :master
   }
+elsif ENV.has_key?('REDIS_URL') || ENV.has_key?('REDIS_SSL_CA_FILE')
+  if ENV.has_key?('REDIS_SSL_CA_FILE')
+    sidekiq_redis = { host: ENV.fetch('REDIS_HOST'), port: ENV.fetch('REDIS_PORT'), username: ENV.fetch('REDIS_USERNAME'), password: ENV.fetch('REDIS_PASSWORD'), ssl: true, ssl_params: { :ca_file => ENV.fetch('REDIS_SSL_CA_FILE') } }
+  else
+    sidekiq_redis = { url: ENV.fetch("REDIS_URL") }
+  end
 else
   {} # default config from REDIS_URL
 end
@@ -32,20 +38,6 @@ Sidekiq.configure_server do |config|
 
   if ENV['SKIP_RELIABLE_FETCH'].blank?
     Sidekiq::ReliableFetch.setup_reliable_fetch!(config)
-  end
-elsif ENV.has_key?('REDIS_URL') || ENV.has_key?('REDIS_SSL_CA_FILE')
-  if ENV.has_key?('REDIS_SSL_CA_FILE')
-    redis_config = { host: ENV.fetch('REDIS_HOST'), port: ENV.fetch('REDIS_PORT'), username: ENV.fetch('REDIS_USERNAME'), password: ENV.fetch('REDIS_PASSWORD'), ssl: true, ssl_params: { :ca_file => ENV.fetch('REDIS_SSL_CA_FILE') } }
-  else
-    redis_config = { url: ENV.fetch("REDIS_URL") }
-  end
-
-  Sidekiq.configure_server do |config|
-    config.redis = redis_config
-  end
-
-  Sidekiq.configure_client do |config|
-    config.redis = redis_config
   end
 end
 

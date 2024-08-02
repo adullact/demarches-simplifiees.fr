@@ -24,7 +24,7 @@ services:
       VIRTUAL_PORT: 3000
   vite:
     << : *app_common
-    command: ./bin/vite dev
+    command: ./bin/bun_vite dev
   delayed_job:
     << : *app_common
     command: rake jobs:work
