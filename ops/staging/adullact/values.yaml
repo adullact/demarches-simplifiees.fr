@@ -2,19 +2,27 @@ app:
   domainName: __URL_STAGING__
   image: __CI_REGISTRY_IMAGE__/app:__TAG__
   initContainers: false
-  extraEnvCustomAssets:
-    DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
-    FAVICON_16PX_SRC: "images/16x16.png"
-    FAVICON_32PX_SRC: "images/32x32.png"
-    FAVICON_96PX_SRC: "images/96x96.png"
-    FAVICON_APPLE_TOUCH_152PX_SRC: "images/apple-touch-icon_adullact.png"
-    FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
-    HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
-    MAILER_FOOTER_LOGO_SRC: "images/logo-mail-footer-adullact_200x71.png"
-    MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
-    PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
+  ports:
+    - name: default
+      external: 80
+      internal: 3000
+  volumes:
+    emptyDir:
+      - name: custom-config
+        emptyDir: {}
+    secret:
+      - name: redis-tls-volume
+        secret: stack-redis-certificates
+  mounts:
+    - name: custom-config
+      mountPath: /app/app/custom_views/
+      subPath: custom_views
+    - name: custom-config
+      mountPath: /app/config/custom_locales/
+      subPath: custom_locales
   extraEnv:
     ACTIVE_STORAGE_SERVICE: scaleway
+    ADMINS_GROUP_ENABLED: "enabled"
     AGENT_CONNECT_BASE_URL: ""
     AGENT_CONNECT_ENABLED: "disabled"
     AGENT_CONNECT_ID: ""
@@ -26,7 +34,10 @@ app:
     API_ENTREPRISE_DEFAULT_SIRET: "44378317000030"
     API_ENTREPRISE_URL: "https://staging.entreprise.api.gouv.fr"
     API_GEO_URL: "https://geo.api.gouv.fr"
+    APP_HOST: __URL_STAGING__
     APP_NAME: "tps_dev"
+    APPLICATION_BASE_URL: https://__URL_STAGING__
+    APPLICATION_NAME: __URL_STAGING__
     APPLICATION_SHORTNAME: d-s.staging.plunge.cloud
     BOOTSTRAP_ADMIN_EMAIL: admin@synbioz.com
     BOOTSTRAP_ADMIN_ENABLED: 1
@@ -48,6 +59,8 @@ app:
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
     HEADER_LOGO_WIDTH: "65"
+    HOST_URL: __URL_STAGING__
+    IGN_CARTE_REFERER: __URL_STAGING__
     LANDING_TESTIMONIALS_ENABLED: "disabled"
     LANDING_USERS_ENABLED: "disabled"
     LOGRAGE_ENABLED: "disabled"
@@ -55,6 +68,8 @@ app:
     MAILCATCHER_ENABLED: "enabled"
     MAILCATCHER_HOST: "mailcatcher-common-app-app"
     MAILCATCHER_PORT: "1025"
+    MATOMO_COOKIE_DOMAIN: "*.__URL_STAGING__"
+    MATOMO_DOMAIN: "*.__URL_STAGING__"
     MATOMO_ENABLED: "disabled"
     MATOMO_HOST: "statistiques.adullact.org"
     MATOMO_ID: "12"
@@ -82,7 +97,6 @@ app:
     STRICT_EMAIL_VALIDATION_STARTS_ON: "2024-04-19"
     TECH_EMAIL: "tech-ds@synbioz.com"
     TRUSTED_NETWORKS: ""
-    ADMINS_GROUP_ENABLED: "enabled"
     WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
   extraSecretEnv:
@@ -91,6 +105,7 @@ app:
         data:
           DB_HOST: postgresql-host
           DB_PASSWORD: postgresql-password
+          DB_PORT: postgresql-port
           DB_USERNAME: postgresql-username
           DB_PORT: postgresql-port
     - fromSecret:
@@ -105,15 +120,15 @@ app:
     - fromSecret:
         name: common
         data:
+          API_ENTREPRISE_KEY: api_entreprise_key
+          AR_ENCRYPTION_KEY_DERIVATION_SALT: ar_encryption__key_derivation_salt
+          AR_ENCRYPTION_PRIMARY_KEY: ar_encryption_primary_key
+          ENCRYPTION_SERVICE_SALT: encryption_service_salt
+          INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
           OTP_SECRET_KEY: otp_secret_key
           PIPEDRIVE_KEY: pipedrive_key
           SIGNING_KEY: signing_key
           SKYLIGHT_AUTHENTICATION_KEY: skylight_authentication_key
-          ENCRYPTION_SERVICE_SALT: encryption_service_salt
-          API_ENTREPRISE_KEY: api_entreprise_key
-          INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
-          AR_ENCRYPTION_PRIMARY_KEY: ar_encryption_primary_key
-          AR_ENCRYPTION_KEY_DERIVATION_SALT: ar_encryption__key_derivation_salt
     - fromSecret:
         name: saml
         data:
@@ -227,27 +242,99 @@ app:
 
   sides:
     sidekiq:
-      include_app_env: "true"
+      include_app_env: true
+      with_service: false
+      with_app_volume: false
       image: __CI_REGISTRY_IMAGE__/app:__TAG__
-      internalPort: 80
       command: ["/bin/bash"]
       args:
         - "-c"
         - "bundle exec sidekiq -C config/sidekiq.yml"
 
-delayed_job:
-  command: rake jobs:work
+    delayed-job:
+      with_service: false
+      with_app_env: true
+      with_app_volume: true
+      image: __CI_REGISTRY_IMAGE__/app:__TAG__
+      command: ["/bin/bash"]
+      args:
+        - "-c"
+        - "rake jobs:work"
+      initContainers:
+        - name: custom-config
+          image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
+          mounts:
+            - name: custom-config
+              mountPath: /data
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - >
+              cp -r /app/app/custom_views/ /data/ &&
+              cp -r /app/config/custom_locales/ /data/
 
-assets:
-  image: __CI_REGISTRY_IMAGE__/assets:__TAG__
+    assets:
+      with_service: true
+      with_app_env: true
+      with_app_volume: false
+      image: __CI_REGISTRY_IMAGE__/assets:__TAG__
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 80
+        initialDelaySeconds: 10
+        timeoutSeconds: 2
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 80
+        initialDelaySeconds: 20
+        timeoutSeconds: 2
 
-custom_assets:
-  enabled: "true"
-  image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_IMAGE__
-
+    custom-assets:
+      with_service: true
+      with_app_env: true
+      with_app_volume: false
+      image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
+      extraEnv:
+        DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
+        FAVICON_16PX_SRC: "images/16x16.png"
+        FAVICON_32PX_SRC: "images/32x32.png"
+        FAVICON_96PX_SRC: "images/96x96.png"
+        FAVICON_APPLE_TOUCH_152PX_SRC: "images/apple-touch-icon_adullact.png"
+        FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
+        HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
+        MAILER_FOOTER_LOGO_SRC: "images/logo-mail-footer-adullact_200x71.png"
+        MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
+        PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 80
+        initialDelaySeconds: 10
+        timeoutSeconds: 2
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 80
+        initialDelaySeconds: 20
+        timeoutSeconds: 2
 ingress:
-  tls:
-    secretName: __CI_COMMIT_REF_SLUG__-__ENV_NAME__-ds-crt
+  sides:
+    assets:
+      paths:
+        - assets
+        - vite
+        - packs
+        - favicon.ico
+        - csv
+        - robot.txt
+        - logo-ds.svg
+      pathType: ImplementationSpecific
+    custom-assets:
+      paths:
+        - custom-assets
+      pathType: ImplementationSpecific
   annotations:
     ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
