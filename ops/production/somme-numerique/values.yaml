@@ -97,7 +97,6 @@ app:
           DB_PASSWORD: postgresql-password
           DB_PORT: postgresql-port
           DB_USERNAME: postgresql-username
-          DB_PORT: postgresql-port
     - fromSecret:
         name: stack-redis
         data:
