@@ -68,14 +68,14 @@ staging:somme-numerique:
 production:adullact:
   extends: [deploy_production]
   variables:
-    APP_VERSION: 1.5.7.rc8
-    ASSETS_VERSION: 1.5.7.rc8
+    APP_VERSION: 1.6.0
+    ASSETS_VERSION: 1.6.0
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc24
     ENV_NAME: adullact
-    HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.4.1
+    HELM_CHART_NAME: app
+    HELM_CHART_VERSION: 0.7.0-rc4
     HELM_REPO_NAME: adullact
-    HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
+    HELM_REPO_URL: ${CI_API_V4_URL}/projects/379/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-production
     PATH_VALUE: adullact/
     RELEASE_NAME: production

@@ -12,7 +12,7 @@ app:
       - name: custom-config
         emptyDir: {}
     secret:
-      - name: redis-tls-volume
+      - name: redis-certificates
         secret: stack-redis-certificates
   mounts:
     - name: custom-config
@@ -21,6 +21,10 @@ app:
     - name: custom-config
       mountPath: /app/config/custom_locales/
       subPath: custom_locales
+    - name: redis-certificates
+      mountPath: "/app/config/tls/"
+      # use string to avoid falsy value. If you use readOnly: false, it will be evaluated to a falsy value and then assign default value (true)
+      readOnly: "false"
   extraEnv:
     ACTIVE_STORAGE_SERVICE: scaleway
     ADMINS_GROUP_ENABLED: "enabled"
@@ -257,7 +261,7 @@ app:
     sidekiq:
       include_app_env: true
       with_service: false
-      with_app_volume: false
+      with_app_volume: true
       image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
       internalPort: 80
       command: ["/bin/bash"]
@@ -305,7 +309,7 @@ app:
         initialDelaySeconds: 20
         timeoutSeconds: 2
 
-    custom_assets:
+    custom-assets:
       with_service: true
       with_app_env: true
       with_app_volume: false
