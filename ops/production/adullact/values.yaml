@@ -282,9 +282,9 @@ app:
 
   sides:
     sidekiq:
-      include_app_env: true
-      with_service: false
+      with_app_env: true
       with_app_volume: true
+      with_service: false
       image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
       internalPort: 80
       command: ["/bin/bash"]
@@ -293,9 +293,9 @@ app:
         - "bundle exec sidekiq -C config/sidekiq.yml"
 
     delayed-job:
-      with_service: false
       with_app_env: true
       with_app_volume: true
+      with_service: false
       image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
       command: ["/bin/bash"]
       args:
@@ -315,9 +315,9 @@ app:
               cp -r /app/config/custom_locales /data/
 
     assets:
-      with_service: true
       with_app_env: true
       with_app_volume: false
+      with_service: true
       image: __CI_REGISTRY_IMAGE__/assets:__ASSETS_VERSION__
       livenessProbe:
         httpGet:
@@ -333,9 +333,9 @@ app:
         timeoutSeconds: 2
 
     custom-assets:
-      with_service: true
       with_app_env: true
       with_app_volume: false
+      with_service: true
       image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
       livenessProbe:
         httpGet:
