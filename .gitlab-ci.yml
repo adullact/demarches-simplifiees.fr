@@ -41,10 +41,11 @@ staging:adullact:
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc24
     ENV_NAME: staging
     HELM_CHART_NAME: app
-    HELM_CHART_VERSION: 0.7.0-rc3
+    HELM_CHART_VERSION: 0.7.0-rc6
     HELM_REPO_NAME: ouidou
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/379/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-staging
+    MAILCATCHER_VERSION: 0.9.0
     PATH_VALUE: adullact/
     PREFIX_APP_NAME: adullact-ds
     SKIP_RESTORE_STAGE: "true"
@@ -73,7 +74,7 @@ production:adullact:
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc24
     ENV_NAME: adullact
     HELM_CHART_NAME: app
-    HELM_CHART_VERSION: 0.7.0-rc4
+    HELM_CHART_VERSION: 0.7.0-rc6
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/379/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-production
