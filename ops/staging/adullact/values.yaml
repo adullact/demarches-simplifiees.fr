@@ -84,7 +84,7 @@ app:
     LOGRAGE_ENABLED: "disabled"
     LOGRAGE_SOURCE: "tps_staging"
     MAILCATCHER_ENABLED: "enabled"
-    MAILCATCHER_HOST: "mailcatcher-common-app-app"
+    MAILCATCHER_HOST: "mailcatcher"
     MAILCATCHER_PORT: "1025"
     MAILER_FOOTER_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/logo-mail-footer-adullact_200x71.png"
     MAILER_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/logo-mail-header-adullact_600x63.png"
@@ -262,9 +262,9 @@ app:
 
   sides:
     sidekiq:
-      include_app_env: true
-      with_service: false
-      with_app_volume: false
+      include_app_env: "true"
+      with_service: "false"
+      with_app_volume: "false"
       image: __CI_REGISTRY_IMAGE__/app:__TAG__
       command: ["/bin/bash"]
       args:
@@ -272,9 +272,9 @@ app:
         - "bundle exec sidekiq -C config/sidekiq.yml"
 
     delayed-job:
-      with_service: false
-      with_app_env: true
-      with_app_volume: true
+      with_service: "false"
+      with_app_env: "true"
+      with_app_volume: "true"
       image: __CI_REGISTRY_IMAGE__/app:__TAG__
       command: ["/bin/bash"]
       args:
@@ -294,9 +294,9 @@ app:
               cp -r /app/config/custom_locales /data/
 
     assets:
-      with_service: true
-      with_app_env: true
-      with_app_volume: false
+      with_service: "true"
+      with_app_env: "true"
+      with_app_volume: "false"
       image: __CI_REGISTRY_IMAGE__/assets:__TAG__
       livenessProbe:
         httpGet:
@@ -312,9 +312,9 @@ app:
         timeoutSeconds: 2
 
     custom-assets:
-      with_service: true
-      with_app_env: true
-      with_app_volume: false
+      with_service: "true"
+      with_app_env: "true"
+      with_app_volume: "false"
       image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
       livenessProbe:
         httpGet:
@@ -328,6 +328,24 @@ app:
           port: 80
         initialDelaySeconds: 20
         timeoutSeconds: 2
+
+    mailcatcher:
+      with_service: "true"
+      with_app_env: "false"
+      with_app_volume: "false"
+      image: build.ouidou.fr/docker-images/mailcatcher/app:__MAILCATCHER_VERSION__
+      ports:
+        - name: http
+          external: 80
+          internal: 3000
+        - name: smtp
+          external: 1025
+          internal: 1025
+      command: ["/bin/bash"]
+      args:
+        - "-c"
+        - "mailcatcher --smtp-ip=0.0.0.0 --http-ip=0.0.0.0 --http-port=3000 --foreground --http-path /mailcatcher"
+
 ingress:
   sides:
     assets:
@@ -343,6 +361,10 @@ ingress:
     custom-assets:
       paths:
         - custom-assets
+      pathType: ImplementationSpecific
+    mailcatcher:
+      paths:
+        - mailcatcher
       pathType: ImplementationSpecific
   annotations:
     ingress.kubernetes.io/rewrite-target: /
