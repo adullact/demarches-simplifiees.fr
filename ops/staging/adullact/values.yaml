@@ -99,6 +99,17 @@ app:
     TRUSTED_NETWORKS: ""
     WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
+    # test
+    DOSSIER_PDF_EXPORT_LOGO_SRC: "custom-assets/images/logo-pdf-export-adullact_360x28.png"
+    FAVICON_16PX_SRC: "custom-assets/images/16x16.png"
+    FAVICON_32PX_SRC: "custom-assets/images/32x32.png"
+    FAVICON_96PX_SRC: "custom-assets/images/96x96.png"
+    FAVICON_APPLE_TOUCH_152PX_SRC: "custom-assets/images/apple-touch-icon_adullact.png"
+    FOOTER_LOGO_SRC: "custom-assets/images/logo-footer-adullact_200x71.png"
+    HEADER_LOGO_SRC: "custom-assets/images/logo-header-adullact_65x56.png"
+    MAILER_FOOTER_LOGO_SRC: "custom-assets/images/logo-mail-footer-adullact_200x71.png"
+    MAILER_LOGO_SRC: "custom-assets/images/logo-mail-header-adullact_600x63.png"
+    PROCEDURE_DEFAULT_LOGO_SRC: "custom-assets/images/procedure-default-logo-adullact.svg"
   extraSecretEnv:
     - fromSecret:
         name: stack-postgresql-13
