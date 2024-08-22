@@ -1,7 +1,6 @@
 app:
   domainName: __URL_STAGING__
   image: __CI_REGISTRY_IMAGE__/app:__TAG__
-  initContainers: false
   ports:
     - name: default
       external: 80
@@ -20,6 +19,18 @@ app:
     - name: custom-config
       mountPath: /app/config/custom_locales/
       subPath: custom_locales
+  initContainers:
+    - name: custom-config
+      image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
+      mounts:
+        - name: custom-config
+          mountPath: /data
+      command: ["/bin/sh"]
+      args:
+        - "-c"
+        - >
+          cp -r /app/app/custom_views /data/ &&
+          cp -r /app/config/custom_locales /data/
   extraEnv:
     ACTIVE_STORAGE_SERVICE: scaleway
     ADMINS_GROUP_ENABLED: "enabled"
@@ -53,11 +64,18 @@ app:
     DB_DATABASE: adullact-ds-__ENV_NAME__
     DB_POOL: 5
     DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: "https://adullact.org/service-en-ligne-demarches-simplifiees"
+    DOSSIER_PDF_EXPORT_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/logo-pdf-export-adullact_360x28.png"
     DS_PROXY_URL: ""
     EQUIPE_EMAIL: "demarches-simplifiees@adullact.org"
+    FAVICON_16PX_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/16x16.png"
+    FAVICON_32PX_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/32x32.png"
+    FAVICON_96PX_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/96x96.png"
+    FAVICON_APPLE_TOUCH_152PX_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/apple-touch-icon_adullact.png"
     FC_PARTICULIER_BASE_URL: "https://fcp.integ01.dev-franceconnect.fr"
+    FOOTER_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/logo-footer-adullact_200x71.png"
     HEADER_LOGO_ALT: ""
     HEADER_LOGO_HEIGHT: "56"
+    HEADER_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/logo-header-adullact_65x56.png"
     HEADER_LOGO_WIDTH: "65"
     HOST_URL: __URL_STAGING__
     IGN_CARTE_REFERER: __URL_STAGING__
@@ -68,6 +86,8 @@ app:
     MAILCATCHER_ENABLED: "enabled"
     MAILCATCHER_HOST: "mailcatcher-common-app-app"
     MAILCATCHER_PORT: "1025"
+    MAILER_FOOTER_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/logo-mail-footer-adullact_200x71.png"
+    MAILER_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/logo-mail-header-adullact_600x63.png"
     MATOMO_COOKIE_DOMAIN: "*.__URL_STAGING__"
     MATOMO_DOMAIN: "*.__URL_STAGING__"
     MATOMO_ENABLED: "disabled"
@@ -79,6 +99,7 @@ app:
     NEW_MAX_DUREE_CONSERVATION: 18
     NO_REPLY_EMAIL: "ne-pas-repondre@adullact.org"
     OLD_CONTACT_EMAIL: "old-contact-ds@synbioz.com"
+    PROCEDURE_DEFAULT_LOGO_SRC: "https://adullact-ds.staging.ouidou.fr/custom-assets/images/procedure-default-logo-adullact.svg"
     RAILS_ENV: production
     RAILS_LOG_TO_STDOUT: 1
     RAILS_MAX_THREADS: 1
@@ -99,17 +120,6 @@ app:
     TRUSTED_NETWORKS: ""
     WEASYPRINT_URL: "http://127.0.0.1:5000/pdf"
     WEB_CONCURRENCY: 5
-    # test
-    DOSSIER_PDF_EXPORT_LOGO_SRC: "custom-assets/images/logo-pdf-export-adullact_360x28.png"
-    FAVICON_16PX_SRC: "custom-assets/images/16x16.png"
-    FAVICON_32PX_SRC: "custom-assets/images/32x32.png"
-    FAVICON_96PX_SRC: "custom-assets/images/96x96.png"
-    FAVICON_APPLE_TOUCH_152PX_SRC: "custom-assets/images/apple-touch-icon_adullact.png"
-    FOOTER_LOGO_SRC: "custom-assets/images/logo-footer-adullact_200x71.png"
-    HEADER_LOGO_SRC: "custom-assets/images/logo-header-adullact_65x56.png"
-    MAILER_FOOTER_LOGO_SRC: "custom-assets/images/logo-mail-footer-adullact_200x71.png"
-    MAILER_LOGO_SRC: "custom-assets/images/logo-mail-header-adullact_600x63.png"
-    PROCEDURE_DEFAULT_LOGO_SRC: "custom-assets/images/procedure-default-logo-adullact.svg"
   extraSecretEnv:
     - fromSecret:
         name: stack-postgresql-13
@@ -280,8 +290,8 @@ app:
           args:
             - "-c"
             - >
-              cp -r /app/app/custom_views/ /data/ &&
-              cp -r /app/config/custom_locales/ /data/
+              cp -r /app/app/custom_views /data/ &&
+              cp -r /app/config/custom_locales /data/
 
     assets:
       with_service: true
@@ -306,17 +316,6 @@ app:
       with_app_env: true
       with_app_volume: false
       image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
-      extraEnv:
-        DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
-        FAVICON_16PX_SRC: "images/16x16.png"
-        FAVICON_32PX_SRC: "images/32x32.png"
-        FAVICON_96PX_SRC: "images/96x96.png"
-        FAVICON_APPLE_TOUCH_152PX_SRC: "images/apple-touch-icon_adullact.png"
-        FOOTER_LOGO_SRC: "images/logo-footer-adullact_200x71.png"
-        HEADER_LOGO_SRC: "images/logo-header-adullact_65x56.png"
-        MAILER_FOOTER_LOGO_SRC: "images/logo-mail-footer-adullact_200x71.png"
-        MAILER_LOGO_SRC: "images/logo-mail-header-adullact_600x63.png"
-        PROCEDURE_DEFAULT_LOGO_SRC: "images/procedure-default-logo-adullact.svg"
       livenessProbe:
         httpGet:
           path: /health
