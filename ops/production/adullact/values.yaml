@@ -28,7 +28,7 @@ app:
       readOnly: "false"
   initContainers:
     - name: custom-config
-      image: build.ouidou.fr/nord/adullact/custom-assets/app:adullact-0.8.2.rc24
+      image: build.ouidou.fr/nord/adullact/custom-assets/app:__CUSTOM_ASSETS_VERSION__
       mounts:
         - name: custom-config
           mountPath: /data
