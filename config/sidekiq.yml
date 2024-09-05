@@ -5,7 +5,12 @@
   - default
   - low_priority
   - expires
-  - active_storage_analysis 
-  - api_entreprise 
-  - mailers 
+  - active_storage_analysis
+  - api_entreprise
+  - mailers
   - purge
+  - webhooks_v1
+  - sva
+  - exports
+  - archives
+  - cron
