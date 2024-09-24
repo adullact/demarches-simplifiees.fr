@@ -249,6 +249,7 @@ app:
         - "rake after_party:run"
       extraEnv: []
     - name: jobs-schedule
+      with_app_volume: true
       command: ["/bin/bash"]
       weight: "-3"
       steps: "pre-install,pre-upgrade"
