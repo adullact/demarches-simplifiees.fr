@@ -41,14 +41,14 @@ staging:adullact:
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc24
     ENV_NAME: staging
     HELM_CHART_NAME: app
-    HELM_CHART_VERSION: 0.7.0-rc6
+    HELM_CHART_VERSION: 0.8.0-rc3
     HELM_REPO_NAME: ouidou
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/379/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-staging
     MAILCATCHER_VERSION: 0.9.0
     PATH_VALUE: adullact/
     PREFIX_APP_NAME: adullact-ds
-    SKIP_RESTORE_STAGE: "true"
+    SKIP_RESTORE_STAGE: 'true'
     URL_STAGING: adullact-ds.staging.ouidou.fr
 
 staging:somme-numerique:
@@ -57,13 +57,13 @@ staging:somme-numerique:
     CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc24
     ENV_NAME: somme-numerique-staging
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.4.1
+    HELM_CHART_VERSION: 0.8.0-rc3
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-staging
     PATH_VALUE: somme-numerique/
     RELEASE_NAME: sm-staging
-    SKIP_RESTORE_STAGE: "true"
+    SKIP_RESTORE_STAGE: 'true'
     URL_STAGING: preprod.demarches-hdf.fr
 
 production:adullact:
@@ -74,13 +74,13 @@ production:adullact:
     CUSTOM_ASSETS_VERSION: adullact-0.8.2.rc24
     ENV_NAME: adullact
     HELM_CHART_NAME: app
-    HELM_CHART_VERSION: 0.7.0-rc6
+    HELM_CHART_VERSION: 0.8.0-rc3
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/379/packages/helm/stable
     K8S_NAMESPACE: adullact-ds-production
     PATH_VALUE: adullact/
     RELEASE_NAME: production
-    SKIP_RESTORE_STAGE: "true"
+    SKIP_RESTORE_STAGE: 'true'
     URL_PRODUCTION: demarches.adullact.org
 
 production:gironde-numerique:
@@ -90,13 +90,13 @@ production:gironde-numerique:
     ASSETS_VERSION: 1.1.0
     ENV_NAME: gironde-numerique
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.2.1
+    HELM_CHART_VERSION: 0.8.0-rc3
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: production
     PATH_VALUE: gironde-numerique/
     RELEASE_NAME: gn-production
-    SKIP_RESTORE_STAGE: "true"
+    SKIP_RESTORE_STAGE: 'true'
     URL_PRODUCTION: demarches.girondenumerique.fr
 
 production:somme-numerique:
@@ -107,11 +107,11 @@ production:somme-numerique:
     CUSTOM_ASSETS_VERSION: somme-numerique-0.8.2.rc24
     ENV_NAME: somme-numerique
     HELM_CHART_NAME: demarches-simplifiees
-    HELM_CHART_VERSION: 0.4.1
+    HELM_CHART_VERSION: 0.8.0-rc3
     HELM_REPO_NAME: adullact
     HELM_REPO_URL: ${CI_API_V4_URL}/projects/349/packages/helm/stable
     K8S_NAMESPACE: sm-production
     PATH_VALUE: somme-numerique/
     RELEASE_NAME: sm-production
-    SKIP_RESTORE_STAGE: "true"
+    SKIP_RESTORE_STAGE: 'true'
     URL_PRODUCTION: demarches-hdf.fr

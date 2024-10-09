@@ -1,7 +1,7 @@
 app:
   domainName: __CI_COMMIT_REF_SLUG__-__REVIEW_DOMAIN__
   image: __CI_REGISTRY_IMAGE__/app:__TAG__
-  initContainers: false
+  initContainers: []
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-adullact_360x28.png"
     FAVICON_16PX_SRC: "images/16x16.png"

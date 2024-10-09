@@ -3,7 +3,7 @@ app:
   image: __CI_REGISTRY_IMAGE__/app:__APP_VERSION__
   replicaCount: 3
   volume_claim_name: gironde-numerique-ds-attachments
-  initContainers: false
+  initContainers: []
   extraEnv:
     ARCHIVE_CREATION_DIR: "/app/storage"
     AGENT_CONNECT_BASE_URL: ""

@@ -1,7 +1,7 @@
 app:
   domainName: __URL_STAGING__
   image: __CI_REGISTRY_IMAGE__/app:__TAG__
-  initContainers: false
+  initContainers: []
   volume_claim_name: staging-sm-ds
   extraEnvCustomAssets:
     DOSSIER_PDF_EXPORT_LOGO_SRC: "images/logo-pdf-export-dhdf_360x28.png"
