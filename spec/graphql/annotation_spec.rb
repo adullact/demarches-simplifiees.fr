@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 RSpec.describe Mutations::DossierModifierAnnotation, type: :graphql do
   let(:admin) { administrateurs(:default_admin) }
   let(:procedure) { create(:procedure, :published, :for_individual, types_de_champ_private: [{ type: :repetition, children: [{ libelle: 'Nom' }, { type: :integer_number, libelle: 'Age' }] }, {}], administrateurs: [admin]) }
   let(:dossiers) { [] }
   let(:instructeur) { create(:instructeur, followed_dossiers: dossiers) }
-  let(:champs_private) { dossier.champs_for_revision(scope: :private, root: true) }
+  let(:champs_private) { dossier.project_champs_private }
 
   let(:query) { '' }
   let(:context) { { administrateur_id: admin.id, procedure_ids: admin.procedure_ids, write_access: true } }
@@ -46,14 +48,14 @@ RSpec.describe Mutations::DossierModifierAnnotation, type: :graphql do
     end
 
     it 'add row' do
-      expect(annotation.champs.size).to eq(4)
+      expect(annotation.row_ids.size).to eq(2)
       expect(data).to eq(dossierModifierAnnotationAjouterLigne: {
         annotation: {
           id: annotation.to_typed_id
         },
         errors: nil
       })
-      expect(annotation.reload.champs.size).to eq(6)
+      expect(annotation.reload.row_ids.size).to eq(3)
     end
   end
 

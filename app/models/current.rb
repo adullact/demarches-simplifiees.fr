@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Current < ActiveSupport::CurrentAttributes
   attribute :application_base_url
   attribute :application_name
@@ -7,4 +9,5 @@ class Current < ActiveSupport::CurrentAttributes
   attribute :no_reply_email
   attribute :request_id
   attribute :user
+  attribute :procedure_columns
 end

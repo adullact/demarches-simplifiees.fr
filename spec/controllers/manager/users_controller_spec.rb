@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Manager::UsersController, type: :controller do
   let(:super_admin) { create(:super_admin) }
 
@@ -40,7 +42,7 @@ describe Manager::UsersController, type: :controller do
           subject
 
           expect(User.find_by(id: user.id).email).not_to eq(nouvel_email)
-          expect(flash[:error]).to match("Le champ « Adresse électronique » est invalide. Saisir une adresse électronique valide, exemple : john.doe@exemple.fr")
+          expect(flash[:error]).to match("Le champ « Adresse électronique » est invalide. Saisir une adresse électronique valide, exemple : adresse@mail.com")
         end
       end
     end

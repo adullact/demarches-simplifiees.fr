@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class DossierModifierAnnotationAjouterLigne < Mutations::BaseMutation
     argument :dossier_id, ID, "Dossier ID", required: true, loads: Types::DossierType
@@ -14,7 +16,7 @@ module Mutations
         return { errors: ["L’annotation \"#{annotation_id}\" n’existe pas"] }
       end
 
-      annotation.add_row(dossier.revision)
+      annotation.add_row(updated_by: instructeur.email)
 
       { annotation:, errors: nil }
     end

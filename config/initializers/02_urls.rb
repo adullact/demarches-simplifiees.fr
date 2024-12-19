@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # rubocop:disable DS/ApplicationName
 # API URLs
 API_ADRESSE_URL = ENV.fetch("API_ADRESSE_URL", "https://api-adresse.data.gouv.fr")
@@ -7,7 +9,7 @@ API_GEO_URL = ENV.fetch("API_GEO_URL", "https://geo.api.gouv.fr")
 API_PARTICULIER_URL = ENV.fetch("API_PARTICULIER_URL", "https://particulier.api.gouv.fr/api")
 API_TCHAP_URL = ENV.fetch("API_TCHAP_URL", "https://matrix.agent.tchap.gouv.fr/_matrix/identity/api/v1")
 API_COJO_URL = ENV.fetch("API_COJO_URL", nil)
-API_RNF_URL = ENV.fetch("API_RNF_URL", "https://rnf.dso.numerique-interieur.com")
+API_RNF_URL = ENV.fetch("API_RNF_URL", "https://rnf.apps.app1.numerique-interieur.com")
 API_RECHERCHE_ENTREPRISE_URL = ENV.fetch("API_RECHERCHE_ENTREPRISE_URL", "https://recherche-entreprises.api.gouv.fr")
 HELPSCOUT_API_URL = ENV.fetch("HELPSCOUT_API_URL", "https://api.helpscout.net/v2")
 SENDINBLUE_API_URL = ENV.fetch("SENDINBLUE_API_URL", "https://in-automate.sendinblue.com/api/v2")

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TypesDeChampEditor::ChampComponent < ApplicationComponent
   attr_reader :coordinate, :upper_coordinates
 
@@ -76,7 +78,7 @@ class TypesDeChampEditor::ChampComponent < ApplicationComponent
   def piece_justificative_template_options
     {
       attached_file: type_de_champ.piece_justificative_template,
-      auto_attach_url: helpers.auto_attach_url(type_de_champ),
+      auto_attach_url: helpers.auto_attach_url(type_de_champ, procedure_id: procedure.id),
       view_as: :download
     }
   end
@@ -84,7 +86,7 @@ class TypesDeChampEditor::ChampComponent < ApplicationComponent
   def notice_explicative_options
     {
       attached_file: type_de_champ.notice_explicative,
-      auto_attach_url: helpers.auto_attach_url(type_de_champ),
+      auto_attach_url: helpers.auto_attach_url(type_de_champ, procedure_id: procedure.id),
       view_as: :download
     }
   end
@@ -128,7 +130,7 @@ class TypesDeChampEditor::ChampComponent < ApplicationComponent
   end
 
   def has_legacy_number?
-    revision.types_de_champ.any?(&:legacy_number?)
+    revision.types_de_champ.any?(&:number?)
   end
 
   def options_for_character_limit

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'Inviting an expert:', js: true do
   include ActiveJob::TestHelper
   include ActionView::Helpers
@@ -5,10 +7,12 @@ describe 'Inviting an expert:', js: true do
   let(:instructeur) { create(:instructeur, password: SECURE_PASSWORD) }
   let(:expert) { create(:expert, password: expert_password) }
   let(:expert2) { create(:expert, password: expert_password) }
+  let(:expert3) { create(:expert, password: expert_password) }
+  let(:expert4) { create(:expert, password: expert_password) }
   let(:expert_password) { 'mot de passe d’expert' }
-  let(:procedure) { create(:procedure, :published, instructeurs: [instructeur]) }
-  let(:dossier) { create(:dossier, :en_construction, :with_dossier_link, procedure: procedure) }
-  let(:linked_dossier) { Dossier.find_by(id: dossier.reload.champs_public.filter(&:dossier_link?).filter_map(&:value)) }
+  let(:procedure) { create(:procedure, :published, instructeurs: [instructeur], types_de_champ_public: [{ type: :dossier_link }]) }
+  let(:dossier) { create(:dossier, :en_construction, :with_populated_champs, procedure:) }
+  let(:linked_dossier) { Dossier.find_by(id: dossier.champs.first.value) }
 
   before do
     clear_emails
@@ -29,6 +33,7 @@ describe 'Inviting an expert:', js: true do
       within('.fr-sidemenu') { click_on 'Demander un avis' }
       expect(page).to have_current_path(avis_new_instructeur_dossier_path(procedure, dossier))
 
+      fill_in 'Emails', with: "#{expert3.email},#{expert4.email}"
       fill_in 'Emails', with: "#{expert.email},"
       fill_in 'Emails', with: expert2.email
       fill_in 'avis_introduction', with: 'Bonjour, merci de me donner votre avis sur ce dossier.'
@@ -43,10 +48,12 @@ describe 'Inviting an expert:', js: true do
       within('section') do
         expect(page).to have_content(expert.email.to_s)
         expect(page).to have_content(expert2.email.to_s)
+        expect(page).to have_content(expert3.email.to_s)
+        expect(page).to have_content(expert4.email.to_s)
         expect(page).to have_content('Bonjour, merci de me donner votre avis sur ce dossier.')
       end
 
-      expect(Avis.count).to eq(4)
+      expect(Avis.count).to eq(8)
       expect(emails_sent_to(expert.email.to_s).size).to eq(1)
       expect(emails_sent_to(expert2.email.to_s).size).to eq(1)
       invitation_email = open_email(expert.email.to_s)

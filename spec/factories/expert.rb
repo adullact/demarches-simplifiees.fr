@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   sequence(:create_expert_email) { |n| "expert#{n}@expert.com" }
 
@@ -6,7 +8,7 @@ FactoryBot.define do
 
     transient do
       email { generate(:expert_email) }
-      password { 'somethingverycomplated!' }
+      password { '{My-$3cure-p4ssWord}' }
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Redcarpet::TrustedRenderer do
   let(:view_context) { ActionController::Base.new.view_context }
   subject(:renderer) { Redcarpet::Markdown.new(described_class.new(view_context), autolink: true) }
@@ -10,7 +12,7 @@ RSpec.describe Redcarpet::TrustedRenderer do
 
     it 'renders external links with target="_blank" and rel="noopener noreferrer"' do
       markdown = "[Visit](http://example.com)"
-      expect(renderer.render(markdown)).to include('<a href="http://example.com" title="Nouvel onglet" target="_blank" rel="noopener noreferrer">Visit</a>')
+      expect(renderer.render(markdown)).to include('<a href="http://example.com" title="Visit — Nouvel onglet" target="_blank" rel="noopener noreferrer">Visit</a>')
     end
   end
 
@@ -19,12 +21,17 @@ RSpec.describe Redcarpet::TrustedRenderer do
       markdown = "![A cute cat](http://example.com/cat.jpg)"
       expect(renderer.render(markdown)).to include('<img alt="A cute cat" loading="lazy" src="http://example.com/cat.jpg" />')
     end
+
+    it 'renders additional attribute' do
+      markdown = "![A cute cat { aria-hidden=\"true\" }](http://example.com/cat.jpg)"
+      expect(renderer.render(markdown)).to include('<img alt="A cute cat" loading="lazy" aria-hidden="true" src="http://example.com/cat.jpg" />')
+    end
   end
 
   context 'when autolinking' do
     it 'autolinks URLs' do
       markdown = "Visit http://example.com"
-      expect(renderer.render(markdown)).to include('Visit <a href="http://example.com" title="Nouvel onglet" target="_blank" rel="noopener noreferrer">http://example.com</a>')
+      expect(renderer.render(markdown)).to include('Visit <a href="http://example.com" title="http://example.com — Nouvel onglet" target="_blank" rel="noopener noreferrer">http://example.com</a>')
     end
 
     it 'autolinks email addresses with mailto' do

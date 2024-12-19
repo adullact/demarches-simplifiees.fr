@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class TypesDeChamp::TypeDeChampBase
   include ActiveModel::Validations
 
-  delegate :description, :libelle, :mandatory, :mandatory?, :stable_id, :fillable?, :public?, to: :@type_de_champ
+  delegate :description, :libelle, :mandatory, :mandatory?, :stable_id, :fillable?, :public?, :type_champ, :options_for_select, :drop_down_options, :drop_down_other?, to: :@type_de_champ
 
   FILL_DURATION_SHORT  = 10.seconds
   FILL_DURATION_MEDIUM = 1.minute
@@ -13,12 +15,12 @@ class TypesDeChamp::TypeDeChampBase
   end
 
   def tags_for_template
-    tdc = @type_de_champ
+    type_de_champ = @type_de_champ
     paths.map do |path|
       path.merge(
         libelle: TagsSubstitutionConcern::TagsParser.normalize(path[:libelle]),
         id: path[:path] == :value ? "tdc#{stable_id}" : "tdc#{stable_id}/#{path[:path]}",
-        lambda: -> (dossier) { dossier.project_champ(tdc, nil).for_tag(path[:path]) }
+        lambda: -> (dossier) { dossier.champ_value_for_tag(type_de_champ, path[:path]) }
       )
     end
   end
@@ -52,51 +54,70 @@ class TypesDeChamp::TypeDeChampBase
     filter_value
   end
 
-  def human_to_filter(human_value)
-    human_value
+  def champ_value(champ)
+    champ.value.present? ? champ.value.to_s : champ_default_value
   end
 
-  class << self
-    def champ_value(champ)
-      champ.value.present? ? champ.value.to_s : champ_default_value
+  def champ_value_for_api(champ, version: 2)
+    case version
+    when 2
+      champ_value(champ)
+    else
+      champ.value.presence || champ_default_api_value(version)
     end
+  end
 
-    def champ_value_for_api(champ, version = 2)
-      case version
-      when 2
-        champ_value(champ)
-      else
-        champ.value.presence || champ_default_api_value(version)
-      end
-    end
+  def champ_value_for_export(champ, path = :value)
+    path == :value ? champ.value.presence : champ_default_export_value(path)
+  end
 
-    def champ_value_for_export(champ, path = :value)
-      path == :value ? champ.value.presence : champ_default_export_value(path)
-    end
+  def champ_value_for_tag(champ, path = :value)
+    path == :value ? champ_value(champ) : nil
+  end
 
-    def champ_value_for_tag(champ, path = :value)
-      path == :value ? champ_value(champ) : nil
-    end
+  def champ_default_value
+    ''
+  end
 
-    def champ_default_value
+  def champ_default_export_value(path = :value)
+    nil
+  end
+
+  def champ_default_api_value(version = 2)
+    case version
+    when 2
       ''
-    end
-
-    def champ_default_export_value(path = :value)
+    else
       nil
     end
+  end
 
-    def champ_default_api_value(version = 2)
-      case version
-      when 2
-        ''
-      else
-        nil
-      end
+  def champ_blank?(champ) = champ.value.blank?
+  def champ_blank_or_invalid?(champ) = champ_blank?(champ)
+
+  def columns(procedure:, displayable: true, prefix: nil)
+    if fillable?
+      [
+        Columns::ChampColumn.new(
+          procedure_id: procedure.id,
+          stable_id:,
+          tdc_type: type_champ,
+          label: libelle_with_prefix(prefix),
+          type: TypeDeChamp.column_type(type_champ),
+          displayable:,
+          options_for_select:
+        )
+      ]
+    else
+      []
     end
   end
 
   private
+
+  def libelle_with_prefix(prefix)
+    [prefix, libelle].compact.join(' – ')
+  end
 
   def paths
     [

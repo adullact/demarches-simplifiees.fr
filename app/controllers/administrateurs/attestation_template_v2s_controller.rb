@@ -1,7 +1,7 @@
+# frozen_string_literal: true
+
 module Administrateurs
   class AttestationTemplateV2sController < AdministrateurController
-    include UninterlacePngConcern
-
     before_action :retrieve_procedure
     before_action :ensure_feature_active
     before_action :retrieve_attestation_template
@@ -72,17 +72,6 @@ module Administrateurs
         @attestation_template.procedure = @procedure
       end
 
-      logo_file = attestation_params.delete(:logo)
-      signature_file = attestation_params.delete(:signature)
-
-      if logo_file
-        attestation_params[:logo] = uninterlace_png(logo_file)
-      end
-
-      if signature_file
-        attestation_params[:signature] = uninterlace_png(signature_file)
-      end
-
       @attestation_template.assign_attributes(attestation_params)
 
       if @attestation_template.invalid?
@@ -133,7 +122,13 @@ module Administrateurs
       @procedure.attestation_templates.build(version: 2, json_body: AttestationTemplate::TIPTAP_BODY_DEFAULT, activated: true, state:)
     end
 
-    def should_edit_draft? = !@procedure.brouillon?
+    def should_edit_draft?
+      if @procedure.brouillon?
+        @procedure.attestation_templates.v1.published.any?
+      else
+        true
+      end
+    end
 
     def editor_params
       params.required(:attestation_template).permit(:activated, :official_layout, :label_logo, :label_direction, :tiptap_body, :footer, :logo, :signature, :activated, :state)

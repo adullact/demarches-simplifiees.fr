@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApplicationHelper
   APP_HOST = ENV['APP_HOST']
   APP_HOST_LEGACY = ENV['APP_HOST_LEGACY']
@@ -42,8 +44,9 @@ module ApplicationHelper
       class_names << 'alert-success'
     when 'alert', 'error'
       class_names << 'alert-danger'
+    when 'routing_mode'
+      class_names << 'hidden'
     end
-
     if sticky
       class_names << 'sticky'
     end
@@ -74,7 +77,7 @@ module ApplicationHelper
     tags, type, dossier_id = options.values_at(:tags, :type, :dossier_id)
     options.except!(:tags, :type, :dossier_id)
 
-    params = { tags: tags, type: type, dossier_id: dossier_id }.compact
+    params = { tags: Array.wrap(tags), type: type, dossier_id: dossier_id }.compact
     link_to title, contact_url(params), options
   end
 
@@ -110,6 +113,10 @@ module ApplicationHelper
 
   def try_format_datetime(datetime, format: nil)
     datetime.present? ? I18n.l(datetime, format:) : ''
+  end
+
+  def try_parse_format_date(date)
+    date.then { Date.parse(_1) rescue nil }&.then { I18n.l(_1) }
   end
 
   def try_format_mois_effectif(etablissement)
@@ -150,4 +157,6 @@ module ApplicationHelper
       .map { |word| word[0].upcase }
       .join
   end
+
+  def asterisk = render(EditableChamp::AsteriskMandatoryComponent.new)
 end

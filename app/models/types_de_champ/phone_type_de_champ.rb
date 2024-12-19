@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TypesDeChamp::PhoneTypeDeChamp < TypesDeChamp::TextTypeDeChamp
   # We want to allow:
   # * international (e164) phone numbers
@@ -20,15 +22,13 @@ class TypesDeChamp::PhoneTypeDeChamp < TypesDeChamp::TextTypeDeChamp
   # See issue #6996.
   DEFAULT_COUNTRY_CODES = [:FR, :GP, :GF, :MQ, :RE, :YT, :NC, :PF].freeze
 
-  class << self
-    def champ_value(champ)
-      if Phonelib.valid_for_countries?(champ.value, DEFAULT_COUNTRY_CODES)
-        Phonelib.parse_for_countries(champ.value, DEFAULT_COUNTRY_CODES).full_national
-      else
-        # When he phone number is possible for the default countries, but not strictly valid,
-        # `full_national` could mess up the formatting. In this case just return the original.
-        champ.value
-      end
+  def champ_value(champ)
+    if Phonelib.valid_for_countries?(champ.value, DEFAULT_COUNTRY_CODES)
+      Phonelib.parse_for_countries(champ.value, DEFAULT_COUNTRY_CODES).full_national
+    else
+      # When he phone number is possible for the default countries, but not strictly valid,
+      # `full_national` could mess up the formatting. In this case just return the original.
+      champ.value
     end
   end
 end

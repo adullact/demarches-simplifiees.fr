@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'dropdown list with other option activated', js: true do
   let(:password) { SECURE_PASSWORD }
   let!(:user) { create(:user, password: password) }
@@ -20,26 +22,26 @@ describe 'dropdown list with other option activated', js: true do
       ]
     end
 
-    scenario 'Select other option and the other input hidden must appear', js: true do
+    scenario 'Select other option and the other input hidden must appear' do
       fill_individual
 
-      find('.fr-fieldset__content .fr-radio-group:last-of-type input').select_option
+      choose I18n.t('shared.champs.drop_down_list.other')
       expect(page).to have_selector('.drop_down_other', visible: true)
     end
 
-    scenario "Getting back from other save the new option", js: true do
+    scenario "Getting back from other save the new option" do
       fill_individual
 
-      choose "Autre"
-      fill_in("Veuillez saisir votre autre choix", with: "My choice")
+      choose I18n.t('shared.champs.drop_down_list.other')
+      fill_in(I18n.t('shared.champs.drop_down_list.other_label'), with: "My choice")
 
-      wait_until { user_dossier.champs_public.first.value == "My choice" }
-      expect(user_dossier.champs_public.first.value).to eq("My choice")
+      wait_until { user_dossier.reload.project_champs_public.first.value == "My choice" }
+      expect(user_dossier.project_champs_public.first.value).to eq("My choice")
 
       choose "Secondary 1.1"
 
-      wait_until { user_dossier.champs_public.first.value == "Secondary 1.1" }
-      expect(user_dossier.champs_public.first.value).to eq("Secondary 1.1")
+      wait_until { user_dossier.reload.project_champs_public.first.value == "Secondary 1.1" }
+      expect(user_dossier.project_champs_public.first.value).to eq("Secondary 1.1")
     end
   end
 
@@ -60,14 +62,14 @@ describe 'dropdown list with other option activated', js: true do
       fill_individual
 
       expect(page).not_to have_selector(".drop_down_other input")
-      select("Autre")
+      select(I18n.t('shared.champs.drop_down_list.other'))
       find(".drop_down_other input", visible: true)
 
       select("Secondary 1.2")
       expect(page).to have_selector(".autosave-status.succeeded", visible: true)
 
-      wait_until { user_dossier.champs_public.first.value == "Secondary 1.2" }
-      expect(user_dossier.champs_public.first.value).to eq("Secondary 1.2")
+      wait_until { user_dossier.reload.project_champs_public.first.value == "Secondary 1.2" }
+      expect(user_dossier.project_champs_public.first.value).to eq("Secondary 1.2")
     end
   end
 

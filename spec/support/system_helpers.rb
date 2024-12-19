@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module SystemHelpers
   include ActiveJob::TestHelper
 
@@ -59,7 +61,7 @@ module SystemHelpers
     confirmation_email = open_email(email)
     procedure_sign_in_link = confirmation_email.body.match(/href="([^"]*\/commencer\/[^"]*)"/)[1]
 
-    visit procedure_sign_in_link
+    visit URI.parse(procedure_sign_in_link).path
   end
 
   def click_reset_password_link_for(email)
@@ -74,13 +76,6 @@ module SystemHelpers
     click_on 'Ajouter un champ'
   end
 
-  def remove_flash_message
-    expect(page).to have_button('Ajouter un champ', disabled: false)
-    expect(page).to have_content('Formulaire enregistré')
-    execute_script("document.querySelector('#flash_message').remove();")
-    execute_script("document.querySelector('#autosave-notice').remove();")
-  end
-
   def hide_autonotice_message
     expect(page).to have_text('Formulaire enregistré')
     execute_script("document.querySelector('#autosave-notice').classList.add('hidden');")
@@ -91,6 +86,13 @@ module SystemHelpers
       page.find('body').click
     else # page after/inside a `within` block does not match body
       page.first('div').click
+    end
+  end
+
+  def playwright_debug
+    page.driver.with_playwright_page do |page|
+      page.context.enable_debug_console!
+      page.pause
     end
   end
 

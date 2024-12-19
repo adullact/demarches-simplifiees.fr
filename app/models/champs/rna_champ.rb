@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Champs::RNAChamp < Champ
   include RNAChampAssociationFetchableConcern
 
@@ -9,6 +11,10 @@ class Champs::RNAChamp < Champ
 
   def title
     data&.dig("association_titre")
+  end
+
+  def update_with_external_data!(data:)
+    update!(data:, value_json: extract_value_json(data:))
   end
 
   def identifier
@@ -38,5 +44,12 @@ class Champs::RNAChamp < Champ
       city_name: address["commune"],
       city_code: address["code_insee"]
     }.with_indifferent_access
+  end
+
+  private
+
+  def extract_value_json(data:)
+    h = APIGeoService.parse_rna_address(data['adresse'])
+    h.merge(title: data['association_titre'])
   end
 end

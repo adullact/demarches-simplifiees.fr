@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'csv'
 
 describe ProcedureExportService do
@@ -153,7 +155,7 @@ describe ProcedureExportService do
         let!(:dossier) { create(:dossier, :en_instruction, :with_populated_champs, :with_individual, procedure:) }
         let!(:dossier_2) { create(:dossier, :en_instruction, :with_populated_champs, :with_individual, procedure:) }
         before do
-          dossier_2.champs_public
+          dossier_2.project_champs_public
             .find { _1.is_a? Champs::PieceJustificativeChamp }
             .piece_justificative_file
             .attach(io: StringIO.new("toto"), filename: "toto.txt", content_type: "text/plain")
@@ -341,14 +343,15 @@ describe ProcedureExportService do
         procedure.reload
       end
 
-      let(:procedure) { create(:procedure, :published, :for_individual, types_de_champ_public: [{ type: :repetition, children: [{ libelle: 'Nom' }, { libelle: 'Age' }] }]) }
+      let(:types_de_champ_public) { [{ type: :repetition, children: [{ libelle: 'Nom' }, { libelle: 'Age' }] }] }
+      let(:procedure) { create(:procedure, :published, :for_individual, types_de_champ_public:) }
       let!(:dossiers) do
         [
           create(:dossier, :en_instruction, :with_populated_champs, :with_individual, procedure: procedure),
           create(:dossier, :en_instruction, :with_populated_champs, :with_individual, procedure: procedure)
         ]
       end
-      let(:champ_repetition) { dossiers.first.champs_public.find { |champ| champ.type_champ == 'repetition' } }
+      let(:champ_repetition) { dossiers.first.project_champs_public.find { |champ| champ.type_champ == 'repetition' } }
 
       it 'should have sheets' do
         expect(subject.sheets.map(&:name)).to eq(['Dossiers', 'Etablissements', 'Avis', champ_repetition.type_de_champ.libelle_for_export])
@@ -387,11 +390,11 @@ describe ProcedureExportService do
 
       context 'with long libelle composed of utf8 characteres' do
         before do
-          procedure.active_revision.types_de_champ_public.each do |c|
-            c.update!(libelle: "#{c.id} - ?/[] ééé ééé ééééééé ééééééé éééééééé. ééé éé éééééééé éé ééé. ééééé éééééééé ééé ééé.")
+          procedure.active_revision.types_de_champ_public.each do |type_de_champ|
+            type_de_champ.update!(libelle: "#{type_de_champ.id} - ?/[] ééé ééé ééééééé ééééééé éééééééé. ééé éé éééééééé éé ééé. ééééé éééééééé ééé ééé.")
           end
-          champ_repetition.champs.each do |c|
-            c.type_de_champ.update!(libelle: "#{c.id} - Quam rem nam maiores numquam dolorem nesciunt. Cum et possimus et aut. Fugit voluptas qui qui.")
+          procedure.active_revision.children_of(champ_repetition.type_de_champ).each do |type_de_champ|
+            type_de_champ.update!(libelle: "#{type_de_champ.id} - Quam rem nam maiores numquam dolorem nesciunt. Cum et possimus et aut. Fugit voluptas qui qui.")
           end
         end
 
@@ -401,20 +404,20 @@ describe ProcedureExportService do
       end
 
       context 'with non unique labels' do
-        let(:dossier) { create(:dossier, :en_instruction, :with_populated_champs, :with_individual, procedure: procedure) }
-        let(:champ_repetition) { dossier.champs_public.find { |champ| champ.type_champ == 'repetition' } }
-        let(:type_de_champ_repetition) { create(:type_de_champ_repetition, :with_types_de_champ, procedure: procedure, libelle: champ_repetition.libelle) }
-        let!(:another_champ_repetition) { create(:champ_repetition, type_de_champ: type_de_champ_repetition, dossier: dossier) }
+        let(:types_de_champ_public) { [{ type: :repetition, libelle: 'Une repetition', children: [{}] }, { type: :repetition, libelle: 'Une repetition', children: [{}] }] }
+        let(:dossier) { create(:dossier, :en_instruction, :with_populated_champs, :with_individual, procedure:) }
+        let(:type_de_champ_repetition) { dossier.revision.types_de_champ_public.first }
+        let(:another_type_de_champ_repetition) { dossier.revision.types_de_champ_public.second }
 
         it 'should have sheets' do
-          expect(subject.sheets.map(&:name)).to eq(['Dossiers', 'Etablissements', 'Avis', another_champ_repetition.type_de_champ.libelle_for_export, champ_repetition.type_de_champ.libelle_for_export])
+          expect(subject.sheets.map(&:name)).to eq(['Dossiers', 'Etablissements', 'Avis', type_de_champ_repetition.libelle_for_export, another_type_de_champ_repetition.libelle_for_export])
         end
       end
 
       context 'with empty repetition' do
         before do
-          dossiers.flat_map { |dossier| dossier.champs_public.filter(&:repetition?) }.each do |champ|
-            champ.champs.destroy_all
+          dossiers.flat_map { |dossier| dossier.project_champs_public.filter(&:repetition?) }.each do |champ|
+            Champ.where(row_id: champ.row_ids).destroy_all
           end
         end
 
@@ -449,7 +452,7 @@ describe ProcedureExportService do
       context 'with export_template' do
         let!(:dossier) { create(:dossier, :accepte, :with_populated_champs, :with_individual, procedure: procedure) }
         let(:dossier_exports) { PiecesJustificativesService.new(user_profile: instructeur, export_template:).generate_dossiers_export(Dossier.where(id: dossier)) }
-        let(:export_template) { create(:export_template, groupe_instructeur: procedure.defaut_groupe_instructeur) }
+        let(:export_template) { create(:export_template, :enabled_pjs, groupe_instructeur: procedure.defaut_groupe_instructeur) }
         before do
           allow_any_instance_of(ActiveStorage::Attachment).to receive(:url).and_return("https://opengraph.githubassets.com/d0e7862b24d8026a3c03516d865b28151eb3859029c6c6c2e86605891fbdcd7a/socketry/async-io")
         end
@@ -464,10 +467,9 @@ describe ProcedureExportService do
               structure = [
                 "#{base_fn}/",
                 "#{base_fn}/dossier-#{dossier.id}/",
-                "#{base_fn}/dossier-#{dossier.id}/piece_justificative-#{dossier.id}-1.txt",
-                "#{base_fn}/dossier-#{dossier.id}/export_#{dossier.id}.pdf"
+                "#{base_fn}/dossier-#{dossier.id}/piece_justificative-#{dossier.id}-01.txt",
+                "#{base_fn}/dossier-#{dossier.id}/export-#{dossier.id}.pdf"
               ]
-              expect(files.size).to eq(structure.size)
               expect(files.map(&:filename)).to match_array(structure)
             end
             FileUtils.remove_entry_secure('tmp.zip')
@@ -518,7 +520,7 @@ describe ProcedureExportService do
     end
 
     let(:dossier) { create(:dossier, :en_instruction, :with_populated_champs, :with_individual, procedure: procedure) }
-    let(:champ_carte) { dossier.champs_public.find(&:carte?) }
+    let(:champ_carte) { dossier.project_champs_public.find(&:carte?) }
     let(:properties) { subject['features'].first['properties'] }
 
     before do
@@ -526,7 +528,7 @@ describe ProcedureExportService do
     end
 
     it 'should have features' do
-      expect(subject['features'].size).to eq(1)
+      expect(subject['features'].size).to eq(3)
       expect(properties['dossier_id']).to eq(dossier.id)
       expect(properties['champ_id']).to eq(champ_carte.stable_id)
       expect(properties['champ_label']).to eq(champ_carte.libelle)

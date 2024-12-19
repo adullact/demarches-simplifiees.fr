@@ -1,0 +1,24 @@
+= form_with model: [:instructeur, @procedure_presentation],
+  class: 'dropdown-form large',
+  id: 'filter-component',
+  data: { turbo: true, controller: 'autosubmit' } do
+  = current_filter_tags
+
+  .fr-select-group
+    = label_tag :column,  t('.column'), class: 'fr-label fr-m-0', id: 'instructeur-filter-combo-label', for: 'search-filter'
+    %react-fragment
+      = render ReactComponent.new "ComboBox/SingleComboBox", **filter_react_props
+
+    %input.hidden{
+      type: 'submit',
+      formmethod: 'get',
+      formaction: url_for([:refresh_column_filter, :instructeur, @procedure_presentation]),
+      formnovalidate: 'true',
+      data: { autosubmit_target: 'submitter' }
+    }
+
+  = label_tag :value, t('.value'), for: 'value', class: 'fr-label'
+  = render Instructeurs::ColumnFilterValueComponent.new(column:)
+
+  = hidden_field_tag :statut, statut
+  = submit_tag t('.add_filter'), class: 'fr-btn fr-btn--secondary fr-mt-2w'

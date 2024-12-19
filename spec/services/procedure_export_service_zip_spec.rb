@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 describe ProcedureExportService do
   let(:instructeur) { create(:instructeur) }
   let(:procedure) { create(:procedure, types_de_champ_public: [{ type: :piece_justificative, libelle: 'pj' }, { type: :repetition, children: [{ type: :piece_justificative, libelle: 'repet_pj' }] }]) }
   let(:dossiers) { create_list(:dossier, 10, procedure: procedure) }
-  let(:export_template) { create(:export_template, groupe_instructeur: procedure.defaut_groupe_instructeur) }
+  let(:export_template) { create(:export_template, :enabled_pjs, groupe_instructeur: procedure.defaut_groupe_instructeur) }
   let(:service) { ProcedureExportService.new(procedure, procedure.dossiers, instructeur, export_template) }
 
-  def pj_champ(d) = d.champs_public.find_by(type: 'Champs::PieceJustificativeChamp')
+  def pj_champ(d) = d.project_champs_public.find { _1.type == 'Champs::PieceJustificativeChamp' }
   def repetition(d) = d.champs.find_by(type: "Champs::RepetitionChamp")
   def attachments(champ) = champ.piece_justificative_file.attachments
 
@@ -13,12 +15,12 @@ describe ProcedureExportService do
     dossiers.each do |dossier|
       attach_file_to_champ(pj_champ(dossier))
 
-      repetition(dossier).add_row(dossier.revision)
-      attach_file_to_champ(repetition(dossier).champs.first)
-      attach_file_to_champ(repetition(dossier).champs.first)
+      repetition(dossier).add_row(updated_by: 'test')
+      attach_file_to_champ(repetition(dossier).rows.first.first)
+      attach_file_to_champ(repetition(dossier).rows.first.first)
 
-      repetition(dossier).add_row(dossier.revision)
-      attach_file_to_champ(repetition(dossier).champs.second)
+      repetition(dossier).add_row(updated_by: 'test')
+      attach_file_to_champ(repetition(dossier).rows.second.first)
     end
 
     allow_any_instance_of(ActiveStorage::Attachment).to receive(:url).and_return("https://opengraph.githubassets.com/d0e7862b24d8026a3c03516d865b28151eb3859029c6c6c2e86605891fbdcd7a/socketry/async-io")
@@ -49,11 +51,11 @@ describe ProcedureExportService do
               structure = [
                 "export/",
                 "export/dossier-#{dossier.id}/",
-                "export/dossier-#{dossier.id}/export_#{dossier.id}.pdf",
-                "export/dossier-#{dossier.id}/pj-#{dossier.id}-1.png",
-                "export/dossier-#{dossier.id}/repet_pj-#{dossier.id}-1-1.png",
-                "export/dossier-#{dossier.id}/repet_pj-#{dossier.id}-2-1.png",
-                "export/dossier-#{dossier.id}/repet_pj-#{dossier.id}-1-2.png"
+                "export/dossier-#{dossier.id}/export-#{dossier.id}.pdf",
+                "export/dossier-#{dossier.id}/pj-#{dossier.id}-01.png",
+                "export/dossier-#{dossier.id}/repet_pj-#{dossier.id}-01-01.png",
+                "export/dossier-#{dossier.id}/repet_pj-#{dossier.id}-02-01.png",
+                "export/dossier-#{dossier.id}/repet_pj-#{dossier.id}-01-02.png"
               ]
 
               expect(files.size).to eq(dossiers.count * 6 + 1)

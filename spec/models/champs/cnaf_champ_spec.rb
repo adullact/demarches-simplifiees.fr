@@ -1,6 +1,11 @@
-describe Champs::CnafChamp, type: :model do
-  let(:champ) { build(:champ_cnaf) }
+# frozen_string_literal: true
 
+describe Champs::CnafChamp, type: :model do
+  let(:champ) { described_class.new(dossier: build(:dossier)) }
+  before do
+    allow(champ).to receive(:type_de_champ).and_return(build(:type_de_champ_cnaf))
+    allow(champ).to receive(:in_dossier_revision?).and_return(true)
+  end
   describe 'numero_allocataire and code_postal' do
     before do
       champ.numero_allocataire = '1234567'
@@ -37,7 +42,7 @@ describe Champs::CnafChamp, type: :model do
   describe '#validate' do
     let(:numero_allocataire) { '1234567' }
     let(:code_postal) { '12345' }
-    let(:champ) { described_class.new(dossier: create(:dossier), type_de_champ: create(:type_de_champ_cnaf)) }
+    let(:champ) { described_class.new(dossier: build(:dossier)) }
     let(:validation_context) { :champs_public_value }
 
     subject { champ.valid?(validation_context) }

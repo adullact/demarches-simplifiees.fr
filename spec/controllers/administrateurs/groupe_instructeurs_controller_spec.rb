@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Administrateurs::GroupeInstructeursController, type: :controller do
   render_views
   include Logic
@@ -341,7 +343,7 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
     context 'when all emails are valid' do
       let(:emails) { ['test@b.gouv.fr', 'test2@b.gouv.fr'] }
       it do
-        expect(subject).to render_template(:index)
+        expect(subject).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure_non_routee))
         expect(subject.request.flash[:alert]).to be_nil
         expect(subject.request.flash[:notice]).to be_present
       end
@@ -350,7 +352,7 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
     context 'when there is at least one bad email' do
       let(:emails) { ['badmail', 'instructeur2@gmail.com'] }
       it do
-        expect(subject).to render_template(:index)
+        expect(subject).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure_non_routee))
         expect(subject.request.flash[:alert]).to be_present
         expect(subject.request.flash[:notice]).to be_present
       end
@@ -360,7 +362,7 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
       let(:instructeur) { create(:instructeur) }
       before { procedure_non_routee.groupe_instructeurs.first.add_instructeurs(emails: [instructeur.user.email]) }
       let(:emails) { [instructeur.email] }
-      it { expect(subject).to render_template(:index) }
+      it { expect(subject).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure_non_routee)) }
     end
 
     context 'when signed in admin comes from manager' do
@@ -385,7 +387,9 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
     context 'of news instructeurs' do
       let!(:user_email_verified) { create(:user, :with_email_verified) }
       let!(:instructeur_email_verified) { create(:instructeur, user: user_email_verified) }
-      let(:new_instructeur_emails) { ['new_i1@gmail.com', 'new_i2@gmail.com', instructeur_email_verified.email] }
+      let!(:instructeur_email_not_verified) { create(:instructeur, user: create(:user, { reset_password_sent_at: 1.day.ago })) }
+      let!(:instructeur_email_not_verified_but_received_invitation_long_time_ago) { create(:instructeur, user: create(:user, { reset_password_sent_at: 10.days.ago })) }
+      let(:new_instructeur_emails) { ['new_i1@gmail.com', 'new_i2@gmail.com', instructeur_email_verified.email, instructeur_email_not_verified.email, instructeur_email_not_verified_but_received_invitation_long_time_ago.email] }
 
       before do
         allow(GroupeInstructeurMailer).to receive(:notify_added_instructeurs)
@@ -395,10 +399,11 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
           .and_return(double(deliver_later: true))
         do_request
       end
+
       it 'validates changes and responses' do
         expect(gi_1_2.instructeurs.pluck(:email)).to include(*new_instructeur_emails)
         expect(flash.notice).to be_present
-        expect(response).to render_template(:show)
+        expect(response).to redirect_to(admin_procedure_groupe_instructeur_path(procedure, gi_1_2))
         expect(procedure.routing_enabled?).to be_truthy
         expect(GroupeInstructeurMailer).to have_received(:notify_added_instructeurs).with(
           gi_1_2,
@@ -419,13 +424,28 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
           gi_1_2,
           admin.email
         )
+
+        expect(InstructeurMailer).not_to have_received(:confirm_and_notify_added_instructeur).with(
+          instructeur_email_not_verified,
+          gi_1_2,
+          admin.email
+        )
+
+        expect(InstructeurMailer).to have_received(:confirm_and_notify_added_instructeur).with(
+          instructeur_email_not_verified_but_received_invitation_long_time_ago,
+          gi_1_2,
+          admin.email
+        )
       end
     end
 
     context 'of an instructeur already in the group' do
       let(:new_instructeur_emails) { [instructeur.email] }
       before { do_request }
-      it { expect(response).to render_template(:show) }
+      it do
+        expect(flash.alert).not_to be_present
+        expect(response).to redirect_to(admin_procedure_groupe_instructeur_path(procedure, gi_1_2))
+      end
     end
 
     context 'of badly formed email' do
@@ -433,14 +453,17 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
       before { do_request }
       it do
         expect(flash.alert).to be_present
-        expect(response).to render_template(:show)
+        expect(response).to redirect_to(admin_procedure_groupe_instructeur_path(procedure, gi_1_2))
       end
     end
 
     context 'of an empty string' do
       let(:new_instructeur_emails) { [''] }
       before { do_request }
-      it { expect(response).to render_template(:show) }
+      it do
+        expect(flash.alert).to be_present
+        expect(response).to redirect_to(admin_procedure_groupe_instructeur_path(procedure, gi_1_2))
+      end
     end
 
     context 'when connected as an administrateur from manager' do
@@ -599,6 +622,8 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
         before do
           allow(GroupeInstructeurMailer).to receive(:notify_added_instructeurs)
             .and_return(double(deliver_later: true))
+          allow(InstructeurMailer).to receive(:confirm_and_notify_added_instructeur)
+            .and_return(double(deliver_later: true))
           subject
         end
 
@@ -606,7 +631,8 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
           expect(procedure.groupe_instructeurs.pluck(:label)).to match_array(["Auvergne-Rhône-Alpes", "Vendée", "défaut", "deuxième groupe"])
           expect(flash.notice).to be_present
           expect(flash.notice).to eq("La liste des instructeurs a été importée avec succès")
-          expect(GroupeInstructeurMailer).to have_received(:notify_added_instructeurs).twice
+          expect(GroupeInstructeurMailer).not_to have_received(:notify_added_instructeurs)
+          expect(InstructeurMailer).to have_received(:confirm_and_notify_added_instructeur).exactly(4).times
         end
       end
 
@@ -688,6 +714,8 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
         before do
           allow(GroupeInstructeurMailer).to receive(:notify_added_instructeurs)
             .and_return(double(deliver_later: true))
+          allow(InstructeurMailer).to receive(:confirm_and_notify_added_instructeur)
+            .and_return(double(deliver_later: true))
           subject
         end
 
@@ -696,11 +724,8 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
           expect(procedure_non_routee.instructeurs.pluck(:email)).to match_array(["kara@beta-gouv.fr", "philippe@mail.com", "lisa@gouv.fr"])
           expect(flash.alert).to be_present
           expect(flash.alert).to eq("Import terminé. Cependant les emails suivants ne sont pas pris en compte: eric")
-          expect(GroupeInstructeurMailer).to have_received(:notify_added_instructeurs).with(
-            procedure_non_routee.defaut_groupe_instructeur,
-            any_args,
-            admin.email
-          )
+          expect(InstructeurMailer).to have_received(:confirm_and_notify_added_instructeur).exactly(3).times
+          expect(GroupeInstructeurMailer).not_to have_received(:notify_added_instructeurs)
         end
       end
 
@@ -768,6 +793,54 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
           expect(GroupeInstructeurMailer).not_to have_received(:notify_added_instructeurs)
         end
       end
+
+      context 'when instructeurs accounts exist' do
+        let(:csv_file) { fixture_file_upload('spec/fixtures/files/two-instructeurs-file.csv', 'text/csv') }
+        let(:user_1) { create(:user, :with_email_verified, email: 'instructeur1@gouv.fr') }
+        let(:user_2) { create(:user, :with_email_verified, email: 'instructeur2@gouv.fr') }
+        let!(:instructeur_1) { create(:instructeur, user: user_1) }
+        let!(:instructeur_2) { create(:instructeur, user: user_2) }
+
+        before do
+          allow(GroupeInstructeurMailer).to receive(:notify_added_instructeurs)
+            .and_return(double(deliver_later: true))
+          allow(InstructeurMailer).to receive(:confirm_and_notify_added_instructeur)
+            .and_return(double(deliver_later: true))
+          subject
+        end
+
+        it 'sends notification without confirmation link' do
+          expect(procedure_non_routee.instructeurs.pluck(:email)).to match_array(["instructeur1@gouv.fr", "instructeur2@gouv.fr"])
+          expect(flash.notice).to be_present
+          expect(flash.notice).to eq("La liste des instructeurs a été importée avec succès")
+          expect(GroupeInstructeurMailer).to have_received(:notify_added_instructeurs)
+          expect(InstructeurMailer).not_to have_received(:confirm_and_notify_added_instructeur)
+        end
+      end
+
+      context 'when instructeurs accounts do not exist' do
+        let(:csv_file) { fixture_file_upload('spec/fixtures/files/two-instructeurs-file.csv', 'text/csv') }
+        let(:user_1) { create(:user, email: 'instructeur1@gouv.fr') }
+        let(:user_2) { create(:user, email: 'instructeur2@gouv.fr') }
+        let!(:instructeur_1) { create(:instructeur, user: user_1) }
+        let!(:instructeur_2) { create(:instructeur, user: user_2) }
+
+        before do
+          allow(GroupeInstructeurMailer).to receive(:notify_added_instructeurs)
+            .and_return(double(deliver_later: true))
+          allow(InstructeurMailer).to receive(:confirm_and_notify_added_instructeur)
+            .and_return(double(deliver_later: true))
+          subject
+        end
+
+        it 'sends notification without confirmation link' do
+          expect(procedure_non_routee.instructeurs.pluck(:email)).to match_array(["instructeur1@gouv.fr", "instructeur2@gouv.fr"])
+          expect(flash.notice).to be_present
+          expect(flash.notice).to eq("La liste des instructeurs a été importée avec succès")
+          expect(GroupeInstructeurMailer).not_to have_received(:notify_added_instructeurs)
+          expect(InstructeurMailer).to have_received(:confirm_and_notify_added_instructeur).twice
+        end
+      end
     end
   end
 
@@ -790,6 +863,41 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
       expect(subject.stream.body).to include(instructeur_assigned_1.email)
       expect(subject.stream.body).to include(instructeur_assigned_2.email)
       expect(subject.header["Content-Disposition"]).to include("#{procedure.id}-groupe-instructeurs-#{Date.today}.csv")
+    end
+  end
+
+  describe '#options' do
+    context 'with a simple routable type de champ' do
+      let!(:procedure) do
+        create(:procedure,
+               types_de_champ_public: [
+                 { type: :drop_down_list, libelle: 'Votre ville', options: ['Paris', 'Lyon', 'Marseille'] }
+               ],
+               administrateurs: [admin])
+      end
+      before { get :options, params: { procedure_id: procedure.id, state: 'choix' } }
+
+      it do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('Choix du type de routage')
+        expect(procedure.reload.routing_enabled).to be_falsey
+      end
+    end
+
+    context 'with a conditionable but not simple routable type de champ' do
+      let!(:procedure) do
+        create(:procedure,
+               types_de_champ_public: [
+                 { type: :integer_number }
+               ],
+               administrateurs: [admin])
+      end
+      before { get :options, params: { procedure_id: procedure.id, state: 'choix' } }
+
+      it do
+        expect(response).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure))
+        expect(procedure.reload.routing_enabled).to be_truthy
+      end
     end
   end
 
@@ -851,8 +959,28 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
       it do
         expect(response).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure3))
         expect(flash.notice).to eq 'Les groupes instructeurs ont été ajoutés'
-        expect(procedure3.groupe_instructeurs.pluck(:label)).to include("01 – Guadeloupe")
-        expect(procedure3.reload.defaut_groupe_instructeur.routing_rule).to eq(ds_eq(champ_value(regions_tdc.stable_id), constant('01')))
+        expect(procedure3.groupe_instructeurs.pluck(:label)).to include("Guadeloupe")
+        expect(procedure3.reload.defaut_groupe_instructeur.routing_rule).to eq(ds_eq(champ_value(regions_tdc.stable_id), constant('84')))
+        expect(procedure3.routing_enabled).to be_truthy
+      end
+    end
+
+    context 'with a pays type de champ' do
+      let!(:procedure3) do
+        create(:procedure,
+               types_de_champ_public: [{ type: :pays }],
+               administrateurs: [admin])
+      end
+
+      let!(:pays_tdc) { procedure3.draft_revision.types_de_champ.first }
+
+      before { post :create_simple_routing, params: { procedure_id: procedure3.id, create_simple_routing: { stable_id: pays_tdc.stable_id } } }
+
+      it do
+        expect(response).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure3))
+        expect(flash.notice).to eq 'Les groupes instructeurs ont été ajoutés'
+        expect(procedure3.groupe_instructeurs.pluck(:label)).to include("AD – Andorre")
+        expect(procedure3.reload.defaut_groupe_instructeur.routing_rule).to eq(ds_eq(champ_value(pays_tdc.stable_id), constant('AD')))
         expect(procedure3.routing_enabled).to be_truthy
       end
     end
@@ -896,6 +1024,26 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
         expect(procedure3.routing_enabled).to be_truthy
       end
     end
+
+    context 'with an address type de champ' do
+      let!(:procedure3) do
+        create(:procedure,
+               types_de_champ_public: [{ type: :address }],
+               administrateurs: [admin])
+      end
+
+      let!(:address_tdc) { procedure3.draft_revision.types_de_champ.first }
+
+      before { post :create_simple_routing, params: { procedure_id: procedure3.id, create_simple_routing: { stable_id: address_tdc.stable_id } } }
+
+      it do
+        expect(response).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure3))
+        expect(flash.notice).to eq 'Les groupes instructeurs ont été ajoutés'
+        expect(procedure3.groupe_instructeurs.pluck(:label)).to include("01 – Ain")
+        expect(procedure3.reload.defaut_groupe_instructeur.routing_rule).to eq(ds_in_departement(champ_value(address_tdc.stable_id), constant('01')))
+        expect(procedure3.routing_enabled).to be_truthy
+      end
+    end
   end
 
   describe '#wizard' do
@@ -910,11 +1058,11 @@ describe Administrateurs::GroupeInstructeursController, type: :controller do
 
     let!(:drop_down_tdc) { procedure4.draft_revision.types_de_champ.first }
 
-    before { patch :wizard, params: { procedure_id: procedure4.id, choice: { state: 'routage_custom' } } }
+    before { patch :wizard, params: { procedure_id: procedure4.id, choice: { state: 'custom_routing' } } }
 
     it do
       expect(response).to redirect_to(admin_procedure_groupe_instructeurs_path(procedure4))
-      expect(procedure4.groupe_instructeurs.pluck(:label)).to match_array(['défaut', 'défaut bis'])
+      expect(procedure4.groupe_instructeurs.pluck(:label)).to match_array(['Groupe 1 (à renommer et configurer)', 'Groupe 2 (à renommer et configurer)'])
       expect(procedure4.reload.routing_enabled).to be_truthy
     end
   end

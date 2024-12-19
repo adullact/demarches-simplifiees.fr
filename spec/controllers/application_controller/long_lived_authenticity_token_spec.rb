@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe ApplicationController::LongLivedAuthenticityToken, type: :controller do
   controller(ActionController::Base) do
     include ApplicationController::LongLivedAuthenticityToken
@@ -59,7 +61,7 @@ end
 RSpec.describe "CSRF cleanup", type: :request do
   describe 'csrf_cleaner hook', :allow_forgery_protection do
     let(:user) { create(:user, password: password) }
-    let(:password) { 'my-very-secure-password' }
+    let(:password) { SECURE_PASSWORD }
 
     it 'refreshes the long-lived cookie after authentication' do
       get new_user_session_path

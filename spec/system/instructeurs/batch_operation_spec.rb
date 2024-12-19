@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'BatchOperation a dossier:', js: true do
   include ActionView::RecordIdentifier
   include ActiveJob::TestHelper
@@ -7,7 +9,7 @@ describe 'BatchOperation a dossier:', js: true do
   let(:procedure) { create(:simple_procedure, :published, instructeurs: [instructeur], administrateurs: [administrateurs(:default_admin)]) }
 
   context 'with an instructeur' do
-    scenario 'create a BatchOperation' do
+    scenario 'create a BatchOperation', chrome: true do
       dossier_1 = create(:dossier, :accepte, procedure: procedure)
       dossier_2 = create(:dossier, :accepte, procedure: procedure)
       dossier_3 = create(:dossier, :accepte, procedure: procedure)
@@ -32,7 +34,7 @@ describe 'BatchOperation a dossier:', js: true do
 
       # ensure batch is created
 
-      page.accept_alert do
+      accept_alert do
         click_on "Archiver les dossiers"
       end
 
@@ -74,7 +76,7 @@ describe 'BatchOperation a dossier:', js: true do
       end
 
       # submit checkall
-      page.accept_alert do
+      accept_alert do
         click_on "Archiver les dossiers"
       end
 

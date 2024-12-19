@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe ProcedureRevision do
   let(:draft) { procedure.draft_revision }
   let(:type_de_champ_public) { draft.types_de_champ_public.first }
@@ -61,7 +63,7 @@ describe ProcedureRevision do
       it do
         expect { subject }.to change { draft.reload.types_de_champ.count }.from(4).to(5)
         expect(draft.children_of(type_de_champ_repetition).last).to eq(subject)
-        expect(draft.children_of(type_de_champ_repetition).map(&:revision_type_de_champ).map(&:position)).to eq([0, 1])
+        expect(draft.children_of(type_de_champ_repetition).map { draft.coordinate_for(_1).position }).to eq([0, 1])
 
         expect(last_coordinate.position).to eq(1)
 
@@ -121,7 +123,7 @@ describe ProcedureRevision do
         draft.reload
         expect(draft.revision_types_de_champ_public.map(&:position)).to eq([0, 1, 2, 3])
         expect(draft.types_de_champ_public.index(type_de_champ_public)).to eq(2)
-        expect(draft.procedure.types_de_champ_for_procedure_presentation.not_repetition.index(type_de_champ_public)).to eq(2)
+        expect(draft.procedure.types_de_champ_for_procedure_export.index(type_de_champ_public)).to eq(2)
       end
 
       it 'move up' do
@@ -130,7 +132,7 @@ describe ProcedureRevision do
         draft.reload
         expect(draft.revision_types_de_champ_public.map(&:position)).to eq([0, 1, 2, 3])
         expect(draft.types_de_champ_public.index(last_type_de_champ)).to eq(0)
-        expect(draft.procedure.types_de_champ_for_procedure_presentation.not_repetition.index(last_type_de_champ)).to eq(0)
+        expect(draft.procedure.types_de_champ_for_procedure_export.index(last_type_de_champ)).to eq(0)
       end
     end
 
@@ -532,6 +534,29 @@ describe ProcedureRevision do
               }
             ])
           end
+        end
+      end
+
+      context 'when a type de champ is transformed into a text_area with no character limit' do
+        let(:procedure) { create(:procedure, types_de_champ_public: [{ type: :text }]) }
+
+        before do
+          updated_tdc = new_draft.find_and_ensure_exclusive_use(first_tdc.stable_id)
+          updated_tdc.update(type_champ: :textarea, options: { "character_limit" => "" })
+        end
+
+        it do
+          is_expected.to eq([
+            {
+              op: :update,
+              attribute: :type_champ,
+              label: first_tdc.libelle,
+              private: false,
+              from: "text",
+              to: "textarea",
+              stable_id: first_tdc.stable_id
+            }
+          ])
         end
       end
 
@@ -1144,7 +1169,7 @@ describe ProcedureRevision do
     }
   end
 
-  describe '#routable_types_de_champ' do
+  describe '#simple_routable_types_de_champ' do
     let(:procedure) do
       create(:procedure, types_de_champ_public: [
         { type: :text, libelle: 'l1' },
@@ -1156,6 +1181,6 @@ describe ProcedureRevision do
       ])
     end
 
-    it { expect(draft.routable_types_de_champ.pluck(:libelle)).to eq(['l2', 'l3', 'l4', 'l5', 'l6']) }
+    it { expect(draft.simple_routable_types_de_champ.pluck(:libelle)).to eq(['l2', 'l3', 'l4', 'l5', 'l6']) }
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Instructeurs::ProceduresController, type: :controller do
   describe "before_action: ensure_ownership!" do
     it "is present" do
@@ -635,6 +637,38 @@ describe Instructeurs::ProceduresController, type: :controller do
           it { expect(assigns(:last_export)).to eq(nil) }
         end
       end
+
+      context 'dossier labels' do
+        let(:procedure) { create(:procedure, :with_labels, instructeurs: [instructeur]) }
+        let!(:dossier) { create(:dossier, :en_construction, procedure:, groupe_instructeur: gi_2) }
+        let!(:dossier_2) { create(:dossier, :en_construction, procedure:, groupe_instructeur: gi_2) }
+        let(:statut) { 'tous' }
+        let(:label_id) { procedure.find_column(label: 'Labels') }
+        let!(:procedure_presentation) do
+          ProcedurePresentation.create!(assign_to: AssignTo.first)
+        end
+        render_views
+
+        before do
+          DossierLabel.create(dossier_id: dossier.id, label_id: dossier.procedure.labels.first.id)
+          DossierLabel.create(dossier_id: dossier.id, label_id: dossier.procedure.labels.second.id)
+          DossierLabel.create(dossier_id: dossier_2.id, label_id: dossier.procedure.labels.last.id)
+
+          procedure_presentation.update(displayed_columns: [
+            label_id.id
+          ])
+
+          subject
+        end
+
+        it 'displays correctly labels in instructeur table' do
+          expect(response.body).to include("Labels")
+          expect(response.body).to have_selector('ul.fr-tags-group li span.fr-tag', text: 'À examiner')
+          expect(response.body).to have_selector('ul.fr-tags-group li span.fr-tag', text: 'À relancer')
+          expect(response.body).not_to have_selector('ul li span.fr-tag', text: 'Urgent')
+          expect(response.body).to have_selector('span.fr-tag', text: 'Urgent')
+        end
+      end
     end
   end
 
@@ -869,26 +903,6 @@ describe Instructeurs::ProceduresController, type: :controller do
     context 'when logged in through super admin' do
       let(:manager) { true }
       it { is_expected.to have_http_status(:forbidden) }
-    end
-  end
-
-  describe '#add_filter' do
-    let(:instructeur) { create(:instructeur) }
-    let(:procedure) { create(:procedure, :for_individual) }
-
-    before do
-      create(:assign_to, instructeur:, groupe_instructeur: build(:groupe_instructeur, procedure:))
-
-      sign_in(instructeur.user)
-    end
-
-    subject do
-      post :add_filter, params: { procedure_id: procedure.id, field: "individual/nom", value: "n" * 110, statut: "a-suivre" }
-    end
-
-    it 'should render the error' do
-      subject
-      expect(flash.alert[0]).to include("Le filtre Nom est trop long (maximum: 100 caractères)")
     end
   end
 end

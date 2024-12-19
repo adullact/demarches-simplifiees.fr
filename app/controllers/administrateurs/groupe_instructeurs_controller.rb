@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 module Administrateurs
   class GroupeInstructeursController < AdministrateurController
     include ActiveSupport::NumberHelper
     include EmailSanitizableConcern
     include Logic
-    include UninterlacePngConcern
     include GroupeInstructeursSignatureConcern
 
     before_action :ensure_not_super_admin!, only: [:add_instructeur]
@@ -25,6 +26,9 @@ module Administrateurs
 
     def options
       @procedure = procedure
+      if params[:state] == 'choix' && @procedure.active_revision.simple_routable_types_de_champ.none?
+        configurate_custom_routing
+      end
     end
 
     def ajout
@@ -41,20 +45,24 @@ module Administrateurs
       @procedure = procedure
       stable_id = params[:create_simple_routing][:stable_id].to_i
 
-      tdc = @procedure.active_revision.routable_types_de_champ.find { |tdc| tdc.stable_id == stable_id }
+      tdc = @procedure.active_revision.simple_routable_types_de_champ.find { |tdc| tdc.stable_id == stable_id }
 
       case tdc.type_champ
       when TypeDeChamp.type_champs.fetch(:departements)
-        tdc_options = APIGeoService.departements.map { ["#{_1[:code]} – #{_1[:name]}", _1[:code]] }
+        tdc_options = APIGeoService.departement_options
         rule_operator = :ds_eq
         create_groups_from_territorial_tdc(tdc_options, stable_id, rule_operator)
-      when TypeDeChamp.type_champs.fetch(:communes), TypeDeChamp.type_champs.fetch(:epci)
-        tdc_options = APIGeoService.departements.map { ["#{_1[:code]} – #{_1[:name]}", _1[:code]] }
+      when TypeDeChamp.type_champs.fetch(:communes), TypeDeChamp.type_champs.fetch(:epci), TypeDeChamp.type_champs.fetch(:address)
+        tdc_options = APIGeoService.departement_options
         rule_operator = :ds_in_departement
         create_groups_from_territorial_tdc(tdc_options, stable_id, rule_operator)
       when TypeDeChamp.type_champs.fetch(:regions)
         rule_operator = :ds_eq
-        tdc_options = APIGeoService.regions.map { ["#{_1[:code]} – #{_1[:name]}", _1[:code]] }
+        tdc_options = APIGeoService.region_options
+        create_groups_from_territorial_tdc(tdc_options, stable_id, rule_operator)
+      when TypeDeChamp.type_champs.fetch(:pays)
+        rule_operator = :ds_eq
+        tdc_options = APIGeoService.countries.map { ["#{_1[:code]} – #{_1[:name]}", _1[:code]] }
         create_groups_from_territorial_tdc(tdc_options, stable_id, rule_operator)
       when TypeDeChamp.type_champs.fetch(:drop_down_list)
         tdc_options = tdc.drop_down_options.reject(&:empty?)
@@ -85,17 +93,23 @@ module Administrateurs
     end
 
     def wizard
-      if params[:choice][:state] == 'routage_custom'
-        new_label = procedure.defaut_groupe_instructeur.label + ' bis'
-        procedure.groupe_instructeurs
-          .create({ label: new_label, instructeurs: [current_administrateur.instructeur] })
-
-        procedure.toggle_routing
-
-        redirect_to admin_procedure_groupe_instructeurs_path(procedure)
+      if params[:choice][:state] == 'custom_routing'
+        configurate_custom_routing
       elsif params[:choice][:state] == 'routage_simple'
         redirect_to simple_routing_admin_procedure_groupe_instructeurs_path
       end
+    end
+
+    def configurate_custom_routing
+      procedure.defaut_groupe_instructeur.update!(label: 'Groupe 1 (à renommer et configurer)')
+      procedure.groupe_instructeurs
+        .create({ label: 'Groupe 2 (à renommer et configurer)', instructeurs: [current_administrateur.instructeur] })
+
+      procedure.toggle_routing
+
+      flash[:routing_mode] = 'custom'
+
+      redirect_to admin_procedure_groupe_instructeurs_path(procedure)
     end
 
     def destroy_all_groups_but_defaut
@@ -234,7 +248,7 @@ module Administrateurs
       end
 
       if instructeurs.present?
-        flash.now[:notice] = if procedure.routing_enabled?
+        flash[:notice] = if procedure.routing_enabled?
           t('.assignment',
             count: instructeurs.size,
             emails: instructeurs.map(&:email).join(', '),
@@ -243,9 +257,11 @@ module Administrateurs
           "Les instructeurs ont bien été affectés à la démarche"
         end
 
-        known_instructeurs, new_instructeurs = instructeurs.partition { |instructeur| instructeur.user.email_verified_at }
+        known_instructeurs, not_verified_instructeurs = instructeurs.partition { |instructeur| instructeur.user.email_verified_at }
 
-        new_instructeurs.each { InstructeurMailer.confirm_and_notify_added_instructeur(_1, groupe_instructeur, current_administrateur.email).deliver_later }
+        not_verified_instructeurs.filter(&:should_receive_email_activation?).each do
+          InstructeurMailer.confirm_and_notify_added_instructeur(_1, groupe_instructeur, current_administrateur.email).deliver_later
+        end
 
         if known_instructeurs.present?
           GroupeInstructeurMailer
@@ -254,7 +270,7 @@ module Administrateurs
         end
       end
 
-      flash.now[:alert] = errors.join(". ") if !errors.empty?
+      flash[:alert] = errors.join(". ") if !errors.empty?
 
       @procedure = procedure
       @instructeurs = paginated_instructeurs
@@ -262,10 +278,10 @@ module Administrateurs
 
       if procedure.routing_enabled?
         @groupe_instructeur = groupe_instructeur
-        render :show
+        redirect_to admin_procedure_groupe_instructeur_path(@procedure, @groupe_instructeur)
       else
         @groupes_instructeurs = paginated_groupe_instructeurs
-        render :index
+        redirect_to admin_procedure_groupe_instructeurs_path(@procedure)
       end
     end
 
@@ -312,48 +328,42 @@ module Administrateurs
     end
 
     def import
-      if procedure.publiee_or_close?
-        if !CSV_ACCEPTED_CONTENT_TYPES.include?(csv_file.content_type) && !CSV_ACCEPTED_CONTENT_TYPES.include?(marcel_content_type)
-          flash[:alert] = "Importation impossible : veuillez importer un fichier CSV"
+      if !CSV_ACCEPTED_CONTENT_TYPES.include?(csv_file.content_type) && !CSV_ACCEPTED_CONTENT_TYPES.include?(marcel_content_type)
+        flash[:alert] = "Importation impossible : veuillez importer un fichier CSV"
 
-        elsif csv_file.size > CSV_MAX_SIZE
-          flash[:alert] = "Importation impossible : le poids du fichier est supérieur à #{number_to_human_size(CSV_MAX_SIZE)}"
+      elsif csv_file.size > CSV_MAX_SIZE
+        flash[:alert] = "Importation impossible : le poids du fichier est supérieur à #{number_to_human_size(CSV_MAX_SIZE)}"
 
-        else
-          file = csv_file.read
-          base_encoding = CharlockHolmes::EncodingDetector.detect(file)
+      else
+        file = csv_file.read
+        base_encoding = CharlockHolmes::EncodingDetector.detect(file)
 
-          csv_content = ACSV::CSV.new_for_ruby3(file.encode("UTF-8", base_encoding[:encoding], invalid: :replace, replace: ""), headers: true, header_converters: :downcase).map(&:to_h)
+        csv_content = ACSV::CSV.new_for_ruby3(file.encode("UTF-8", base_encoding[:encoding], invalid: :replace, replace: ""), headers: true, header_converters: :downcase).map(&:to_h)
 
-          if csv_content.first.has_key?("groupe") && csv_content.first.has_key?("email")
-            groupes_emails = csv_content.map { |r| r.to_h.slice('groupe', 'email') }
+        if csv_content.first.has_key?("groupe") && csv_content.first.has_key?("email")
+          groupes_emails = csv_content.map { |r| r.to_h.slice('groupe', 'email') }
 
-            added_instructeurs_by_group, invalid_emails = InstructeursImportService.import_groupes(procedure, groupes_emails)
+          added_instructeurs_by_group, invalid_emails = InstructeursImportService.import_groupes(procedure, groupes_emails)
 
-            added_instructeurs_by_group.each do |groupe, added_instructeurs|
-              if added_instructeurs.present?
-                GroupeInstructeurMailer
-                  .notify_added_instructeurs(groupe, added_instructeurs, current_administrateur.email)
-                  .deliver_later
-              end
-              flash_message_for_import(invalid_emails)
-            end
-
-          elsif csv_content.first.has_key?("email") && !csv_content.map(&:to_h).first.keys.many? && procedure.groupe_instructeurs.one?
-            instructors_emails = csv_content.map(&:to_h)
-
-            added_instructeurs, invalid_emails = InstructeursImportService.import_instructeurs(procedure, instructors_emails)
+          added_instructeurs_by_group.each do |groupe, added_instructeurs|
             if added_instructeurs.present?
-              GroupeInstructeurMailer
-                .notify_added_instructeurs(groupe_instructeur, added_instructeurs, current_administrateur.email)
-                .deliver_later
+              notify_instructeurs(groupe, added_instructeurs)
             end
             flash_message_for_import(invalid_emails)
-          else
-            flash_message_for_invalid_csv
           end
-          redirect_to admin_procedure_groupe_instructeurs_path(procedure)
+
+        elsif csv_content.first.has_key?("email") && !csv_content.map(&:to_h).first.keys.many? && procedure.groupe_instructeurs.one?
+          instructors_emails = csv_content.map(&:to_h)
+
+          added_instructeurs, invalid_emails = InstructeursImportService.import_instructeurs(procedure, instructors_emails)
+          if added_instructeurs.present?
+            notify_instructeurs(groupe_instructeur, added_instructeurs)
+          end
+          flash_message_for_import(invalid_emails)
+        else
+          flash_message_for_invalid_csv
         end
+        redirect_to admin_procedure_groupe_instructeurs_path(procedure)
       end
     end
 
@@ -454,6 +464,10 @@ module Administrateurs
       params.require(:procedure).permit(:instructeurs_self_management_enabled)
     end
 
+    def hide_instructeurs_email_params
+      params.require(:procedure).permit(:hide_instructeurs_email)
+    end
+
     def routing_enabled_params
       { routing_enabled: params.require(:routing) == 'enable' }
     end
@@ -488,6 +502,18 @@ module Administrateurs
           .groupe_instructeurs
           .find_or_create_by(label: label)
           .update(instructeurs: [current_administrateur.instructeur], routing_rule:)
+      end
+    end
+
+    def notify_instructeurs(groupe, added_instructeurs)
+      known_instructeurs, new_instructeurs = added_instructeurs.partition { |instructeur| instructeur.user.email_verified_at }
+
+      new_instructeurs.each { InstructeurMailer.confirm_and_notify_added_instructeur(_1, groupe, current_administrateur.email).deliver_later }
+
+      if known_instructeurs.present?
+        GroupeInstructeurMailer
+          .notify_added_instructeurs(groupe, known_instructeurs, current_administrateur.email)
+          .deliver_later
       end
     end
   end

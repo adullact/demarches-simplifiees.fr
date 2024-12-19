@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DossierHelper
   include EtablissementHelper
 
@@ -105,7 +107,7 @@ module DossierHelper
       status_class = 'unknown'
     end
 
-    tag.span(status_text, class: "label #{status_class} ")
+    tag.span(status_text, class: "fr-badge #{status_class} ")
   end
 
   def pending_correction_badge(for_profile, html_class: nil)
@@ -114,6 +116,21 @@ module DossierHelper
 
   def correction_resolved_badge(html_class: nil)
     tag.span(Dossier.human_attribute_name("pending_correction.resolved"), class: ['fr-badge fr-badge--sm fr-badge--success super', html_class], role: 'status')
+  end
+
+  def tags_label(tags)
+    if tags.count > 1
+      tag.ul(class: 'fr-tags-group') do
+        safe_join(tags.map { |t| tag.li(tag_label(t[1], t[2])) })
+      end
+    else
+      tag = tags.first
+      tag_label(tag[1], tag[2])
+    end
+  end
+
+  def tag_label(name, color)
+    tag.span(name, class: "fr-tag fr-tag--sm fr-tag--#{Label.class_name(color)}")
   end
 
   def demandeur_dossier(dossier)

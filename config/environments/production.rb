@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "active_support/core_ext/integer/time"
 require Rails.root.join("app/lib/balancer_delivery_method")
 
@@ -81,7 +83,7 @@ Rails.application.configure do
   end
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
-  config.active_job.queue_adapter = :delayed_job
+  config.active_job.queue_adapter = ENV.fetch('RAILS_QUEUE_ADAPTER') { :sidekiq }
   # config.active_job.queue_name_prefix = "tps_production"
 
   config.action_mailer.perform_caching = false

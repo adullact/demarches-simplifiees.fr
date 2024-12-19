@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe EmailCheckerController, type: :controller do
   describe '#show' do
     render_views
@@ -38,6 +40,14 @@ describe EmailCheckerController, type: :controller do
 
     context 'incomplete' do
       let(:params) { { email: 'bikram.subedi81@' } }
+      it do
+        expect(response).to have_http_status(:success)
+        expect(body).to eq({ success: false })
+      end
+    end
+
+    context 'malformed' do
+      let(:params) { { email: { some: 'hash' } } }
       it do
         expect(response).to have_http_status(:success)
         expect(body).to eq({ success: false })

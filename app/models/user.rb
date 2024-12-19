@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User < ApplicationRecord
   include DomainMigratableConcern
   include EmailSanitizableConcern
@@ -42,10 +44,6 @@ class User < ApplicationRecord
   # plug our custom validation a la devise (same options) https://github.com/heartcombo/devise/blob/main/lib/devise/models/validatable.rb#L30
   validates :email, strict_email: true, allow_blank: true, if: :devise_will_save_change_to_email?
 
-  def validate_password_complexity?
-    administrateur?
-  end
-
   # Override of Devise::Models::Confirmable#send_confirmation_instructions
   def send_confirmation_instructions
     unless @raw_confirmation_token
@@ -63,7 +61,6 @@ class User < ApplicationRecord
 
   # Callback provided by Devise
   def after_confirmation
-    update!(email_verified_at: Time.zone.now)
     link_invites!
   end
 
@@ -87,6 +84,18 @@ class User < ApplicationRecord
     token = SecureRandom.hex(10)
     self.update!(confirmation_token: token, confirmation_sent_at: Time.zone.now)
     UserMailer.invite_tiers(self, token, dossier).deliver_later
+  end
+
+  def invite_expert_and_send_avis!(avis)
+    token = SecureRandom.hex(10)
+    self.update!(confirmation_token: token, confirmation_sent_at: Time.zone.now)
+    AvisMailer.avis_invitation_and_confirm_email(self, token, avis).deliver_later
+  end
+
+  def resend_confirmation_email!
+    token = SecureRandom.hex(10)
+    self.update!(confirmation_token: token, confirmation_sent_at: Time.zone.now)
+    UserMailer.resend_confirmation_email(self, token).deliver_later
   end
 
   def invite_gestionnaire!(groupe_gestionnaire)
@@ -161,13 +170,11 @@ class User < ApplicationRecord
 
   def self.create_or_promote_to_expert(email, password)
     user = User
-      .create_with(password: password, confirmed_at: Time.zone.now, email_verified_at: Time.zone.now)
+      .create_with(password: password, confirmed_at: Time.zone.now)
       .find_or_create_by(email: email)
 
-    if user.valid?
-      if user.expert.nil?
-        user.create_expert!
-      end
+    if user.valid? && user.expert.nil?
+      user.create_expert!
     end
 
     user

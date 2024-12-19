@@ -34,9 +34,8 @@ en:
     sentence_for_humans: 'If you are a human, ignore this field'
   help: 'Help'
   help_dropdown:
-    general_title: "Online help"
     procedure_title: "Do you have a question about this procedure?"
-    problem_title: A problem with the website ?
+    problem_title: A problem with the website?
     problem_description: Find your answer in the online help.
     technical_contact_title: Technical contact
     technical_contact_description: Send us a message to %{contact_email}.
@@ -47,14 +46,14 @@ en:
   utils:
     'yes': 'Yes'
     'no': 'No'
+    email_suggest:
+      wanna_say: 'Do you mean to say ?'
+
     deconnexion: "Log out"
     pj: "Attachments"
     asterisk_html: "Fields marked by an asterisk ( <svg aria-label='required' class='icon mandatory' height='10' role='img' viewBox='0 0 1200 1200' width='10' xml:space='preserve' xmlns='http://www.w3.org/2000/svg'><desc>required</desc><path d='M489.838 29.354v443.603L68.032 335.894 0 545.285l421.829 137.086-260.743 358.876 178.219 129.398L600.048 811.84l260.673 358.806 178.146-129.398-260.766-358.783L1200 545.379l-68.032-209.403-421.899 137.07V29.443H489.84l-.002-.089z'></path></svg> ) are mandatory."
     mandatory_champs: All fields are mandatory.
     no_mandatory: (optional)
-    file_number: File number
-    subject: Subject
-    message: Message
     send_mail: Send message
     new_tab: New tab
   helpers:
@@ -77,15 +76,13 @@ en:
   layouts:
     commencer:
       no_procedure:
-        line1: A simple tool
-        line2: to manage dematerialized
-        line3: administrative forms.
+        text: A simple tool to manage dematerialized administrative forms.
         are_you_new: First time on %{app_name}?
     my_account: My account
     header:
       close_modal: 'Close'
       back: "Back"
-      back_title: "Revenir sur le site de mon administration"
+      back_title: "Back to my administration's website"
       main_menu: "Main menu"
     locale_dropdown:
       select_locale: "Choose a language"
@@ -123,7 +120,7 @@ en:
     accessibility_statement:
       title: "Accessibility statement"
       line_one_html: "DINUM is committed to making its service accessible in accordance with <a href=\"https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000037388867\" hreflang=\"fr\">Article 47 of Law No. 2005-102 of 11 February 2005</a>."
-      line_two_html: "This accessibility statement applies to <a href=\"%{host}\">%{app_name}</a> website."
+      line_two_html: "This accessibility statement applies to <a href=\"https://%{host}\">%{app_name}</a> website."
       compliance:
         title: "Compliance status"
         content_html: "The website Démarches simplifiées is <strong>partially compliant</strong> with <a href=\"https://accessibilite.numerique.gouv.fr/\">the General Accessibility Guidelines (RGAA)</a> version 4.1.2 as a result of the non-compliances listed below."
@@ -156,7 +153,7 @@ en:
         content_html: "<p class=\"fr-mb-2w\">The documentation pages are managed by a third-party tool. They are not fully accessible.</p>
           <p class=\"fr-mb-2w\">FAQ management was delegated to a third-party tool. It was reintegrated into the platform in May 2024 and has not yet been audited.</p>"
 
-          
+
       preparation:
         title: "Preparation of this accessibility declaration"
         intro: "This declaration was drawn up on 27 April 2022. It was updated on 14 June 2024."
@@ -281,7 +278,7 @@ en:
           textarea: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
           decimal_number: 49.3
           integer_number: 42
-          email: personne@fournisseur.fr
+          email: address@mail.com
           phone: 0612345678
           iban: FR7611315000011234567890138
           yes_no: "true"
@@ -314,12 +311,9 @@ en:
         subtitle: "Create an account using an email"
         email_label: 'Email (name@site.com)'
         password_label: "Password (%{min_length} characters minimum)"
-        password_message: "Your password must have :"
-        password_placeholder: "%{min_length} characters minimum"
     confirmation:
       new:
         title: 'Confirm your email address'
-        image_alt: "Email sent"
         email_cta_html: "Before filling your file, we have to validate your email address <strong>%{email}</strong>."
         email_guidelines_html: "Open your mailbox and <strong>click on the activation link</strong> within the mail we just sent you."
         email_missing: "If you have not received our email (have you checked your spam ?), we can resend it."
@@ -401,12 +395,11 @@ en:
           traites_html: "The files in this tab are finished: they have been accepted, refused or closed without follow-up. You can <a href=%{archives_path}>download</a> the zip archives of finished files and their attachments."
           tous: All the files that have been submitted on this approach, included files to be follow and files followed by you or other instructors.
           tous_with_routing: All the files that have been submitted on this approach, and assigned to your instructors groups.
-          supprimes_recemment: All files not <strong>archive</strong>, <strong>completed</strong> and <strong>deleted by the instructors</strong> on this approach.
+          supprimes: All files not <strong>archive</strong>, <strong>completed</strong> and <strong>deleted by the instructors</strong> on this approach.
           archives: "The files in this tab are archived: you can no longer reply to them, and requesters can no longer modify them."
           expirant: Records will not expire prior to the data retention period.
         archived_dossier: "This file will be kept for an additional month"
         delete_dossier: "Delete file"
-        deleted_by_user: "File deleted by user"
         acts_on_behalf: "acts for"
         deleted_by_administration: "File deleted by administration"
         restore: "Restore"
@@ -421,7 +414,6 @@ en:
         repasser_en_construction: Revert to submitted
         show_deleted_dossiers: Show deleted files
         follow_file: Follow-up the file
-        save: Save
         stop_follow: No longer follow
         no_file: No file
         dossier_synthesis: Summary of files
@@ -469,7 +461,7 @@ en:
             summary: "Summary"
             request: "Request"
             mailbox: "Mailbox"
-            dossier_number: "File n. %{dossier_id}"
+            dossier_number_html: "File <span class='visually-hidden'>number</span> <span aria-hidden='true'>n.</span> %{dossier_id}"
             created_date: "- Draft on %{date_du_dossier}"
             submit_date: "- Submit on %{date_du_dossier}"
           status_overview:
@@ -522,19 +514,20 @@ en:
           created_at: Created at %{date}
           updated_at: updated at %{date}
           shared_with: File shared by %{owner} with
-          deleted: Deleted at %{date}
-          deleted_badge: Deleted
+          deleted_by_user: Deleted on %{date} by user
+          deleted_by_automatic: Deleted on %{date} automatically due to expiration date
           procedure_closed:
             brouillon:
-              internal_procedure_html: This procedure is closed, you cannot submit this file. We invite you to submit a new one on the %{link} which replaces it
-              other_html: This process is closed, you cannot submit this file. %{link}
+              internal_procedure_html: This procedure is closed. You cannot submit this file. We invite you to submit a new one on the %{link} which replaces it.
+              other_html: This process is closed. You cannot submit this file, nor submit a new one for this procedure. %{link}
             en_cours:
-              internal_procedure_html: This procedure is closed. Your file has been submitted and can be investigated by the administration
-              other_html: This procedure is closed. Your file has been submitted and can be processed by the administration. %{link}
+              internal_procedure_html: This procedure is closed. Your file has been submitted and can be investigated by the administration. If necessary, you can submit a new file on the %{link} that replaces it.
+              other_html: This procedure is closed. Your file has been submitted and can be processed by the administration. You cannot submit a new file for this procedure. %{link}
             termine:
-              internal_procedure_html: This procedure is closed and replaced by %{link}. Your file has been processed by the administration
-              other_html: This process is closed, you cannot submit a new file. %{link}
-            closing_details: Details on the closed procedure
+              internal_procedure_html: This procedure is closed. Your file has been processed by the administration. If necessary, you can submit a new file on the %{link} that replaces it.
+              other_html: This process is closed. Your file has been processed by the administration. You cannot submit a new file for this procedure. %{link}
+            title_new_procedure: New procedure available
+            title_closing_details: More information on the closing procedure
             more_details: More information
             procedure: procedure
             this_procedure: this procedure
@@ -578,15 +571,13 @@ en:
           submit: Change password
           submit_loading: Sending…
         reset_link_sent:
-          got_it: Got it!
-          open_your_mailbox: Now open your mailbox.
-          email_sent_html: "If a <strong>%{application_name}</strong> account exists with the address <strong>%{email}</strong>, we have sent you an email."
-          click_link_to_reset_password: Click on the link in the email to change your password.
+          email_sent_html: "If an account exists with the address <strong>%{email}</strong>, we have sent you an email."
           no_mail: Didn't receive the email?
           check_spams: Check your junk or spam email.
-          check_account: Have you created a %{application_name} account with the adress %{email}? You will not receive any message if no account is linked to your email adress.
+          check_account_html: Have you created a <strong> %{application_name} </strong>account with the adress <strong> %{email}</strong>? You will not receive any message if no account is linked to your email adress.
           check_france_connect_html: Have you once logged in with France Connect? If yes, <a href=\"%{href}\">try again with France Connect</a>.
           check_gpdr: "The account may have been deleted in the event of prolonged inactivity and no current file. In this case you will have to recreate an account from a procedure."
+          title: "Password reset link sent"
       shared:
         email_can_take_a_while_html: <strong>Please note</strong> that this email can take up to 15 minutes to arrive.
         contact_us_if_any_trouble_html: 'You can contact us <a href="%{href}">through this form</a> if a problem still exists.'
@@ -613,7 +604,7 @@ en:
         password: 'Password'
         requested_merge_into: 'new email address'
         hints:
-          email: "Expected format : john.doe@example.com"
+          email: 'Expected format : address@mail.com'
       user:
         siret: 'SIRET number'
         << : *default_attributes
@@ -646,7 +637,7 @@ en:
         not_a_phone: 'Invalid phone number'
         not_a_rna: 'Invalid RNA number'
         url: 'is not a valid link'
-        invalid_email_format: "is invalid. Please fill in a valid email ex: john.doe@exemple.fr"
+        invalid_email_format: 'is invalid. Please fill in a valid email ex: address@mail.com'
       models:
         attestation_template:
           attributes:
@@ -663,11 +654,11 @@ en:
             reset_password_token:
               invalid: ": is expired. Ask a new one"
             email:
-              blank: "is empty. Fill in the email"
-              invalid: "is invalid. Fill in a valid email address, example: john.doe@example.fr"
-              taken: "already in use. Fill in another email"
+              blank: 'is empty. Fill in the email'
+              invalid: 'is invalid. Fill in a valid email address, example: address@mail.com'
+              taken: 'already in use. Fill in another email'
             password:
-              too_short: "is too short. Fill in a password with at least 8 characters"
+              too_short: "is too short. Fill in a password with at least 12 characters"
               not_strong: "not strong enough. Fill in a stronger password"
             password_confirmation:
               confirmation: ": The two passwords do not match"
@@ -754,6 +745,7 @@ en:
       # # etablissement_fail: 'Désolé, nous n’avons pas réussi à enregistrer l’établissement correspondant à ce numéro SIRET'
       france_connect:
         connexion: "Error trying to connect to France Connect."
+        forbidden_html: "Only citizen can use FranceConnect. As an instructor or administrator, you should <a href='%{reset_link}'>reset your password</a>."
       evil_regexp: The regular expression you have entered is potentially dangerous and could lead to performance issues.
       mismatch_regexp: The provided example must match the regular expression
       syntax_error_regexp: The syntax of the regular expression is invalid
@@ -797,12 +789,9 @@ en:
     dossiers_invites:
       one: guest file
       other: guest files
-    dossiers_supprimes_recemment:
+    dossiers_supprimes:
       one: recently deleted file
       other: recently deleted files
-    dossiers_supprimes_definitivement:
-      one: permanently deleted file
-      other: permanently deleted files
     dossiers_transferes:
       one: transfer request
       other: transfer requests
@@ -890,10 +879,19 @@ en:
           to_follow: to follow
   france_connect:
     particulier:
-      password_confirmation:
-        back: 'back to previous step'
-        already_exists: An account with %{email} already existis on %{application_name}
-        fill_in_password: fill in your password to merge your accounts
+      choose_email:
+        intro_html: "Your FranceConnect account uses <span class='fr-badge fr-badge--info fr-badge--no-icon fr-badge--lowercase'>%{email}</span> as the contact email."
+        use_email_for_notifications: "Would you like to use it to receive notifications regarding the progress of your cases?"
+        confirm: "Confirm"
+        choose_email_contact: "Choose your contact email"
+        alternative_email: "Please provide the email to use for contacting you."
+        keep_fc_email_html: Yes, use <b class='bold'>%{email}</b> as contact email.
+        use_another_email: No, use another address.
+      confirmation_sent:
+        confirmation_sent_by_email: "Confirm your email"
+        intro_html: "A confirmation email has been sent to your address <span class='fr-badge fr-badge--info fr-badge--no-icon fr-badge--lowercase'>%{email}</span>"
+        click_the_link_in_the_email: "Please click the link in the email to confirm your account and connect with France Connect in the future."
+        continue: "Continue"
       merge:
         title: "Merge your account FranceConnect and %{application_name}"
         subtitle_html: "Hello,<br /><br />Your account FranceConnect uses <b class='bold'>%{email}</b> as contact email.<br />But there is an existing %{application_name} account using this email."
@@ -905,6 +903,11 @@ en:
         link_confirm_by_email: Confirm by receiving an email
       flash:
           confirmation_mail_sent: "An email with the confirmation link has been sent, please click on the link."
+          confirmation_mail_resent: "Confirmation link expired. A new link has been sent by email."
+          confirmation_mail_resent_error: "An unexpected error has occurred. Please contact support if the problem persists."
+          redirect_new_user_session: "You have been disconnected from your previous account. Please click on the confirmation link again."
+          email_confirmed: "Your email is confirmed"
+          user_not_found: "User not found"
           invalid_password: "The password is not correct."
           connection_done: "The accounts for FranceConnect and %{application_name} are now merged."
           merger_token_expired: "Le delay to merge your FranceConnect and %{application_name} accounts is expired. Please retry."

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'users/dossiers/index', type: :view do
   let(:user) { create(:user) }
   let(:procedure_accuse_lecture) { create(:procedure, :accuse_lecture) }
@@ -16,8 +18,7 @@ describe 'users/dossiers/index', type: :view do
     allow(controller).to receive(:current_user) { user }
     assign(:user_dossiers, user_dossiers)
     assign(:dossiers_invites, Kaminari.paginate_array(dossiers_invites).page(1))
-    assign(:dossiers_supprimes_recemment, Kaminari.paginate_array(user_dossiers).page(1))
-    assign(:dossiers_supprimes_definitivement, Kaminari.paginate_array(user_dossiers).page(1))
+    assign(:dossiers_supprimes, Kaminari.paginate_array(user_dossiers).page(1))
     assign(:dossiers_traites, Kaminari.paginate_array(user_dossiers).page(1))
     assign(:dossier_transferes, Kaminari.paginate_array([]).page(1))
     assign(:dossiers_close_to_expiration, Kaminari.paginate_array([]).page(1))
@@ -97,7 +98,7 @@ describe 'users/dossiers/index', type: :view do
 
     it 'affiche la barre d’onglets' do
       expect(rendered).to have_selector('nav.fr-tabs')
-      expect(rendered).to have_selector('nav.fr-tabs li', count: 5)
+      expect(rendered).to have_selector('nav.fr-tabs li', count: 4)
       expect(rendered).to have_selector('nav.fr-tabs li.active', count: 1)
     end
   end
@@ -112,12 +113,12 @@ describe 'users/dossiers/index', type: :view do
 
   context 'caching', caching: true do
     it "works" do
-      expect(user_dossiers).to receive(:present?).once
+      expect(user_dossiers).to receive(:present?).thrice
       2.times { render; user.reload }
     end
 
     it "cache key depends on statut" do
-      expect(user_dossiers).to receive(:present?).twice
+      expect(user_dossiers).to receive(:present?).exactly(4).times
       render
 
       assign(:statut, "termines")
@@ -127,7 +128,7 @@ describe 'users/dossiers/index', type: :view do
     end
 
     it "cache key depends on dossier updated_at" do
-      expect(user_dossiers).to receive(:present?).twice
+      expect(user_dossiers).to receive(:present?).exactly(4).times
       render
 
       dossier_termine.touch
@@ -147,8 +148,8 @@ describe 'users/dossiers/index', type: :view do
       expect(rendered).to have_text(/6\s+en cours/)
     end
 
-    it "cache key dpeends on dossier invites" do
-      expect(user_dossiers).to receive(:present?).twice
+    it "cache key depends on dossier invites" do
+      expect(user_dossiers).to receive(:present?).exactly(4).times
       render
 
       create(:invite, user:)
@@ -158,10 +159,10 @@ describe 'users/dossiers/index', type: :view do
     end
 
     it "cache key depends on dossier deletion" do
-      expect(user_dossiers).to receive(:present?).twice
+      expect(user_dossiers).to receive(:present?).exactly(4).times
       render
 
-      dossier_termine.expired_keep_track_and_destroy!
+      dossier_termine.hide_and_keep_track!(:automatic, :expired)
       user.reload
 
       render

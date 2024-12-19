@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class API::Public::V1::DossiersController < API::Public::V1::BaseController
   before_action :retrieve_procedure
 
@@ -7,7 +9,7 @@ class API::Public::V1::DossiersController < API::Public::V1::BaseController
       state: Dossier.states.fetch(:brouillon),
       prefilled: true
     )
-    dossier.build_default_individual
+    dossier.build_default_values
     if dossier.save
       dossier.prefill!(PrefillChamps.new(dossier, params.to_unsafe_h).to_a, PrefillIdentity.new(dossier, params.to_unsafe_h).to_h)
       render json: serialize_dossier(dossier), status: :created

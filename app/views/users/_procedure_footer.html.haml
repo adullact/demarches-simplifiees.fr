@@ -1,37 +1,10 @@
 %footer.fr-footer.footer-procedure#footer{ role: "contentinfo" }
-  - service = dossier&.service || procedure.service
   .fr-footer__top.fr-mb-0
     .fr-container
+      %h2.sr-only= t("links.footer.top_labels.hidden_title_procedure")
       .fr-grid-row.fr-grid-row--start.fr-grid-row--gutters
         .fr-col-12.fr-col-sm-4.fr-col-md-4
-          - if service.present?
-            %h3.fr-footer__top-cat= I18n.t('users.procedure_footer.managed_by.header')
-            .fr-footer__top-link.fr-pb-2w
-              %span{ lang: :fr }= service.pretty_nom
-              %div{ lang: :fr }
-                = render SimpleFormatComponent.new(service.adresse, class_names_map: {paragraph: 'fr-footer__content-desc'})
-          %h3.fr-footer__top-cat= I18n.t('users.procedure_footer.contact.header')
-          %ul.fr-footer__top-list
-            - if dossier.present? && dossier.messagerie_available?
-              %li
-                = link_to I18n.t('users.procedure_footer.contact.in_app_mail.link'), messagerie_dossier_path(dossier), class: 'fr-footer__top-link'
-            - elsif service.present?
-              %li
-                %span.fr-footer__top-link
-                  = I18n.t('users.procedure_footer.contact.email.link')
-                = link_to service.email, "mailto:#{service.email}", class: "fr-footer__top-link"
-
-            - if service.present?
-              - if service.telephone.present? || service.horaires.present?
-                %li
-                  - horaires = "#{I18n.t('users.procedure_footer.contact.schedule.prefix')}#{formatted_horaires(service.horaires)}"
-                  - if service.telephone.present?
-                    = link_to service.telephone_url, class: 'fr-footer__top-link' do
-                      %p
-                        = I18n.t('users.procedure_footer.contact.phone.link', service_telephone: service.telephone)
-                      - if service.horaires.present?
-                        %p
-                          = horaires
+          = render partial: 'shared/dossiers/update_contact_information', locals: { dossier: dossier, procedure: procedure }
 
         - politiques = politiques_conservation_de_donnees(procedure)
         - if politiques.present?
@@ -40,30 +13,29 @@
             %ul.fr-footer__top-list
               - politiques.each do |politique|
                 %li
-                  = link_to t("users.procedure_footer.legals.data_retention_url"), class: "fr-footer__top-link", title: new_tab_suffix(t("users.procedure_footer.legals.data_retention_title")), **external_link_attributes do
+                  = link_to t("users.procedure_footer.legals.data_retention_url"), class: "fr-footer__link", title: new_tab_suffix(t("users.procedure_footer.legals.data_retention_title", data_retention_title: politiques_conservation_de_donnees(procedure).join)), **external_link_attributes do
                     = politique
               - if procedure.deliberation.attached?
                 %li
-                  = link_to url_for(procedure.deliberation), rel: 'noopener', class: 'fr-footer__top-link' do
+                  = link_to url_for(procedure.deliberation), rel: 'noopener', class: 'fr-footer__link' do
                     = I18n.t("users.procedure_footer.legals.terms")
               - else
                 %li
-                  = link_to I18n.t("users.procedure_footer.legals.terms"), procedure.cadre_juridique, rel: 'noopener', class: 'fr-footer__top-link'
+                  = link_to I18n.t("users.procedure_footer.legals.terms"), procedure.cadre_juridique, rel: 'noopener', class: 'fr-footer__link'
 
               - if procedure.lien_dpo.present?
                 %li
-                  = link_to url_or_email_to_lien_dpo(procedure), rel: 'noopener', class: 'fr-footer__top-link' do
+                  = link_to url_or_email_to_lien_dpo(procedure), rel: 'noopener', class: 'fr-footer__link' do
                     = I18n.t("users.procedure_footer.legals.dpo")
               %li
-                = link_to I18n.t('users.procedure_footer.contact.stats.link'), statistiques_path(procedure.path), class: 'fr-footer__top-link', rel: 'noopener'
+                = link_to I18n.t('users.procedure_footer.contact.stats.link'), statistiques_path(procedure.path), class: 'fr-footer__link', rel: 'noopener'
 
 
         .fr-col-12.fr-col-sm-4.fr-col-md-4
           - unless procedure.close?
             %h3.fr-footer__top-cat= I18n.t('users.procedure_footer.dematerialisation.header')
             .fr-download
-              %p
-                = link_to I18n.t('users.procedure_footer.dematerialisation.title_1'), commencer_dossier_vide_for_revision_path(procedure.active_revision), class: 'fr-footer__top-link fr-download__link'
+              = link_to I18n.t('users.procedure_footer.dematerialisation.title_1'), commencer_dossier_vide_for_revision_path(procedure.active_revision), download: 'true', class: 'fr-download__link'
           %h3.fr-footer__top-cat= I18n.t('users.procedure_footer.support.header')
           .fr-footer__brand.fr-enlarge-link
             = link_to t("users.procedure_footer.dematerialisation.link"), title: t("users.procedure_footer.dematerialisation.alt"), class: "fr-footer__brand-link" do

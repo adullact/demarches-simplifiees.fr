@@ -1,14 +1,17 @@
+# frozen_string_literal: true
+
 describe Champs::RNFChamp, type: :model do
-  let(:champ) { build(:champ_rnf, external_id:) }
-  let(:stub) { stub_request(:get, "#{url}/#{external_id}").to_return(body:, status:) }
-  let(:url) { RNFService.new.send(:url) }
-  let(:body) { Rails.root.join('spec', 'fixtures', 'files', 'api_rnf', "#{response_type}.json").read }
+  let(:champ) { described_class.new(external_id:) }
   let(:external_id) { '075-FDD-00003-01' }
-  let(:status) { 200 }
+  let(:body) { Rails.root.join('spec', 'fixtures', 'files', 'api_rnf', "#{response_type}.json").read }
   let(:response_type) { 'valid' }
 
   describe 'fetch_external_data' do
-    subject { stub; champ.fetch_external_data }
+    let(:url) { RNFService.new.send(:url) }
+    let(:status) { 200 }
+    before { stub_request(:get, "#{url}/075-FDD-00003-01").to_return(body:, status:) }
+
+    subject { champ.fetch_external_data }
 
     context 'success' do
       it do
@@ -47,6 +50,20 @@ describe Champs::RNFChamp, type: :model do
       end
     end
 
+    context 'success (with space)' do
+      let(:external_id) { '075-FDD- 00003-01 ' }
+      it {
+        expect(subject).to be_success
+      }
+    end
+
+    context 'success (with tab)' do
+      let(:external_id) { '075-FDD-0	0003-01	' }
+      it {
+        expect(subject).to be_success
+      }
+    end
+
     context 'failure (schema)' do
       let(:response_type) { 'invalid' }
       it {
@@ -81,16 +98,39 @@ describe Champs::RNFChamp, type: :model do
         expect(subject.failure.reason).to be_a(API::Client::HTTPError)
       }
     end
+
+    describe 'update_with_external_data!' do
+      it 'works' do
+        value_json = {
+          street_number: "16",
+          street_name: "Rue du Général de Boissieu",
+          street_address: "16 Rue du Général de Boissieu",
+          postal_code: "75015",
+          city_name: "Paris 15e Arrondissement",
+          city_code: "75115",
+          departement_code: "75",
+          department_code: "75",
+          departement_name: "Paris",
+          department_name: "Paris",
+          region_code: "11",
+          region_name: "Île-de-France",
+          title: "Fondation SFR"
+        }
+        expect(champ).to receive(:update!).with(data: anything, value_json:)
+        champ.update_with_external_data!(data: subject.value!)
+      end
+    end
   end
 
   describe 'for_export' do
-    let(:champ) { build(:champ_rnf, external_id:, data: JSON.parse(body)) }
+    let(:champ) { described_class.new(external_id:, data: JSON.parse(body)) }
+    before { allow(champ).to receive(:type_de_champ).and_return(build(:type_de_champ_rnf)) }
     it do
-      expect(champ.for_export(:value)).to eq '075-FDD-00003-01'
-      expect(champ.for_export(:nom)).to eq 'Fondation SFR'
-      expect(champ.for_export(:address)).to eq '16 Rue du Général de Boissieu 75015 Paris'
-      expect(champ.for_export(:code_insee)).to eq '75115'
-      expect(champ.for_export(:departement)).to eq '75 – Paris'
+      expect(champ.type_de_champ.champ_value_for_export(champ, :value)).to eq '075-FDD-00003-01'
+      expect(champ.type_de_champ.champ_value_for_export(champ, :nom)).to eq 'Fondation SFR'
+      expect(champ.type_de_champ.champ_value_for_export(champ, :address)).to eq '16 Rue du Général de Boissieu 75015 Paris'
+      expect(champ.type_de_champ.champ_value_for_export(champ, :code_insee)).to eq '75115'
+      expect(champ.type_de_champ.champ_value_for_export(champ, :departement)).to eq '75 – Paris'
     end
   end
 end

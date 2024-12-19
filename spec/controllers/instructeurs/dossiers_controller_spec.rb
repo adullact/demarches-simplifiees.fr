@@ -1,10 +1,13 @@
+# frozen_string_literal: true
+
 describe Instructeurs::DossiersController, type: :controller do
   render_views
 
   let(:instructeur) { create(:instructeur) }
   let(:administration) { create(:administration) }
   let(:instructeurs) { [instructeur] }
-  let(:procedure) { create(:procedure, :published, :for_individual, instructeurs: instructeurs) }
+  let(:types_de_champ_public) { [] }
+  let(:procedure) { create(:procedure, :published, :for_individual, instructeurs: instructeurs, types_de_champ_public:) }
   let(:procedure_accuse_lecture) { create(:procedure, :published, :for_individual, :accuse_lecture, :new_administrateur, instructeurs: instructeurs) }
   let(:dossier) { create(:dossier, :en_construction, :with_individual, procedure: procedure) }
   let(:dossier_accuse_lecture) { create(:dossier, :en_construction, :with_individual, procedure: procedure_accuse_lecture) }
@@ -58,40 +61,59 @@ describe Instructeurs::DossiersController, type: :controller do
 
   describe '#follow' do
     let(:batch_operation) {}
-    before do
+
+    subject do
       batch_operation
       patch :follow, params: { procedure_id: procedure.id, dossier_id: dossier.id }
     end
 
-    it { expect(instructeur.followed_dossiers).to match([dossier]) }
-    it { expect(flash.notice).to eq('Dossier suivi') }
-    it { expect(response).to redirect_to(instructeur_procedure_path(dossier.procedure)) }
+    it do
+      subject
+      expect(instructeur.followed_dossiers).to match([dossier])
+      expect(flash.notice).to eq('Dossier suivi')
+      expect(response).to redirect_to(instructeur_procedure_path(dossier.procedure))
+    end
+    it { expect { subject }.to change { dossier.reload.updated_at } }
 
     context 'with dossier in batch_operation' do
       let(:batch_operation) { create(:batch_operation, operation: :archiver, dossiers: [dossier], instructeur: instructeur) }
-      it { expect(instructeur.followed_dossiers).to eq([]) }
-      it { expect(response).to redirect_to(instructeur_dossier_path(dossier.procedure, dossier)) }
-      it { expect(flash.alert).to eq("Votre action n'a pas été effectuée, ce dossier fait parti d'un traitement de masse.") }
+
+      it do
+        subject
+        expect(instructeur.followed_dossiers).to eq([])
+        expect(response).to redirect_to(instructeur_dossier_path(dossier.procedure, dossier))
+        expect(flash.alert).to eq("Votre action n'a pas été effectuée, ce dossier fait parti d'un traitement de masse.")
+      end
     end
   end
 
   describe '#unfollow' do
     let(:batch_operation) {}
-    before do
+    before { instructeur.followed_dossiers << dossier }
+
+    subject do
       batch_operation
-      instructeur.followed_dossiers << dossier
       patch :unfollow, params: { procedure_id: procedure.id, dossier_id: dossier.id }
-      instructeur.reload
     end
 
-    it { expect(instructeur.followed_dossiers).to match([]) }
-    it { expect(flash.notice).to eq("Vous ne suivez plus le dossier nº #{dossier.id}") }
-    it { expect(response).to redirect_to(instructeur_procedure_path(dossier.procedure)) }
+    it do
+      subject
+      expect(instructeur.followed_dossiers).to match([])
+      expect(flash.notice).to eq("Vous ne suivez plus le dossier nº #{dossier.id}")
+      expect(response).to redirect_to(instructeur_procedure_path(dossier.procedure))
+    end
+
+    it { expect { subject }.to change { dossier.reload.updated_at } }
+
     context 'with dossier in batch_operation' do
       let(:batch_operation) { create(:batch_operation, operation: :archiver, dossiers: [dossier], instructeur: instructeur) }
-      it { expect(instructeur.followed_dossiers).to eq([dossier]) }
-      it { expect(response).to redirect_to(instructeur_dossier_path(dossier.procedure, dossier)) }
-      it { expect(flash.alert).to eq("Votre action n'a pas été effectuée, ce dossier fait parti d'un traitement de masse.") }
+
+      it do
+        subject
+        expect(instructeur.followed_dossiers).to eq([dossier])
+        expect(response).to redirect_to(instructeur_dossier_path(dossier.procedure, dossier))
+        expect(flash.alert).to eq("Votre action n'a pas été effectuée, ce dossier fait parti d'un traitement de masse.")
+      end
     end
   end
 
@@ -816,7 +838,7 @@ describe Instructeurs::DossiersController, type: :controller do
         before { subject }
 
         it { expect(response).to render_template :avis }
-        it { expect(flash.alert).to eq(["emaila.com : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : john.doe@exemple.fr"]) }
+        it { expect(flash.alert).to eq(["emaila.com : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : adresse@mail.com"]) }
         it { expect { subject }.not_to change(Avis, :count) }
         it { expect(dossier.last_avis_updated_at).to eq(nil) }
       end
@@ -838,7 +860,7 @@ describe Instructeurs::DossiersController, type: :controller do
         before { subject }
 
         it { expect(response).to render_template :avis }
-        it { expect(flash.alert).to eq(["toto.fr : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : john.doe@exemple.fr"]) }
+        it { expect(flash.alert).to eq(["toto.fr : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : adresse@mail.com"]) }
         it { expect(flash.notice).to eq("Une demande d’avis a été envoyée à titi@titimail.com") }
         it { expect(Avis.count).to eq(old_avis_count + 1) }
         it { expect(saved_avis.expert.email).to eq("titi@titimail.com") }
@@ -854,7 +876,8 @@ describe Instructeurs::DossiersController, type: :controller do
       context 'with linked dossiers' do
         let(:asked_confidentiel) { false }
         let(:previous_avis_confidentiel) { false }
-        let(:dossier) { create(:dossier, :en_construction, :with_dossier_link, procedure: procedure) }
+        let(:types_de_champ_public) { [{ type: :dossier_link }] }
+        let(:dossier) { create(:dossier, :en_construction, :with_populated_champs, procedure:) }
         before { subject }
         context 'when the expert doesn’t share linked dossiers' do
           let(:invite_linked_dossiers) { false }
@@ -873,7 +896,7 @@ describe Instructeurs::DossiersController, type: :controller do
           context 'and the expert can access the linked dossiers' do
             let(:saved_avis) { Avis.last(2).first }
             let(:linked_avis) { Avis.last }
-            let(:linked_dossier) { Dossier.find_by(id: dossier.reload.champs_public.filter(&:dossier_link?).filter_map(&:value)) }
+            let(:linked_dossier) { Dossier.find_by(id: dossier.champs.first.value) }
             let(:invite_linked_dossiers) do
               instructeur.assign_to_procedure(linked_dossier.procedure)
               true
@@ -974,11 +997,11 @@ describe Instructeurs::DossiersController, type: :controller do
     let(:another_instructeur) { create(:instructeur) }
     let(:now) { Time.zone.parse('01/01/2100') }
 
-    let(:champ_multiple_drop_down_list) { dossier.champs_private.first }
-    let(:champ_linked_drop_down_list) { dossier.champs_private.second }
-    let(:champ_datetime) { dossier.champs_private.third }
-    let(:champ_repetition) { dossier.champs_private.fourth }
-    let(:champ_drop_down_list) { dossier.champs_private.fifth }
+    let(:champ_multiple_drop_down_list) { dossier.project_champs_private.first }
+    let(:champ_linked_drop_down_list) { dossier.project_champs_private.second }
+    let(:champ_datetime) { dossier.project_champs_private.third }
+    let(:champ_repetition) { dossier.project_champs_private.fourth }
+    let(:champ_drop_down_list) { dossier.project_champs_private.fifth }
 
     context 'when no invalid champs_public' do
       context "with new values for champs_private" do
@@ -1014,7 +1037,7 @@ describe Instructeurs::DossiersController, type: :controller do
                   primary_value: 'primary',
                   secondary_value: 'secondary'
                 },
-                champ_repetition.champs.first.public_id => {
+                champ_repetition.rows.first.first.public_id => {
                   value: 'text'
                 },
                 champ_drop_down_list.public_id => {
@@ -1031,7 +1054,7 @@ describe Instructeurs::DossiersController, type: :controller do
           expect(champ_linked_drop_down_list.primary_value).to eq('primary')
           expect(champ_linked_drop_down_list.secondary_value).to eq('secondary')
           expect(champ_datetime.value).to eq(Time.zone.parse('2019-12-21T13:17:00').iso8601)
-          expect(champ_repetition.champs.first.value).to eq('text')
+          expect(champ_repetition.rows.first.first.value).to eq('text')
           expect(champ_drop_down_list.value).to eq('other value')
           expect(dossier.reload.last_champ_private_updated_at).to eq(now)
           expect(response).to have_http_status(200)
@@ -1102,7 +1125,7 @@ describe Instructeurs::DossiersController, type: :controller do
         ]
       end
 
-      let(:champ_decimal_number) { dossier.champs_public.first }
+      let(:champ_decimal_number) { dossier.project_champs_public.first }
 
       let(:params) do
         {
@@ -1212,10 +1235,6 @@ describe Instructeurs::DossiersController, type: :controller do
         expect(DeletedDossier.where(dossier_id: dossier.id).count).to eq(0)
       end
 
-      it 'does not discard the dossier' do
-        expect(dossier.reload.hidden_at).to eq(nil)
-      end
-
       it 'fill hidden by reason' do
         expect(dossier.reload.hidden_by_reason).not_to eq(nil)
         expect(dossier.reload.hidden_by_reason).to eq("instructeur_request")
@@ -1238,7 +1257,7 @@ describe Instructeurs::DossiersController, type: :controller do
 
     context 'with dossier in batch_operation' do
       let(:batch_operation) { create(:batch_operation, operation: :archiver, dossiers: [dossier], instructeur: instructeur) }
-      it { expect { subject }.not_to change { dossier.reload.hidden_at } }
+      it { expect { subject }.not_to change { dossier.reload.hidden_by_administration_at } }
       it { is_expected.to redirect_to(instructeur_dossier_path(dossier.procedure, dossier)) }
       it 'flashes message' do
        subject
@@ -1302,6 +1321,71 @@ describe Instructeurs::DossiersController, type: :controller do
       it { expect(dossier.hidden_by_administration_at).not_to eq(nil) }
       it { expect(response).to redirect_to(instructeur_dossier_path(dossier.procedure, dossier)) }
       it { expect(flash.alert).to eq("Votre action n'a pas été effectuée, ce dossier fait parti d'un traitement de masse.") }
+    end
+  end
+
+  describe '#extend_conservation and restore' do
+    subject { post :extend_conservation_and_restore, params: { procedure_id: procedure.id, dossier_id: dossier.id } }
+
+    before do
+      dossier.update(hidden_by_expired_at: 1.hour.ago, hidden_by_reason: 'expired')
+    end
+
+    context 'when dossier has expired but was not hidden by anyone' do
+      it 'works' do
+        expect(subject).to redirect_to(instructeur_dossier_path(procedure, dossier))
+      end
+
+      it 'extends conservation_extension by 1 month and let dossier not hidden' do
+        subject
+        expect(dossier.reload.conservation_extension).to eq(1.month)
+        expect(dossier.reload.hidden_by_reason).to eq(nil)
+        expect(dossier.reload.hidden_by_expired_at).to eq(nil)
+        expect(dossier.reload.hidden_by_administration_at).to eq(nil)
+        expect(dossier.reload.hidden_by_user_at).to eq(nil)
+      end
+
+      it 'flashed notice success' do
+        subject
+        expect(flash[:notice]).to eq(I18n.t('views.instructeurs.dossiers.archived_dossier'))
+      end
+    end
+
+    context 'when dossier has expired and was hidden by instructeur' do
+      let!(:dossier) { create(:dossier, :hidden_by_administration, :accepte, :with_individual, procedure: procedure) }
+
+      it 'extends conservation_extension by 1 month and restore dossier for instructeur' do
+        subject
+        expect(dossier.reload.conservation_extension).to eq(1.month)
+        expect(dossier.reload.hidden_by_reason).to eq(nil)
+        expect(dossier.reload.hidden_by_expired_at).to eq(nil)
+        expect(dossier.reload.hidden_by_administration_at).to eq(nil)
+        expect(dossier.reload.hidden_by_user_at).to eq(nil)
+      end
+    end
+
+    context 'when dossier has expired and was hidden by user' do
+      let!(:dossier) { create(:dossier, :hidden_by_user, :accepte, :with_individual, procedure: procedure) }
+      it 'extends conservation_extension by 1 month and let dossier hidden for user' do
+        subject
+        expect(dossier.reload.conservation_extension).to eq(1.month)
+        expect(dossier.reload.hidden_by_reason).to eq("user_request")
+        expect(dossier.reload.hidden_by_expired_at).to eq(nil)
+        expect(dossier.reload.hidden_by_administration_at).to eq(nil)
+        expect(dossier.reload.hidden_by_user_at).not_to eq(nil)
+      end
+    end
+
+    context 'when dossier has expired and was hidden by user and instructeur' do
+      let!(:dossier) { create(:dossier, :hidden_by_user, :hidden_by_administration, :accepte, :with_individual, procedure: procedure) }
+      it 'extends conservation_extension by 1 month and let dossier hidden for user' do
+        subject
+        expect(dossier.reload.conservation_extension).to eq(1.month)
+        expect(dossier.reload.hidden_by_reason).to eq("user_request")
+        expect(dossier.reload.hidden_by_expired_at).to eq(nil)
+        expect(dossier.reload.hidden_by_administration_at).to eq(nil)
+        expect(dossier.reload.hidden_by_user_at).not_to eq(nil)
+      end
     end
   end
 
@@ -1399,25 +1483,85 @@ describe Instructeurs::DossiersController, type: :controller do
   describe '#pieces_jointes' do
     let(:procedure) { create(:procedure, :published, types_de_champ_public: [{ type: :piece_justificative }], instructeurs:) }
     let(:dossier) { create(:dossier, :en_construction, :with_populated_champs, procedure: procedure) }
-    let(:path) { 'spec/fixtures/files/logo_test_procedure.png' }
+    let(:logo_path) { 'spec/fixtures/files/logo_test_procedure.png' }
+    let(:rib_path) { 'spec/fixtures/files/RIB.pdf' }
+    let(:commentaire) { create(:commentaire, dossier: dossier) }
+    let(:expert) { create(:expert) }
+    let(:experts_procedure) { create(:experts_procedure, expert: expert, procedure: procedure) }
+    let(:avis) { create(:avis, :with_answer, :with_piece_justificative, dossier: dossier, claimant: expert, experts_procedure: experts_procedure) }
 
     before do
       dossier.champs.first.piece_justificative_file.attach(
-        io: File.open(path),
+        io: File.open(logo_path),
         filename: "logo_test_procedure.png",
         content_type: "image/png",
         metadata: { virus_scan_result: ActiveStorage::VirusScanner::SAFE }
       )
+
+      commentaire.piece_jointe.attach(
+        io: File.open(rib_path),
+        filename: "RIB.pdf",
+        content_type: "application/pdf",
+        metadata: { virus_scan_result: ActiveStorage::VirusScanner::SAFE }
+      )
+
+      avis.piece_justificative_file.attach(
+        io: File.open(rib_path),
+        filename: "RIB.pdf",
+        content_type: "application/pdf",
+        metadata: { virus_scan_result: ActiveStorage::VirusScanner::SAFE }
+      )
+
       get :pieces_jointes, params: {
         procedure_id: procedure.id,
         dossier_id: dossier.id
       }
     end
 
-    it do
+    it 'returns pieces jointes from champs, messagerie and avis' do
       expect(response.body).to include('Télécharger le fichier toto.txt')
       expect(response.body).to include('Télécharger le fichier logo_test_procedure.png')
+      expect(response.body).to include('Télécharger le fichier RIB.pdf')
       expect(response.body).to include('Visualiser')
+      expect(response.body).to include('Pièce jointe au message')
+      expect(response.body).to include('Pièce jointe à l’avis')
+      expect(assigns(:gallery_attachments).count).to eq 4
+      expect(assigns(:gallery_attachments)).to all(be_a(ActiveStorage::Attachment))
+      expect([Champs::PieceJustificativeChamp, Champs::TitreIdentiteChamp, Commentaire, Avis]).to include(*assigns(:gallery_attachments).map { _1.record.class })
+    end
+  end
+
+  describe 'dossier_labels' do
+    let(:procedure) { create(:procedure, :with_labels, instructeurs: [instructeur]) }
+    let!(:dossier) { create(:dossier, :en_construction, procedure:) }
+    context 'it create dossier labels' do
+      subject { post :dossier_labels, params: { procedure_id: procedure.id, dossier_id: dossier.id, label_id: [Label.first.id] }, format: :turbo_stream }
+      it 'works' do
+        subject
+        dossier.reload
+
+        expect(dossier.dossier_labels.count).to eq(1)
+        expect(subject.body).to include('fr-tag--purple-glycine')
+        expect(subject.body).not_to include('Ajouter un label')
+      end
+    end
+
+    context 'it remove dossier labels' do
+      before do
+        DossierLabel.create(dossier_id: dossier.id, label_id: dossier.procedure.labels.first.id)
+      end
+
+      subject { post :dossier_labels, params: { procedure_id: procedure.id, dossier_id: dossier.id, label_id: [] }, format: :turbo_stream }
+
+      it 'works' do
+        expect(dossier.dossier_labels.count).to eq(1)
+
+        subject
+        dossier.reload
+
+        expect(dossier.dossier_labels.count).to eq(0)
+        expect(subject.body).to include('Ajouter un label')
+      end
     end
   end
 end

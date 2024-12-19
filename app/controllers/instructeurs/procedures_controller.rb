@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Instructeurs
   class ProceduresController < InstructeurController
     before_action :ensure_ownership!, except: [:index]
@@ -36,7 +38,7 @@ module Instructeurs
       @dossiers_archived_count_per_procedure = dossiers.by_statut('archives').group('groupe_instructeurs.procedure_id').count
       @dossiers_termines_count_per_procedure = dossiers.by_statut('traites').group('groupe_instructeurs.procedure_id').reorder(nil).count
       @dossiers_expirant_count_per_procedure = dossiers.by_statut('expirant').group('groupe_instructeurs.procedure_id').count
-      @dossiers_supprimes_recemment_count_per_procedure = dossiers.by_statut('supprimes_recemment').group('groupe_instructeurs.procedure_id').reorder(nil).count
+      @dossiers_supprimes_count_per_procedure = dossiers.by_statut('supprimes').group('groupe_instructeurs.procedure_id').reorder(nil).count
 
       groupe_ids = current_instructeur.groupe_instructeurs.pluck(:id)
       @followed_dossiers_count_per_procedure = current_instructeur
@@ -56,7 +58,7 @@ module Instructeurs
         t('.all') => @dossiers_count_per_procedure.sum { |_, v| v },
         t('.dossiers_close_to_expiration') => @dossiers_expirant_count_per_procedure.sum { |_, v| v },
         t('.archived') => @dossiers_archived_count_per_procedure.sum { |_, v| v },
-        t('.dossiers_supprimes_recemment') => @dossiers_supprimes_recemment_count_per_procedure.sum { |_, v| v }
+        t('.dossiers_supprimes') => @dossiers_supprimes_count_per_procedure.sum { |_, v| v }
       }
 
       @procedure_ids_en_cours_with_notifications = current_instructeur.procedure_ids_with_notifications(:en_cours)
@@ -71,8 +73,7 @@ module Instructeurs
       # Setting it here to make clear that it is used by the view
       @procedure_presentation = procedure_presentation
 
-      @current_filters = current_filters
-      @displayable_fields_for_select, @displayable_fields_selected = procedure_presentation.displayable_fields_for_select
+      @current_filters = procedure_presentation.filters_for(statut)
       @counts = current_instructeur
         .dossiers_count_summary(groupe_instructeur_ids)
         .symbolize_keys
@@ -94,9 +95,7 @@ module Instructeurs
 
       @has_export_notification = notify_exports?
       @last_export = last_export_for(statut)
-
-      @filtered_sorted_ids = procedure_presentation.filtered_sorted_ids(dossiers, statut, count: dossiers_count)
-
+      @filtered_sorted_ids = DossierFilterService.filtered_sorted_ids(dossiers, statut, procedure_presentation.filters_for(statut), procedure_presentation.sorted_column, current_instructeur, count: dossiers_count)
       page = params[:page].presence || 1
 
       @dossiers_count = @filtered_sorted_ids.size
@@ -105,7 +104,7 @@ module Instructeurs
         .page(page)
         .per(ITEMS_PER_PAGE)
 
-      @projected_dossiers = DossierProjectionService.project(@filtered_sorted_paginated_ids, procedure_presentation.displayed_fields)
+      @projected_dossiers = DossierProjectionService.project(@filtered_sorted_paginated_ids, procedure_presentation.displayed_columns)
       @disable_checkbox_all = @projected_dossiers.all? { _1.batch_operation_id.present? }
 
       @batch_operations = BatchOperation.joins(:groupe_instructeurs)
@@ -121,9 +120,9 @@ module Instructeurs
         .order(:dossier_id)
         .page params[:page]
 
-      @a_suivre_count, @suivis_count, @traites_count, @tous_count, @archives_count, @supprimes_recemment_count, @expirant_count = current_instructeur
+      @a_suivre_count, @suivis_count, @traites_count, @tous_count, @archives_count, @supprimes_count, @expirant_count = current_instructeur
         .dossiers_count_summary(groupe_instructeur_ids)
-        .fetch_values('a_suivre', 'suivis', 'traites', 'tous', 'archives', 'supprimes_recemment', 'expirant')
+        .fetch_values('a_suivre', 'suivis', 'traites', 'tous', 'archives', 'supprimes', 'expirant')
       @can_download_dossiers = (@tous_count + @archives_count) > 0 && !instructeur_as_manager?
 
       notifications = current_instructeur.notifications_for_groupe_instructeurs(groupe_instructeur_ids)
@@ -131,40 +130,6 @@ module Instructeurs
       @has_termine_notifications = notifications[:termines].present?
 
       @statut = 'supprime'
-    end
-
-    def update_displayed_fields
-      values = params['values'].presence || []
-      procedure_presentation.update_displayed_fields(values)
-
-      redirect_back(fallback_location: instructeur_procedure_url(procedure))
-    end
-
-    def update_sort
-      procedure_presentation.update_sort(params[:table], params[:column], params[:order])
-
-      redirect_back(fallback_location: instructeur_procedure_url(procedure))
-    end
-
-    def add_filter
-      if !procedure_presentation.add_filter(statut, params[:field], params[:value])
-        flash.alert = procedure_presentation.errors.full_messages
-      end
-
-      redirect_back(fallback_location: instructeur_procedure_url(procedure))
-    end
-
-    def update_filter
-      @statut = statut
-      @procedure = procedure
-      @procedure_presentation = procedure_presentation
-      @field = params[:field]
-    end
-
-    def remove_filter
-      procedure_presentation.remove_filter(statut, params[:field], params[:value])
-
-      redirect_back(fallback_location: instructeur_procedure_url(procedure))
     end
 
     def download_export
@@ -367,19 +332,20 @@ module Instructeurs
     end
 
     def procedure_presentation
-      @procedure_presentation ||= get_procedure_presentation
-    end
+      @procedure_presentation ||= begin
+        procedure_presentation, errors = current_instructeur.procedure_presentation_and_errors_for_procedure_id(procedure_id)
 
-    def get_procedure_presentation
-      procedure_presentation, errors = current_instructeur.procedure_presentation_and_errors_for_procedure_id(procedure_id)
-      if errors.present?
-        flash[:alert] = "Votre affichage a dû être réinitialisé en raison du problème suivant : " + errors.full_messages.join(', ')
+        if errors.present?
+          msg = "Votre affichage a dû être réinitialisé en raison du problème suivant : " + errors.full_messages.join(', ')
+          if request.get?
+            flash.now[:alert] = msg
+          else
+            flash[:alert] = msg
+          end
+        end
+
+        procedure_presentation
       end
-      procedure_presentation
-    end
-
-    def current_filters
-      @current_filters ||= procedure_presentation.filters.fetch(statut, [])
     end
 
     def bulk_message_params

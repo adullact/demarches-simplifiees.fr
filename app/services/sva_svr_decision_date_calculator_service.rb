@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SVASVRDecisionDateCalculatorService
   attr_reader :dossier, :procedure, :unit, :period, :resume_method
 
@@ -57,7 +59,7 @@ class SVASVRDecisionDateCalculatorService
   end
 
   def latest_correction_date
-    correction_date dossier.corrections.max_by(&:resolved_at)
+    correction_date dossier.corrections.max_by { _1.resolved_at || Time.current }
   end
 
   def calculate_correction_delay(start_date)

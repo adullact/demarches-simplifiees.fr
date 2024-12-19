@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 describe AttachmentsController, type: :controller do
   let(:user) { create(:user) }
   let(:attachment) { champ.piece_justificative_file.attachments.first }
-  let(:dossier) { create(:dossier, user: user) }
-  let(:champ) { create(:champ_piece_justificative, dossier_id: dossier.id) }
+  let(:procedure) { create(:procedure, types_de_champ_public: [{ type: :piece_justificative }]) }
+  let(:dossier) { create(:dossier, :with_populated_champs, user:, procedure:) }
+  let(:champ) { dossier.champs.first }
   let(:signed_id) { attachment.blob.signed_id }
 
   describe '#show' do
@@ -46,12 +49,10 @@ describe AttachmentsController, type: :controller do
     render_views
 
     let(:attachment) { champ.piece_justificative_file.attachments.first }
-    let(:dossier) { create(:dossier, user: user) }
-    let(:champ) { create(:champ_piece_justificative, dossier_id: dossier.id) }
     let(:signed_id) { attachment.blob.signed_id }
 
     subject do
-      delete :destroy, params: { id: attachment.id, signed_id: signed_id }, format: :turbo_stream
+      delete :destroy, params: { id: attachment.id, signed_id: signed_id, dossier_id: dossier.id, stable_id: champ.stable_id }, format: :turbo_stream
     end
 
     context "when authenticated" do

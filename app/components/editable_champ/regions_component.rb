@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class EditableChamp::RegionsComponent < EditableChamp::EditableChampBaseComponent
   include ApplicationHelper
 
@@ -8,7 +10,7 @@ class EditableChamp::RegionsComponent < EditableChamp::EditableChampBaseComponen
   private
 
   def options
-    APIGeoService.regions.map { [_1[:name], _1[:code]] }
+    APIGeoService.region_options
   end
 
   def select_options

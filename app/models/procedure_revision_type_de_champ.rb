@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ProcedureRevisionTypeDeChamp < ApplicationRecord
   belongs_to :revision, class_name: 'ProcedureRevision'
   belongs_to :type_de_champ
@@ -11,7 +13,7 @@ class ProcedureRevisionTypeDeChamp < ApplicationRecord
   scope :public_only, -> { joins(:type_de_champ).where(types_de_champ: { private: false }) }
   scope :private_only, -> { joins(:type_de_champ).where(types_de_champ: { private: true }) }
 
-  delegate :stable_id, :libelle, :description, :type_champ, :mandatory?, :private?, :to_typed_id, to: :type_de_champ
+  delegate :stable_id, :libelle, :description, :type_champ, :header_section?, :mandatory?, :private?, :to_typed_id, to: :type_de_champ
 
   def child?
     parent_id.present?
@@ -30,8 +32,8 @@ class ProcedureRevisionTypeDeChamp < ApplicationRecord
   end
 
   def siblings
-    if parent_id.present?
-      revision.revision_types_de_champ.where(parent_id: parent_id).ordered
+    if child?
+      revision.revision_types_de_champ.where(parent_id:).ordered
     elsif private?
       revision.revision_types_de_champ_private
     else
@@ -73,7 +75,7 @@ class ProcedureRevisionTypeDeChamp < ApplicationRecord
   end
 
   def used_by_routing_rules?
-    stable_id.in?(procedure.stable_ids_used_by_routing_rules)
+    procedure.used_by_routing_rules?(type_de_champ)
   end
 
   def used_by_ineligibilite_rules?

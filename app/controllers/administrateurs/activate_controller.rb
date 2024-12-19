@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Administrateurs::ActivateController < ApplicationController
   include TrustedDeviceConcern
 
@@ -26,6 +28,8 @@ class Administrateurs::ActivateController < ApplicationController
     })
 
     if user&.errors&.empty?
+      user.update!(email_verified_at: Time.zone.now)
+
       sign_in(user, scope: :user)
 
       flash.notice = "Mot de passe enregistré"

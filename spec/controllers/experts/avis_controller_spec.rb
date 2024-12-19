@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Experts::AvisController, type: :controller do
   context 'with an expert signed in' do
     render_views
@@ -8,7 +10,8 @@ describe Experts::AvisController, type: :controller do
     let(:another_instructeur) { create(:instructeur) }
     let(:claimant) { create(:expert) }
     let(:expert) { create(:expert) }
-    let(:procedure) { create(:procedure, :published, instructeurs: [instructeur, another_instructeur, instructeur_with_instant_avis_notification]) }
+    let(:types_de_champ_public) { [] }
+    let(:procedure) { create(:procedure, :published, instructeurs: [instructeur, another_instructeur, instructeur_with_instant_avis_notification], types_de_champ_public:) }
     let(:procedure_id) { procedure.id }
     let(:another_procedure) { create(:procedure, :published, instructeurs: [instructeur]) }
     let(:dossier) { create(:dossier, :en_construction, procedure:) }
@@ -398,7 +401,7 @@ describe Experts::AvisController, type: :controller do
 
         it do
           expect(response).to render_template :instruction
-          expect(flash.alert).to eq(["toto.fr : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : john.doe@exemple.fr"])
+          expect(flash.alert).to eq(["toto.fr : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : adresse@mail.com"])
           expect(Avis.last).to eq(previous_avis)
           expect(dossier.last_avis_updated_at).to eq(nil)
         end
@@ -429,7 +432,7 @@ describe Experts::AvisController, type: :controller do
 
         it do
           expect(response).to render_template :instruction
-          expect(flash.alert).to eq(["toto.fr : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : john.doe@exemple.fr"])
+          expect(flash.alert).to eq(["toto.fr : Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : adresse@mail.com"])
           expect(flash.notice).to eq("Une demande d’avis a été envoyée à titi@titimail.com")
           expect(Avis.count).to eq(old_avis_count + 1)
         end
@@ -464,7 +467,8 @@ describe Experts::AvisController, type: :controller do
       end
 
       context 'with linked dossiers' do
-        let(:dossier) { create(:dossier, :en_construction, :with_dossier_link, procedure: procedure) }
+        let(:types_de_champ_public) { [{ type: :dossier_link }] }
+        let(:dossier) { create(:dossier, :en_construction, :with_populated_champs, procedure:) }
 
         context 'when the expert doesn’t share linked dossiers' do
           let(:invite_linked_dossiers) { false }
@@ -479,7 +483,7 @@ describe Experts::AvisController, type: :controller do
         context 'when the expert also shares the linked dossiers' do
           context 'and the expert can access the linked dossiers' do
             let(:created_avis) { create(:avis, dossier: dossier, claimant: claimant, email: "toto3@gmail.com") }
-            let(:linked_dossier) { Dossier.find_by(id: dossier.reload.champs_public.filter(&:dossier_link?).filter_map(&:value)) }
+            let(:linked_dossier) { Dossier.find_by(id: dossier.reload.project_champs_public.filter(&:dossier_link?).filter_map(&:value)) }
             let(:linked_avis) { create(:avis, dossier: linked_dossier, claimant: claimant) }
             let(:invite_linked_dossiers) { true }
 
@@ -594,7 +598,7 @@ describe Experts::AvisController, type: :controller do
 
       context 'with a random avis, procedure and user' do
         let(:avis_id) { create(:avis).id }
-        let(:random_user) { create(:user) }
+        let(:random_user) { create(:user, password: '{Another-$3cure-p4ssWord}') }
         let(:email) { random_user.email }
 
         it 'doesn’t change the random user password' do
@@ -609,7 +613,7 @@ describe Experts::AvisController, type: :controller do
         let(:avis) { create(:avis) }
         let(:avis_id) { avis.id }
         let(:procedure_id) { avis.procedure.id }
-        let(:random_user) { create(:user) }
+        let(:random_user) { create(:user, password: '{Another-$3cure-p4ssWord}') }
         let(:email) { random_user.email }
 
         it 'doesn’t change the random user password' do
@@ -625,7 +629,7 @@ describe Experts::AvisController, type: :controller do
 
         it 'doesn’t change the expert password' do
           subject
-          expect(expert.user.reload.valid_password?(SECURE_PASSWORD)).to be false
+          expect(expert.user.reload.valid_password?('{Another-$3cure-p4ssWord}')).to be false
         end
 
         it { is_expected.to redirect_to new_user_session_url }

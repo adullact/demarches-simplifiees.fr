@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class DossierType < Types::BaseObject
     class DossierState < Types::BaseEnum
@@ -103,14 +105,10 @@ module Types
     def connection_usager
       if object.user_deleted?
         :deleted
+      elsif object.user_from_france_connect?
+        :france_connect
       else
-        user_loader.then do |_user|
-          if object.user_from_france_connect?
-            :france_connect
-          else
-            :password
-          end
-        end
+        :password
       end
     end
 
@@ -118,7 +116,7 @@ module Types
       if object.user_deleted?
         { email: object.user_email_for(:display), id: '<deleted>' }
       else
-        user_loader
+        object.user
       end
     end
 
@@ -168,7 +166,7 @@ module Types
           .for(object, private: false)
           .load(ApplicationRecord.id_from_typed_id(id))
       else
-        object.champs_for_revision(scope: :public, root: true).filter(&:visible?)
+        object.project_champs_public.filter(&:visible?)
       end
     end
 
@@ -178,7 +176,7 @@ module Types
           .for(object, private: true)
           .load(ApplicationRecord.id_from_typed_id(id))
       else
-        object.champs_for_revision(scope: :private, root: true).filter(&:visible?)
+        object.project_champs_private.filter(&:visible?)
       end
     end
 
@@ -218,12 +216,6 @@ module Types
 
     def self.authorized?(object, context)
       context.authorized_demarche?(object.revision.procedure)
-    end
-
-    private
-
-    def user_loader
-      Loaders::Record.for(User, includes: :france_connect_informations).load(object.user_id)
     end
   end
 end

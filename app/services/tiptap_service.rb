@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TiptapService
   # NOTE: node must be deep symbolized keys
   def self.used_tags_and_libelle_for(node, tags = Set.new)
@@ -16,13 +18,13 @@ class TiptapService
   def to_html(node, substitutions = {})
     return '' if node.nil?
 
-    children(node[:content], substitutions, 0)
+    children(node[:content], substitutions, 0).gsub('<p></p>', '')
   end
 
-  def to_path(node, substitutions = {})
+  def to_texts_and_tags(node, substitutions = {})
     return '' if node.nil?
 
-    children_path(node[:content], substitutions)
+    children_texts_and_tags(node[:content], substitutions)
   end
 
   private
@@ -31,18 +33,24 @@ class TiptapService
     @body_started = false
   end
 
-  def children_path(content, substitutions)
-    content.map { node_to_path(_1, substitutions) }.join
+  def children_texts_and_tags(content, substitutions)
+    content.map { node_to_texts_and_tags(_1, substitutions) }.join
   end
 
-  def node_to_path(node, substitutions)
+  def node_to_texts_and_tags(node, substitutions)
     case node
     in type: 'paragraph', content:
-      children_path(content, substitutions)
-    in type: 'text', text:, **rest
+      children_texts_and_tags(content, substitutions)
+    in type: 'paragraph' # empty paragraph
+      ''
+    in type: 'text', text:
       text.strip
-    in type: 'mention', attrs: { id: }, **rest
-      substitutions.fetch(id) { "--#{id}--" }
+    in type: 'mention', attrs: { id:, label: }
+      if substitutions.present?
+        substitutions.fetch(id) { "--#{id}--" }
+      else
+        "<span class='fr-tag fr-tag--sm'>#{label}</span>"
+      end
     end
   end
 
@@ -71,10 +79,16 @@ class TiptapService
       "<h#{hlevel}#{body_start_mark}#{text_align(attrs)}>#{children(content, substitutions, level + 1)}</h#{hlevel}>"
     in type: 'bulletList', content:
       "<ul>#{children(content, substitutions, level + 1)}</ul>"
-    in type: 'orderedList', content:
-      "<ol>#{children(content, substitutions, level + 1)}</ol>"
+    in type: 'orderedList', content:, **rest
+      "<ol#{class_list(rest[:attrs])}>#{children(content, substitutions, level + 1)}</ol>"
     in type: 'listItem', content:
       "<li>#{children(content, substitutions, level + 1)}</li>"
+    in type: 'descriptionList', content:
+      "<dl>#{children(content, substitutions, level + 1)}</dl>"
+    in type: 'descriptionTerm', content:, **rest
+      "<dt#{class_list(rest[:attrs])}>#{children(content, substitutions, level + 1)}</dt>"
+    in type: 'descriptionDetails', content:
+      "<dd>#{children(content, substitutions, level + 1)}</dd>"
     in type: 'text', text:, **rest
       if rest[:marks].present?
         apply_marks(text, rest[:marks])
@@ -82,7 +96,12 @@ class TiptapService
         text
       end
     in type: 'mention', attrs: { id: }, **rest
-      text = substitutions.fetch(id) { "--#{id}--" }
+      text_or_presentation = substitutions.fetch(id) { "--#{id}--" }
+      text = if text_or_presentation.respond_to?(:to_tiptap_node)
+        handle_presentation_node(text_or_presentation, substitutions, level + 1)
+      else
+        text_or_presentation
+      end
 
       if rest[:marks].present?
         apply_marks(text, rest[:marks])
@@ -94,11 +113,27 @@ class TiptapService
     end
   end
 
+  def handle_presentation_node(presentation, substitutions, level)
+    node = presentation.to_tiptap_node
+    content = node_to_html(node, substitutions, level)
+    if presentation.block_level?
+      "</p>#{content}<p>"
+    else
+      content
+    end
+  end
+
   def text_align(attrs)
     if attrs.present? && attrs[:textAlign].present?
       " style=\"text-align: #{attrs[:textAlign]}\""
     else
       ""
+    end
+  end
+
+  def class_list(attrs)
+    if attrs.present? && attrs[:class].present?
+      " class=\"#{attrs[:class]}\""
     end
   end
 

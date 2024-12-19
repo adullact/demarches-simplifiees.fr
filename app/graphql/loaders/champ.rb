@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # references:
 # https://github.com/Shopify/graphql-batch/blob/master/examples/record_loader.rb
 
@@ -19,9 +21,7 @@ module Loaders
     private
 
     def query(keys)
-      ::Champ.where(@where)
-        .includes(:type_de_champ)
-        .where(types_de_champ: { stable_id: keys })
+      ::Champ.where(@where).where(stable_id: keys)
     end
   end
 end

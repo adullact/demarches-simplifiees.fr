@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ChampConditionalConcern
   extend ActiveSupport::Concern
 
@@ -28,7 +30,7 @@ module ChampConditionalConcern
     private
 
     def champs_for_condition
-      dossier.champs.filter { _1.row_id.nil? || _1.row_id == row_id }
+      dossier.filled_champs.filter { _1.row_id.nil? || _1.row_id == row_id }
     end
   end
 end

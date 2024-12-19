@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 're_routing_dossiers' do
   describe 'run' do
     include Logic
@@ -12,9 +14,9 @@ describe 're_routing_dossiers' do
 
       dossier2.champs.last.update(value: 'Allier')
 
-      tdc = procedure.active_revision.routable_types_de_champ.first
+      tdc = procedure.active_revision.simple_routable_types_de_champ.first
 
-      tdc_options = APIGeoService.departements.map { ["#{_1[:code]} – #{_1[:name]}", _1[:code]] }
+      tdc_options = APIGeoService.departement_options
 
       rule_operator = :ds_eq
 

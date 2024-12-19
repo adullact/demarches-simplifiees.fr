@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Dsfr
   module InputErrorable
     extend ActiveSupport::Concern
@@ -21,7 +23,7 @@ module Dsfr
 
         {
           "#{dsfr_group_classname}--error" => errors_on_attribute?,
-          "#{dsfr_group_classname}--valid" => !errors_on_attribute? && errors_on_another_attribute?
+          "#{dsfr_group_classname}--valid" => !errors_on_attribute? && errors_on_another_attribute? && object.public_send(attribute).present?
         }
       end
 
@@ -49,9 +51,9 @@ module Dsfr
       def attribute_or_rich_body
         case @input_type
         when :rich_text_area
-          @attribute.to_s.sub(/\Arich_/, '').to_sym
+          attribute.to_s.sub(/\Arich_/, '').to_sym
         else
-          @attribute
+          attribute
         end
       end
 
@@ -127,6 +129,8 @@ module Dsfr
         end
       end
 
+      def hint? = hint.present?
+
       def password?
         false
       end
@@ -141,15 +145,6 @@ module Dsfr
 
       def hintable?
         false
-      end
-
-      def hint?
-        return true if get_slot(:hint).present?
-
-        maybe_hint = I18n.exists?("activerecord.attributes.#{object.class.name.underscore}.hints.#{@attribute}")
-        maybe_hint_html = I18n.exists?("activerecord.attributes.#{object.class.name.underscore}.hints.#{@attribute}_html")
-
-        maybe_hint || maybe_hint_html
       end
     end
   end

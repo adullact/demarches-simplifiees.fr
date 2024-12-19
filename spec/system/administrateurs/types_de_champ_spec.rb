@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'As an administrateur I can edit types de champ', js: true do
   include ActionView::RecordIdentifier
 
@@ -53,7 +55,7 @@ describe 'As an administrateur I can edit types de champ', js: true do
 
     # Champs can be deleted
     within '.type-de-champ:nth-child(3)' do
-      page.accept_alert do
+      accept_alert do
         click_on 'Supprimer'
       end
     end
@@ -78,7 +80,7 @@ describe 'As an administrateur I can edit types de champ', js: true do
 
     page.refresh
 
-    page.accept_alert do
+    accept_alert do
       click_on 'Supprimer'
     end
     expect(page).to have_content('Formulaire enregistré')
@@ -160,7 +162,7 @@ describe 'As an administrateur I can edit types de champ', js: true do
     fill_in 'Options de la liste', with: 'Un menu', fill_options: { clear: :backspace }
     check "Proposer une option « autre » avec un texte libre"
 
-    wait_until { procedure.active_revision.types_de_champ_public.first.drop_down_list_options == ['', 'Un menu'] }
+    wait_until { procedure.active_revision.types_de_champ_public.first.drop_down_options == ['Un menu'] }
     wait_until { procedure.active_revision.types_de_champ_public.first.drop_down_other == "1" }
     expect(page).to have_content('Formulaire enregistré')
 
@@ -184,7 +186,7 @@ describe 'As an administrateur I can edit types de champ', js: true do
       expect(page).to have_content('Durée de remplissage estimée : 2 min')
 
       # It updates the estimate when removing the champ
-      page.accept_alert do
+      accept_alert do
         click_on 'Supprimer'
       end
       expect(page).not_to have_content('Durée de remplissage estimée')
@@ -224,7 +226,7 @@ describe 'As an administrateur I can edit types de champ', js: true do
       select('Titre de niveau 2', from: dom_id(second_header, :header_section_level))
 
       within(".types-de-champ-block li:first-child") do
-        page.accept_alert do
+        accept_alert do
           click_on 'Supprimer'
         end
       end
@@ -349,6 +351,66 @@ describe 'As an administrateur I can edit types de champ', js: true do
           expect(page).to have_selector("##{ActionView::RecordIdentifier.dom_id(coordinate, :type_de_champ_editor)} .position", text: coordinate.position + 1)
         end
       end
+    end
+  end
+
+  context "unpublished changes navbar" do
+    let(:procedure) { create(:procedure, :published) }
+
+    before do
+      login_as administrateur.user, scope: :user
+      visit champs_admin_procedure_path(procedure)
+    end
+
+    scenario "navbar behavior for published and unpublished procedures" do
+      expect(page).not_to have_selector('.sticky-header.sticky-header-warning')
+
+      # Ajouter le premier champ
+      find('.fr-btn.fr-btn--secondary.fr-btn--icon-left.fr-icon-add-line', match: :first).click
+      fill_in 'Libellé du champ', with: 'Premier champ'
+      expect(page).to have_selector('.sticky-header.sticky-header-warning')
+      expect(page).to have_content("Les modifications effectuées ne seront visibles qu'à la prochaine publication")
+      expect(page).to have_link('Publier les modifications')
+
+      expect(page).to have_field('Libellé du champ', with: 'Premier champ')
+
+      # Ajouter le deuxième champ
+      find('.fr-btn.fr-btn--secondary.fr-btn--icon-left.fr-icon-add-line', match: :first).click
+
+      expect(page).to have_selector('.type-de-champ', count: 2, wait: 5)
+
+      within all('.type-de-champ').last do
+        fill_in 'Libellé du champ', with: 'Deuxième champ'
+        select 'Choix simple', from: 'Type de champ'
+        fill_in "Options de la liste", with: "" # make tdc invalid
+      end
+
+      expect(page).to have_field('Libellé du champ', with: 'Premier champ')
+      expect(page).to have_field('Libellé du champ', with: 'Deuxième champ')
+
+      expect(page).to have_selector('.sticky-header.sticky-header-warning')
+      expect(page).to have_content("Les modifications effectuées ne seront visibles qu'à la prochaine publication")
+      expect(page).to have_button('Publier les modifications', disabled: true)
+
+      # Supprime dernier champ
+      accept_alert do
+        all('.fr-btn--tertiary-no-outline[title="Supprimer le champ"]').last.click
+      end
+
+      expect(page).to have_selector('.type-de-champ', count: 1, wait: 5)
+
+      accept_alert do
+        click_on "Publier les modifications"
+      end
+
+      expect(page).to have_content("démarche publiée")
+
+      unpublished_procedure = create(:procedure)
+      visit champs_admin_procedure_path(unpublished_procedure)
+
+      find('.fr-btn.fr-btn--secondary.fr-btn--icon-left.fr-icon-add-line', match: :first).click
+      fill_in 'Libellé du champ', with: 'Nouveau champ'
+      expect(page).not_to have_selector('.sticky-header.sticky-header-warning')
     end
   end
 end

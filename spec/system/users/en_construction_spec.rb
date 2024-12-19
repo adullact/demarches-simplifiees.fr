@@ -1,4 +1,6 @@
-describe "Dossier en_construction" do
+# frozen_string_literal: true
+
+describe "Dossier en_construction", js: true do
   let(:user) { create(:user) }
   let(:procedure) { create(:procedure, :for_individual, types_de_champ_public: [{ type: :piece_justificative }, { type: :titre_identite }]) }
   let(:dossier) { create(:dossier, :en_construction, :with_individual, :with_populated_champs, user:, procedure:) }
@@ -8,16 +10,16 @@ describe "Dossier en_construction" do
   }
 
   let(:champ) {
-    dossier.find_editing_fork(dossier.user).champs_public.find { _1.type_de_champ_id == tdc.id }
+    dossier.find_editing_fork(dossier.user).project_champs_public.find { _1.stable_id == tdc.stable_id }
   }
 
-  scenario 'delete a non mandatory piece justificative', js: true do
+  scenario 'delete a non mandatory piece justificative' do
     visit_dossier(dossier)
 
     expect(page).not_to have_button("Remplacer")
     click_on "Supprimer le fichier toto.txt"
 
-    wait_until { champ.reload.for_export.blank? }
+    wait_until { champ.reload.blank? }
     expect(page).not_to have_text("toto.txt")
   end
 
@@ -26,18 +28,18 @@ describe "Dossier en_construction" do
       tdc.update_attribute(:mandatory, true)
     end
 
-    scenario 'remplace a mandatory piece justificative', js: true do
+    scenario 'remplace a mandatory piece justificative' do
       visit_dossier(dossier)
 
       click_on "Supprimer le fichier toto.txt"
+      expect(page).not_to have_text("toto.txt")
 
       input_selector = "#attachment-multiple-empty-#{champ.public_id}"
       expect(page).to have_selector(input_selector)
       find(input_selector).attach_file(Rails.root.join('spec/fixtures/files/file.pdf'))
 
-      wait_until { champ.reload.for_export == 'file.pdf' }
+      wait_until { champ.reload.piece_justificative_file.first&.filename == 'file.pdf' }
       expect(page).to have_text("file.pdf")
-      expect(page).not_to have_text("toto.txt")
     end
   end
 
@@ -50,17 +52,17 @@ describe "Dossier en_construction" do
       tdc.update_attribute(:mandatory, true)
     end
 
-    scenario 'remplace a mandatory titre identite', js: true do
+    scenario 'remplace a mandatory titre identite' do
       visit_dossier(dossier)
 
       click_on "Supprimer le fichier toto.png"
+      expect(page).not_to have_text("toto.png")
 
       input_selector = "##{champ.input_id}"
       expect(page).to have_selector(input_selector)
       find(input_selector).attach_file(Rails.root.join('spec/fixtures/files/file.pdf'))
 
       expect(page).to have_text("file.pdf")
-      expect(page).not_to have_text("toto.png")
     end
   end
 

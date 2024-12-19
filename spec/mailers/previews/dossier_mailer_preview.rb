@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Preview all emails at http://localhost:3000/rails/mailers/dossier_mailer
 class DossierMailerPreview < ActionMailer::Preview
   def notify_new_draft
@@ -56,15 +58,15 @@ class DossierMailerPreview < ActionMailer::Preview
   end
 
   def notify_deletion_to_administration
-    DossierMailer.notify_deletion_to_administration(deleted_dossier, administration_email)
+    DossierMailer.notify_deletion_to_administration(dossier, administration_email)
   end
 
   def notify_automatic_deletion_to_user
-    DossierMailer.notify_automatic_deletion_to_user([deleted_dossier, deleted_dossier], usager_email)
+    DossierMailer.notify_automatic_deletion_to_user([dossier, dossier], usager_email)
   end
 
   def notify_automatic_deletion_to_administration
-    DossierMailer.notify_automatic_deletion_to_administration([deleted_dossier, deleted_dossier], administration_email)
+    DossierMailer.notify_automatic_deletion_to_administration([dossier, dossier], administration_email)
   end
 
   def notify_brouillon_not_submitted

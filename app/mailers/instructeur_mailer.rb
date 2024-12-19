@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Preview all emails at http://localhost:3000/rails/mailers/instructeur_mailer
 class InstructeurMailer < ApplicationMailer
   helper MailerHelper
@@ -34,6 +36,8 @@ class InstructeurMailer < ApplicationMailer
     @instructeur_id = instructeur.id
     @login_token = login_token
     subject = "Connexion sécurisée à #{Current.application_name}"
+
+    bypass_unverified_mail_protection!
 
     mail(to: instructeur.email, subject: subject)
   end

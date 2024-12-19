@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 describe Champs::SiretController, type: :controller do
   let(:user) { create(:user) }
   let(:procedure) { create(:procedure, :published, types_de_champ_public: [{ type: :siret }]) }
 
   describe '#show' do
     let(:dossier) { create(:dossier, user: user, procedure: procedure) }
-    let(:champ) { dossier.champs_public.first }
+    let(:champ) { dossier.project_champs_public.first }
 
     let(:champs_public_attributes) do
       champ_attributes = {}

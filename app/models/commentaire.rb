@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Commentaire < ApplicationRecord
   include Discard::Model
   belongs_to :dossier, inverse_of: :commentaires, touch: true, optional: false
@@ -37,7 +39,7 @@ class Commentaire < ApplicationRecord
 
   def redacted_email
     if sent_by_instructeur?
-      if dossier.procedure.feature_enabled?(:hide_instructeur_email)
+      if dossier.procedure.hide_instructeurs_email?
         "Instructeur n° #{instructeur.id}"
       else
         instructeur.email.split('@').first

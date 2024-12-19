@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe AttestationTemplate, type: :model do
   describe 'validates footer length' do
     let(:attestation_template) { build(:attestation_template, footer: footer) }
@@ -73,11 +75,11 @@ describe AttestationTemplate, type: :model do
     end
 
     before do
-      dossier.champs_public
+      dossier.project_champs_public
         .find { |champ| champ.libelle == 'libelleA' }
         .update(value: 'libelle1')
 
-      dossier.champs_public
+      dossier.project_champs_public
         .find { |champ| champ.libelle == 'libelleB' }
         .update(value: 'libelle2')
     end

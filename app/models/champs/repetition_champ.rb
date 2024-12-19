@@ -1,59 +1,30 @@
+# frozen_string_literal: true
+
 class Champs::RepetitionChamp < Champ
-  accepts_nested_attributes_for :champs
+  delegate :libelle_for_export, to: :type_de_champ
 
   def rows
-    dossier
-      .champs_for_revision(scope: type_de_champ)
-      .group_by(&:row_id)
-      .sort
-      .map(&:second)
+    dossier.project_rows_for(type_de_champ)
   end
 
   def row_ids
-    rows.map { _1.first.row_id }
+    dossier.repetition_row_ids(type_de_champ)
   end
 
-  def add_row(revision)
-    added_champs = []
-    transaction do
-      row_id = ULID.generate
-      revision.children_of(type_de_champ).each do |type_de_champ|
-        added_champs << type_de_champ.build_champ(row_id:)
-      end
-      self.champs << added_champs
-    end
-    added_champs
+  def add_row(updated_by:)
+    dossier.repetition_add_row(type_de_champ, updated_by:)
   end
 
-  def remove_row(row_id)
-    dossier.champs.where(row_id:).destroy_all
-    dossier.champs.reload
+  def remove_row(row_id, updated_by:)
+    dossier.repetition_remove_row(type_de_champ, row_id, updated_by:)
   end
 
   def focusable_input_id
     rows.last&.first&.focusable_input_id
   end
 
-  def blank?
-    champs.empty?
-  end
-
   def search_terms
     # The user cannot enter any information here so it doesn’t make much sense to search
-  end
-
-  def for_tag(path = :value)
-    ([libelle] + rows.map do |champs|
-      champs.map do |champ|
-        "#{champ.libelle} : #{champ}"
-      end.join("\n")
-    end).join("\n\n")
-  end
-
-  def rows_for_export
-    row_ids.map.with_index(1) do |row_id, index|
-      Champs::RepetitionChamp::Row.new(index:, row_id:, dossier:)
-    end
   end
 
   class Row < Hashie::Dash
@@ -69,11 +40,11 @@ class Champs::RepetitionChamp < Champ
       self[attribute]
     end
 
-    def spreadsheet_columns(types_de_champ)
+    def spreadsheet_columns(types_de_champ, export_template: nil, format:)
       [
         ['Dossier ID', :dossier_id],
         ['Ligne', :index]
-      ] + dossier.champs_for_export(types_de_champ, row_id)
+      ] + dossier.champ_values_for_export(types_de_champ, row_id:, export_template:, format:)
     end
   end
 end

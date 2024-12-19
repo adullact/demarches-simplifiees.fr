@@ -1,21 +1,19 @@
+# frozen_string_literal: true
+
 class Procedure < ApplicationRecord
+  include APIEntrepriseTokenConcern
   include ProcedureStatsConcern
   include EncryptableConcern
   include InitiationProcedureConcern
   include ProcedureGroupeInstructeurAPIHackConcern
   include ProcedureSVASVRConcern
   include ProcedureChorusConcern
+  include ProcedurePublishConcern
   include PiecesJointesListConcern
+  include ColumnsConcern
 
   include Discard::Model
   self.discard_column = :hidden_at
-  self.ignored_columns += [
-    :direction,
-    :durees_conservation_required,
-    :cerfa_flag,
-    :test_started_at,
-    :lien_demarche
-  ]
 
   default_scope -> { kept }
 
@@ -62,8 +60,10 @@ class Procedure < ApplicationRecord
   belongs_to :service, optional: true
   belongs_to :zone, optional: true
   has_and_belongs_to_many :zones
+  has_and_belongs_to_many :procedure_tags
 
   has_many :bulk_messages, dependent: :destroy
+  has_many :labels, dependent: :destroy
 
   def active_dossier_submitted_message
     published_dossier_submitted_message || draft_dossier_submitted_message
@@ -73,10 +73,11 @@ class Procedure < ApplicationRecord
     brouillon? ? draft_revision : published_revision
   end
 
-  def types_de_champ_for_procedure_presentation(parent = nil)
+  def all_revisions_types_de_champ(parent: nil, with_header_section: false)
+    types_de_champ_scope = with_header_section ? TypeDeChamp.with_header_section : TypeDeChamp.fillable
     if brouillon?
       if parent.nil?
-        TypeDeChamp.fillable
+        types_de_champ_scope
           .joins(:revision_types_de_champ)
           .where(revision_types_de_champ: { revision_id: draft_revision_id, parent_id: nil })
           .order(:private, :position)
@@ -84,43 +85,13 @@ class Procedure < ApplicationRecord
         draft_revision.children_of(parent)
       end
     else
-      # all published revisions
-      revision_ids = revisions.ids - [draft_revision_id]
-      # fetch all parent types de champ
-      parent_ids = if parent.present?
-        ProcedureRevisionTypeDeChamp
-          .where(revision_id: revision_ids)
-          .joins(:type_de_champ)
-          .where(type_de_champ: { stable_id: parent.stable_id })
-          .ids
-      end
-
-      # fetch all type_de_champ.stable_id for all the revisions expect draft
-      # and for each stable_id take the bigger (more recent) type_de_champ.id
-      recent_ids = TypeDeChamp
-        .fillable
-        .joins(:revision_types_de_champ)
-        .where(revision_types_de_champ: { revision_id: revision_ids, parent_id: parent_ids })
-        .group(:stable_id).select('MAX(types_de_champ.id)')
-
-      # fetch the more recent procedure_revision_types_de_champ
-      # which includes recents_ids
-      recents_prtdc = ProcedureRevisionTypeDeChamp
-        .where(type_de_champ_id: recent_ids)
-        .where.not(revision_id: draft_revision_id)
-        .group(:type_de_champ_id)
-        .select('MAX(id)')
-
-      TypeDeChamp
-        .joins(:revision_types_de_champ)
-        .where(revision_types_de_champ: { id: recents_prtdc }).then do |relation|
-          if feature_enabled?(:export_order_by_revision) # Fonds Verts, en attente d'exports personnalisables
-            relation.order(:private, 'revision_types_de_champ.revision_id': :desc, position: :asc)
-          else
-            relation.order(:private, :position, 'revision_types_de_champ.revision_id': :desc)
-          end
-        end
+      cache_key = ['all_revisions_types_de_champ', published_revision, parent, with_header_section].compact
+      Rails.cache.fetch(cache_key, expires_in: 1.month) { published_revisions_types_de_champ(parent:, with_header_section:) }
     end
+  end
+
+  def types_de_champ_for_procedure_export
+    all_revisions_types_de_champ.not_repetition
   end
 
   def types_de_champ_for_tags
@@ -153,7 +124,7 @@ class Procedure < ApplicationRecord
   end
 
   has_many :administrateurs_procedures, dependent: :delete_all
-  has_many :administrateurs, through: :administrateurs_procedures, after_remove: -> (procedure, _admin) { procedure.validate! }
+  has_many :administrateurs, through: :administrateurs_procedures, before_remove: :check_administrateur_minimal_presence
   has_many :groupe_instructeurs, -> { order(:label) }, inverse_of: :procedure, dependent: :destroy
   has_many :instructeurs, through: :groupe_instructeurs
   has_many :export_templates, through: :groupe_instructeurs
@@ -175,9 +146,7 @@ class Procedure < ApplicationRecord
 
   belongs_to :defaut_groupe_instructeur, class_name: 'GroupeInstructeur', inverse_of: false, optional: true
 
-  has_one_attached :logo do |attachable|
-    attachable.variant :email, resize_to_limit: [450, 450]
-  end
+  has_one_attached :logo
   has_one_attached :notice
   has_one_attached :deliberation
 
@@ -236,20 +205,6 @@ class Procedure < ApplicationRecord
 
   scope :for_api_v2, -> {
     includes(:draft_revision, :published_revision, administrateurs: :user)
-  }
-
-  scope :for_download, -> {
-    includes(
-      :groupe_instructeurs,
-      dossiers: {
-        champs_public: [
-          piece_justificative_file_attachments: :blob,
-          champs: [
-            piece_justificative_file_attachments: :blob
-          ]
-        ]
-      }
-    )
   }
 
   validates :libelle, presence: true, allow_blank: false, allow_nil: false
@@ -335,7 +290,6 @@ class Procedure < ApplicationRecord
     size: { less_than: LOGO_MAX_SIZE },
     if: -> { new_record? || created_at > Date.new(2020, 11, 13) }
 
-  validates :api_entreprise_token, jwt_token: true, allow_blank: true
   validates :api_particulier_token, format: { with: /\A[A-Za-z0-9\-_=.]{15,}\z/ }, allow_blank: true
   validate :validate_auto_archive_on_in_the_future, if: :will_save_change_to_auto_archive_on?
   validates :fc_particulier_id, format: { with: /\A[[:alnum:]]{64}\z/, message: "n'est pas un identifiant valide" }, allow_blank: true
@@ -371,34 +325,14 @@ class Procedure < ApplicationRecord
     end
   end
 
+  def check_administrateur_minimal_presence(_object)
+    if self.administrateurs.count <= 1
+      raise ActiveRecord::RecordNotDestroyed.new("Cannot remove the last administrateur of procedure #{self.libelle} (#{self.id})")
+    end
+  end
+
   def dossiers_close_to_expiration
     dossiers.close_to_expiration.count
-  end
-
-  def publish_or_reopen!(administrateur)
-    Procedure.transaction do
-      if brouillon?
-        reset!
-      end
-
-      other_procedure = other_procedure_with_path(path)
-      if other_procedure.present? && administrateur.owns?(other_procedure)
-        other_procedure.unpublish!
-        publish!(other_procedure.canonical_procedure || other_procedure)
-      else
-        publish!
-      end
-    end
-  end
-
-  def reset!
-    if !locked? || draft_changed?
-      dossier_ids_to_destroy = draft_revision.dossiers.ids
-      if dossier_ids_to_destroy.present?
-        Rails.logger.info("Resetting #{dossier_ids_to_destroy.size} dossiers on procedure #{id}: #{dossier_ids_to_destroy}")
-        draft_revision.dossiers.destroy_all
-      end
-    end
   end
 
   def suggested_path(administrateur)
@@ -570,6 +504,7 @@ class Procedure < ApplicationRecord
     procedure.closing_notification_en_cours = false
     procedure.template = false
     procedure.monavis_embed = nil
+    procedure.labels = labels.map(&:dup)
 
     if !procedure.valid?
       procedure.errors.attribute_names.each do |attribute|
@@ -669,14 +604,6 @@ class Procedure < ApplicationRecord
     end
   end
 
-  def self.default_sort
-    {
-      'table' => 'self',
-      'column' => 'id',
-      'order' => 'desc'
-    }
-  end
-
   def whitelist!
     touch(:whitelisted_at)
   end
@@ -709,6 +636,10 @@ class Procedure < ApplicationRecord
       result << :service
     end
 
+    if service_siret_test?
+      result << :service
+    end
+
     if missing_instructeurs?
       result << :instructeurs
     end
@@ -722,7 +653,8 @@ class Procedure < ApplicationRecord
 
   def logo_url
     if logo.attached?
-      Rails.application.routes.url_helpers.url_for(logo)
+      logo_variant = logo.variant(resize_to_limit: [400, 400])
+      logo_variant.key.present? ? logo_variant.processed.url : Rails.application.routes.url_helpers.url_for(logo)
     else
       ActionController::Base.helpers.image_url(PROCEDURE_DEFAULT_LOGO_SRC)
     end
@@ -738,6 +670,10 @@ class Procedure < ApplicationRecord
     else
       false
     end
+  end
+
+  def service_siret_test?
+    service&.siret == Service::SIRET_TEST
   end
 
   def revised?
@@ -758,7 +694,7 @@ class Procedure < ApplicationRecord
   end
 
   def routing_champs
-    active_revision.types_de_champ_public.filter(&:used_by_routing_rules?).map(&:libelle)
+    active_revision.revision_types_de_champ_public.filter(&:used_by_routing_rules?).map(&:libelle)
   end
 
   def can_be_deleted_by_administrateur?
@@ -809,35 +745,6 @@ class Procedure < ApplicationRecord
     "Procedure;#{id}"
   end
 
-  def api_entreprise_role?(role)
-    APIEntrepriseToken.new(api_entreprise_token).role?(role)
-  end
-
-  def api_entreprise_token
-    self[:api_entreprise_token].presence || Rails.application.secrets.api_entreprise[:key]
-  end
-
-  def api_entreprise_token_expired?
-    APIEntrepriseToken.new(api_entreprise_token).expired?
-  end
-
-  def create_new_revision(revision = nil)
-    transaction do
-      new_revision = (revision || draft_revision)
-        .deep_clone(include: [:revision_types_de_champ])
-        .tap { |revision| revision.published_at = nil }
-        .tap(&:save!)
-
-      move_new_children_to_new_parent_coordinate(new_revision)
-
-      # they are not aware of the new tdcs
-      new_revision.types_de_champ_public.reset
-      new_revision.types_de_champ_private.reset
-
-      new_revision
-    end
-  end
-
   def average_dossier_weight
     if dossiers.termine.any?
       dossiers_sample = dossiers.termine.limit(100)
@@ -849,31 +756,6 @@ class Procedure < ApplicationRecord
       MIN_WEIGHT + total_size / dossiers_sample.length
     else
       nil
-    end
-  end
-
-  def publish_revision!
-    reset!
-    transaction do
-      self.published_revision = draft_revision
-      self.draft_revision = create_new_revision
-      save!(context: :publication)
-      published_revision.touch(:published_at)
-    end
-    dossiers
-      .state_not_termine
-      .find_each(&:rebase_later)
-  end
-
-  def reset_draft_revision!
-    if published_revision.present? && draft_changed?
-      reset!
-      transaction do
-        draft_revision.types_de_champ.filter(&:only_present_on_draft?).each(&:destroy)
-        draft_revision.update(dossier_submitted_message: nil)
-        draft_revision.destroy
-        update!(draft_revision: create_new_revision(published_revision))
-      end
     end
   end
 
@@ -915,45 +797,6 @@ class Procedure < ApplicationRecord
     end
   end
 
-  def move_new_children_to_new_parent_coordinate(new_draft)
-    children = new_draft.revision_types_de_champ
-      .includes(parent: :type_de_champ)
-      .where.not(parent_id: nil)
-    coordinates_by_stable_id = new_draft.revision_types_de_champ
-      .includes(:type_de_champ)
-      .index_by(&:stable_id)
-
-    children.each do |child|
-      child.update!(parent: coordinates_by_stable_id.fetch(child.parent.stable_id))
-    end
-    new_draft.reload
-  end
-
-  def before_publish
-    assign_attributes(closed_at: nil, unpublished_at: nil)
-  end
-
-  def after_publish(canonical_procedure = nil)
-    self.canonical_procedure = canonical_procedure
-    self.published_revision = draft_revision
-    self.draft_revision = create_new_revision
-    save!(context: :publication)
-    touch(:published_at)
-    published_revision.touch(:published_at)
-  end
-
-  def after_republish(canonical_procedure = nil)
-    touch(:published_at)
-  end
-
-  def after_close
-    touch(:closed_at)
-  end
-
-  def after_unpublish
-    touch(:unpublished_at)
-  end
-
   def update_juridique_required
     self.juridique_required ||= (cadre_juridique.present? || deliberation.attached?)
     true
@@ -987,8 +830,14 @@ class Procedure < ApplicationRecord
     end
   end
 
-  def stable_ids_used_by_routing_rules
-    @stable_ids_used_by_routing_rules ||= groupe_instructeurs.flat_map { _1.routing_rule&.sources }.compact
+  def create_generic_labels
+    Label::GENERIC_LABELS.each do |label|
+      Label.create(name: label[:name], color: label[:color], procedure_id: self.id)
+    end
+  end
+
+  def used_by_routing_rules?(type_de_champ)
+    type_de_champ.stable_id.in?(stable_ids_used_by_routing_rules)
   end
 
   # We need this to unfuck administrate + aasm
@@ -1010,10 +859,12 @@ class Procedure < ApplicationRecord
 
   def dossier_for_preview(user)
     # Try to use a preview or a dossier filled by current user
-    dossiers.where(for_procedure_preview: true).or(dossiers.not_brouillon)
+    dossiers.where(for_procedure_preview: true).or(dossiers.visible_by_administration)
       .order(Arel.sql("CASE WHEN user_id = #{user.id} THEN 1 ELSE 0 END DESC,
                        CASE WHEN state = 'accepte' THEN 1 ELSE 0 END DESC,
-                       CASE WHEN for_procedure_preview = True THEN 1 ELSE 0 END DESC")) \
+                       CASE WHEN state = 'brouillon' THEN 0 ELSE 1 END DESC,
+                       CASE WHEN for_procedure_preview = True THEN 1 ELSE 0 END DESC,
+                       id DESC")) \
       .first
   end
 
@@ -1030,6 +881,49 @@ class Procedure < ApplicationRecord
   end
 
   private
+
+  def stable_ids_used_by_routing_rules
+    @stable_ids_used_by_routing_rules ||= groupe_instructeurs.flat_map { _1.routing_rule&.sources }.compact.uniq
+  end
+
+  def published_revisions_types_de_champ(parent: nil, with_header_section: false)
+    # all published revisions
+    revision_ids = revisions.ids - [draft_revision_id]
+    # fetch all parent types de champ
+    parent_ids = if parent.present?
+      ProcedureRevisionTypeDeChamp
+        .where(revision_id: revision_ids)
+        .joins(:type_de_champ)
+        .where(type_de_champ: { stable_id: parent.stable_id })
+        .ids
+    end
+
+    # fetch all type_de_champ.stable_id for all the revisions expect draft
+    # and for each stable_id take the bigger (more recent) type_de_champ.id
+    types_de_champ_scope = with_header_section ? TypeDeChamp.with_header_section : TypeDeChamp.fillable
+    recent_ids = types_de_champ_scope
+      .joins(:revision_types_de_champ)
+      .where(revision_types_de_champ: { revision_id: revision_ids, parent_id: parent_ids })
+      .group(:stable_id).select('MAX(types_de_champ.id)')
+
+    # fetch the more recent procedure_revision_types_de_champ
+    # which includes recents_ids
+    recents_prtdc = ProcedureRevisionTypeDeChamp
+      .where(type_de_champ_id: recent_ids)
+      .where.not(revision_id: draft_revision_id)
+      .group(:type_de_champ_id)
+      .select('MAX(id)')
+
+    TypeDeChamp
+      .joins(:revision_types_de_champ)
+      .where(revision_types_de_champ: { id: recents_prtdc }).then do |relation|
+        if feature_enabled?(:export_order_by_revision) # Fonds Verts, en attente d'exports personnalisables
+          relation.order(:private, 'revision_types_de_champ.revision_id': :desc, position: :asc)
+        else
+          relation.order(:private, :position, 'revision_types_de_champ.revision_id': :desc)
+        end
+      end
+  end
 
   def validates_associated_draft_revision_with_context
     return if draft_revision.blank?

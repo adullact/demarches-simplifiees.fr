@@ -28,9 +28,10 @@ en:
           not_filled: not filled
           not_found: "RNA number %{rna} (no association found)"
         association:
-          data_fetched: "This RNA number is linked to %{title}, %{address}"
+          data_fetched: "This RNA number is linked to: %{title}, %{address}"
           not_found: "No association found"
           network_error: "A network error has prevented the association associated with this RNA to be fetched"
+          invalid_number: "The RNA number must begin with a capital W followed by 9 digits or letters"
       rnf:
         show:
           not_found: "RNF %{rnf} (no foundation found)"
@@ -53,4 +54,5 @@ en:
           data_fetched: "Data concerning %{sources} linked to the INE %{ine} has been received from the MESRI."
           data_fetched_title: "Data received from the MESRI"
       drop_down_list:
-        other: Other
+        other: Enter another option
+        other_label: Enter your option

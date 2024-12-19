@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 describe Champs::DossierLinkChamp, type: :model do
   describe 'prefilling validations' do
     describe 'value' do
-      subject { build(:champ_dossier_link, value: value).valid?(:prefill) }
+      subject { described_class.new(value:, dossier: build(:dossier)).valid?(:prefill) }
 
       context 'when nil' do
         let(:value) { nil }
@@ -31,6 +33,37 @@ describe Champs::DossierLinkChamp, type: :model do
         let(:value) { 'totoro' }
 
         it { expect(subject).to eq(false) }
+      end
+    end
+  end
+
+  describe 'validation' do
+    let(:champ) { Champs::DossierLinkChamp.new(value:, dossier: build(:dossier)) }
+
+    before do
+      allow(champ).to receive(:type_de_champ).and_return(build(:type_de_champ_dossier_link, mandatory:))
+      allow(champ).to receive(:in_dossier_revision?).and_return(true)
+      champ.run_callbacks(:validation)
+    end
+
+    subject { champ.validate(:champs_public_value) }
+
+    context 'when not mandatory' do
+      let(:mandatory) { false }
+      let(:value) { nil }
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when mandatory' do
+      let(:mandatory) { true }
+      context 'when valid id' do
+        let(:value) { create(:dossier).id }
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when invalid id' do
+        let(:value) { 'kthxbye' }
+        it { is_expected.to be_falsey }
       end
     end
   end

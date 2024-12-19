@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe API::V2::GraphqlController do
   let(:admin) { administrateurs(:default_admin) }
   let(:generated_token) { APIToken.generate(admin) }
@@ -45,6 +47,24 @@ describe API::V2::GraphqlController do
       expect(champ_descriptor).not_to be_nil
       expect(champ_descriptor[:fields].find { _1[:name] == 'options' }).to be_nil
     }
+  end
+
+  describe 'when not authenticated' do
+    let(:variables) { { dossierNumber: dossier.id } }
+    let(:operation_name) { 'getDossier' }
+    let!(:authorization_header) { nil }
+
+    context 'with query' do
+      let(:query) { 'query getDossier($dossierNumber: Int!) { dossier(number: $dossierNumber) { id } }' }
+
+      it { expect(gql_errors.first[:message]).to eq('Without a token, only persisted queries are allowed') }
+    end
+
+    context 'with queryId' do
+      let(:query_id) { 'ds-query-v2' }
+
+      it { expect(gql_errors.first[:message]).to eq('An object of type Dossier was hidden due to permissions') }
+    end
   end
 
   describe 'ds-query-v2' do
@@ -102,8 +122,9 @@ describe API::V2::GraphqlController do
       end
 
       context 'with entreprise' do
+        let(:types_de_champ_public) { [{ type: :siret }] }
         let(:procedure) { create(:procedure, :published, :with_service, administrateurs: [admin], types_de_champ_public:) }
-        let(:dossier) { create(:dossier, :en_construction, :with_entreprise, procedure: procedure) }
+        let(:dossier) { create(:dossier, :en_construction, :with_entreprise, :with_populated_champs, procedure: procedure) }
 
         it {
           expect(gql_errors).to be_nil
@@ -889,6 +910,35 @@ describe API::V2::GraphqlController do
       end
     end
 
+    context 'dossierDesarchiver' do
+      let(:dossier) { create(:dossier, :refuse, :with_individual, :archived, procedure:) }
+      let(:variables) { { input: { dossierId: dossier.to_typed_id, instructeurId: instructeur.to_typed_id } } }
+      let(:operation_name) { 'dossierDesarchiver' }
+
+      it {
+        expect(gql_errors).to be_nil
+        expect(gql_data[:dossierDesarchiver][:errors]).to be_nil
+        expect(gql_data[:dossierDesarchiver][:dossier][:id]).to eq(dossier.to_typed_id)
+        expect(gql_data[:dossierDesarchiver][:dossier][:archived]).to be_falsey
+      }
+
+      context 'read only token' do
+        before { api_token.update(write_access: false) }
+
+        it {
+          expect(gql_data[:dossierDesarchiver][:errors].first[:message]).to eq('Le jeton utilisé est configuré seulement en lecture')
+        }
+      end
+
+      context 'when not processed' do
+        let(:dossier) { create(:dossier, :refuse, :with_individual, procedure:) }
+
+        it {
+          expect(gql_data[:dossierDesarchiver][:errors].first[:message]).to eq('Un dossier non archivé ne peut pas être désarchivé')
+        }
+      end
+    end
+
     context 'dossierPasserEnInstruction' do
       let(:dossier) { create(:dossier, :en_construction, :with_individual, procedure: procedure) }
       let(:variables) { { input: { dossierId: dossier.to_typed_id, instructeurId: instructeur.to_typed_id, disableNotification: } } }
@@ -1194,7 +1244,7 @@ describe API::V2::GraphqlController do
             expect(gql_errors).to be_nil
             expect(gql_data[:groupeInstructeurModifier][:errors]).to be_nil
             expect(gql_data[:groupeInstructeurModifier][:groupeInstructeur][:id]).to eq(dossier.groupe_instructeur.to_typed_id)
-            expect(routing_champ.reload.drop_down_list_options).to match_array(procedure.groupe_instructeurs.active.map(&:label))
+            expect(routing_champ.reload.drop_down_options).to match_array(procedure.groupe_instructeurs.active.map(&:label))
             expect(procedure.groupe_instructeurs.active.map(&:routing_rule)).to match_array(procedure.groupe_instructeurs.active.map { ds_eq(champ_value(routing_champ.stable_id), constant(_1.label)) })
           }
         end
@@ -1248,7 +1298,7 @@ describe API::V2::GraphqlController do
           expect(gql_errors).to be_nil
           expect(gql_data[:groupeInstructeurCreer][:errors]).to be_nil
           expect(gql_data[:groupeInstructeurCreer][:groupeInstructeur][:id]).not_to be_nil
-          expect(routing_champ.reload.drop_down_list_options).to match_array(procedure.groupe_instructeurs.map(&:label))
+          expect(routing_champ.reload.drop_down_options).to match_array(procedure.groupe_instructeurs.map(&:label))
           expect(procedure.groupe_instructeurs.map(&:routing_rule)).to match_array(procedure.groupe_instructeurs.map { ds_eq(champ_value(routing_champ.stable_id), constant(_1.label)) })
         }
       end

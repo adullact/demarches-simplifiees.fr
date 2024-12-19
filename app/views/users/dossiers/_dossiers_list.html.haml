@@ -7,7 +7,7 @@
       .flex.justify-between
         %div
           %h3.card-title
-            - if ["dossiers-transferes", "dossiers-supprimes-recemment"].exclude?(@statut)
+            - if ["dossiers-transferes", "dossiers-supprimes"].exclude?(@statut)
               = link_to(url_for_dossier(dossier), class: 'cell-link') do
                 = dossier.procedure.libelle
             - else
@@ -16,9 +16,12 @@
           %p.fr-icon--sm.fr-icon-user-line
             = demandeur_dossier(dossier)
 
-          - if dossier.hidden_by_user?
+          - if dossier.hidden_by_expired?
             %p.fr-icon--sm.fr-icon-delete-line
-              = t('views.users.dossiers.dossiers_list.deleted', date: l(dossier.hidden_by_user_at.to_date))
+              = t('views.users.dossiers.dossiers_list.deleted_by_automatic', date: l(dossier.hidden_by_expired_at.to_date))
+          - elsif dossier.hidden_by_user?
+            %p.fr-icon--sm.fr-icon-delete-line
+              = t('views.users.dossiers.dossiers_list.deleted_by_user', date: l(dossier.hidden_by_user_at.to_date))
           - else
             %p.fr-icon--sm.fr-icon-edit-box-line
               - if dossier.depose_at.present?
@@ -40,11 +43,7 @@
             = t('views.users.dossiers.dossiers_list.n_dossier')
             = number_with_html_delimiter(dossier.id)
 
-          - if @statut == "dossiers-supprimes-recemment"
-            %span.fr-badge.fr-badge--sm.fr-badge--warning
-              = t('views.users.dossiers.dossiers_list.deleted_badge')
-          - else
-            = status_badge_user(dossier, 'fr-mb-1w')
+          = status_badge_user(dossier, 'fr-mb-1w')
 
           - if dossier.pending_correction?
             %br
@@ -55,17 +54,17 @@
           - c.with_body do
             %p
               - if dossier.brouillon? && dossier.procedure.closing_reason_internal_procedure?
-                = t('views.users.dossiers.dossiers_list.procedure_closed.brouillon.internal_procedure_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.procedure'), commencer_path(dossier.procedure.replaced_by_procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.closing_details'))).html_safe)
-              - elsif dossier.brouillon? && dossier.procedure.closing_reason_other?
-                = t('views.users.dossiers.dossiers_list.procedure_closed.brouillon.other_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.more_details'), closing_details_path(dossier.procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.closing_details'))).html_safe)
+                = t('views.users.dossiers.dossiers_list.procedure_closed.brouillon.internal_procedure_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.procedure'), commencer_path(dossier.procedure.replaced_by_procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.title_new_procedure'))).html_safe)
+              - elsif dossier.brouillon?
+                = t('views.users.dossiers.dossiers_list.procedure_closed.brouillon.other_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.more_details'), closing_details_path(dossier.procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.title_closing_details'))).html_safe)
               - elsif dossier.en_construction_ou_instruction? && dossier.procedure.closing_reason_internal_procedure?
-                = t('views.users.dossiers.dossiers_list.procedure_closed.en_cours.internal_procedure_html')
-              - elsif dossier.en_construction_ou_instruction? && dossier.procedure.closing_reason_other?
-                = t('views.users.dossiers.dossiers_list.procedure_closed.en_cours.other_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.more_details'), closing_details_path(dossier.procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.closing_details'))).html_safe)
+                = t('views.users.dossiers.dossiers_list.procedure_closed.en_cours.internal_procedure_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.procedure'), commencer_path(dossier.procedure.replaced_by_procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.title_new_procedure'))).html_safe)
+              - elsif dossier.en_construction_ou_instruction?
+                = t('views.users.dossiers.dossiers_list.procedure_closed.en_cours.other_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.more_details'), closing_details_path(dossier.procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.title_closing_details'))).html_safe)
               - elsif dossier.termine? && dossier.procedure.closing_reason_internal_procedure?
-                = t('views.users.dossiers.dossiers_list.procedure_closed.termine.internal_procedure_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.this_procedure'), commencer_path(dossier.procedure.replaced_by_procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.closing_details'))).html_safe)
-              - elsif dossier.termine? && dossier.procedure.closing_reason_other?
-                = t('views.users.dossiers.dossiers_list.procedure_closed.termine.other_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.more_details'), closing_details_path(dossier.procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.closing_details'))).html_safe)
+                = t('views.users.dossiers.dossiers_list.procedure_closed.termine.internal_procedure_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.this_procedure'), commencer_path(dossier.procedure.replaced_by_procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.title_new_procedure'))).html_safe)
+              - elsif dossier.termine?
+                = t('views.users.dossiers.dossiers_list.procedure_closed.termine.other_html', link: link_to(t('views.users.dossiers.dossiers_list.procedure_closed.more_details'), closing_details_path(dossier.procedure.path), **external_link_attributes, title: new_tab_suffix(t('views.users.dossiers.dossiers_list.procedure_closed.title_closing_details'))).html_safe)
 
       - if dossier.pending_correction?
         = render Dsfr::AlertComponent.new(state: :warning, size: :sm, extra_class_names: "fr-mb-2w") do |c|
@@ -97,14 +96,24 @@
                 = link_to t('views.users.dossiers.transfers.revoke'), transfer_path(dossier.transfer), class: 'fr-link', method: :delete
 
 
-      - if ["dossiers-transferes", "dossiers-supprimes-recemment"].exclude?(@statut)
+      - if ["dossiers-transferes", "dossiers-supprimes"].exclude?(@statut)
         .flex.justify-end
           = render partial: 'dossier_actions', locals: { dossier: dossier }
 
-      - if @statut == "dossiers-supprimes-recemment"
+      - if @statut == "dossiers-supprimes"
         .flex.justify-end
-          = link_to restore_dossier_path(dossier.id), method: :patch, class: "fr-btn fr-btn--sm" do
-            Restaurer
+          - if dossier.hidden_by_reason != 'expired'
+            = link_to restore_dossier_path(dossier.id), method: :patch, class: "fr-btn fr-btn--sm" do
+              Restaurer
+
+          - else
+            - if dossier.expiration_can_be_extended?
+              = button_to users_dossier_repousser_expiration_and_restore_path(dossier), class: 'fr-btn fr-btn--sm' do
+                Restaurer et étendre la conservation
+
+
+            - else
+              = render(partial: 'users/dossiers/show/download_dossier', locals: { dossier: dossier })
 
   = paginate dossiers, views_prefix: 'shared'
 

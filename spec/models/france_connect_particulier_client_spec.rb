@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe FranceConnectParticulierClient do
   describe '#initialize' do
     let(:default_identifier) { Rails.application.secrets.france_connect_particulier[:identifier] }

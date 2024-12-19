@@ -1,10 +1,8 @@
+# frozen_string_literal: true
+
 class Champs::PoleEmploiChamp < Champs::TextChamp
   # see https://github.com/betagouv/api-particulier/blob/master/src/presentation/middlewares/pole-emploi-input-validation.middleware.ts
   store_accessor :value_json, :identifiant
-
-  def blank?
-    external_id.nil?
-  end
 
   def fetch_external_data?
     true

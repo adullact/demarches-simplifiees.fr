@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Champs::CnafChamp < Champs::TextChamp
   # see https://github.com/betagouv/api-particulier/blob/master/src/presentation/middlewares/cnaf-input-validation.middleware.ts
 
@@ -5,10 +7,6 @@ class Champs::CnafChamp < Champs::TextChamp
   validates :code_postal, format: { with: /\A\w{5}\z/ }, if: -> { numero_allocataire.present? && validate_champ_value_or_prefill? }
 
   store_accessor :value_json, :numero_allocataire, :code_postal
-
-  def blank?
-    external_id.nil?
-  end
 
   def fetch_external_data?
     true

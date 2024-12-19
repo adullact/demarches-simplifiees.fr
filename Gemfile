@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 gem 'rails', '~> 7.0.8' # allows update to security fixes at any time
@@ -18,6 +20,7 @@ gem 'aws-sdk-s3'
 gem 'bcrypt'
 gem 'bootsnap', '>= 1.4.4', require: false # Reduces boot times through caching; required in config/boot.rb
 gem 'browser'
+gem 'capybara-playwright-driver'
 gem 'charlock_holmes'
 gem 'chartkick'
 gem 'chunky_png'
@@ -107,13 +110,10 @@ gem 'view_component'
 gem 'vite_rails'
 gem 'warden'
 gem 'webrick', require: false
-gem 'yabeda-graphql'
 gem 'yabeda-prometheus'
-gem 'yabeda-puma-plugin'
-gem 'yabeda-rails'
 gem 'yabeda-sidekiq'
 gem 'zipline'
-gem 'zxcvbn-ruby', require: 'zxcvbn'
+gem 'zxcvbn'
 
 group :test do
   gem 'axe-core-rspec' # accessibility rspec matchers
@@ -150,7 +150,6 @@ group :development do
   gem 'rubocop-performance', require: false
   gem 'rubocop-rails', require: false
   gem 'rubocop-rspec', require: false
-  gem 'scss_lint', require: false
   gem 'stackprof'
   gem 'web-console'
 end

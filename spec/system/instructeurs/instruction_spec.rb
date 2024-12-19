@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'Instructing a dossier:', js: true do
   include ActiveJob::TestHelper
   include Logic
@@ -50,7 +52,8 @@ describe 'Instructing a dossier:', js: true do
     click_on 'Instruire le dossier'
 
     within('.instruction-button') do
-      click_on 'Accepter'
+      # FIXME click_on 'Accepter' is not working for some reason
+      find_link('Accepter').click
     end
 
     within('.accept.motivation') do
@@ -129,13 +132,14 @@ describe 'Instructing a dossier:', js: true do
     test_statut_bar(a_suivre: 1, tous_les_dossiers: 1)
 
     click_on "Télécharger un dossier"
-    within(:css, '.dossiers-export') do
-      click_on "Demander un export au format .csv"
+    within(:css, '#tabpanel-standard1-panel') do
+      choose "Fichier csv", allow_label_click: true
+      click_on "Demander l'export"
     end
 
     expect(page).to have_text('Nous générons cet export.')
 
-    click_on "voir les exports"
+    click_on "Voir les exports et modèles d'export"
     expect(page).to have_text("Export .csv d’un dossier « à suivre » demandé il y a moins d'une minute")
     expect(page).to have_text("En préparation")
 
@@ -143,7 +147,7 @@ describe 'Instructing a dossier:', js: true do
       perform_enqueued_jobs(only: ExportJob)
     end
 
-    page.driver.browser.navigate.refresh
+    page.refresh
     expect(page).to have_text('Télécharger l’export')
   end
 
@@ -208,10 +212,10 @@ describe 'Instructing a dossier:', js: true do
       expect(Archive.first.month).not_to be_nil
     end
   end
-  context 'with dossiers having attached files', js: true do
+  context 'with dossiers having attached files' do
     let(:procedure) { create(:procedure, :published, types_de_champ_public: [{ type: :piece_justificative }], instructeurs: [instructeur]) }
     let(:dossier) { create(:dossier, :en_construction, procedure: procedure) }
-    let(:champ) { dossier.champs_public.first }
+    let(:champ) { dossier.project_champs_public.first }
     let(:path) { 'spec/fixtures/files/piece_justificative_0.pdf' }
     let(:commentaire) { create(:commentaire, instructeur: instructeur, dossier: dossier) }
 
@@ -230,9 +234,6 @@ describe 'Instructing a dossier:', js: true do
     scenario 'A instructeur can download an archive containing a single attachment' do
       find(:css, '[aria-controls=print-pj-menu]').click
       click_on 'Télécharger le dossier et toutes ses pièces jointes'
-      # For some reason, clicking the download link does not trigger the download in the headless browser ;
-      # So we need to go to the download link directly
-      visit telecharger_pjs_instructeur_dossier_path(procedure, dossier)
 
       DownloadHelpers.wait_for_download
       files = ZipTricks::FileReader.read_zip_structure(io: File.open(DownloadHelpers.download))
@@ -252,7 +253,9 @@ describe 'Instructing a dossier:', js: true do
                 content_type: "application/pdf",
                 metadata: { virus_scan_result: ActiveStorage::VirusScanner::SAFE })
 
-      visit telecharger_pjs_instructeur_dossier_path(procedure, dossier)
+      find(:css, '[aria-controls=print-pj-menu]').click
+      click_on 'Télécharger le dossier et toutes ses pièces jointes'
+
       DownloadHelpers.wait_for_download
       files = ZipTricks::FileReader.read_zip_structure(io: File.open(DownloadHelpers.download))
 
@@ -268,6 +271,39 @@ describe 'Instructing a dossier:', js: true do
 
     before { DownloadHelpers.clear_downloads }
     after { DownloadHelpers.clear_downloads }
+  end
+
+  context 'An instructeur can add labels' do
+    let(:procedure) { create(:procedure, :with_labels, :published, instructeurs: [instructeur]) }
+
+    scenario 'An instructeur can add and remove labels to a dossier' do
+      log_in(instructeur.email, password)
+
+      visit instructeur_dossier_path(procedure, dossier)
+      click_on 'Ajouter un label'
+
+      check 'À relancer', allow_label_click: true
+      expect(page).to have_css('.fr-tag', text: "À relancer", count: 2)
+      expect(dossier.dossier_labels.count).to eq(1)
+
+      expect(page).not_to have_text('Ajouter un label')
+      find('span.dropdown button.dropdown-button').click
+
+      expect(page).to have_checked_field('À relancer')
+      check 'Complet', allow_label_click: true
+
+      expect(page).to have_css('.fr-tag', text: "Complet", count: 2)
+      expect(dossier.dossier_labels.count).to eq(2)
+
+      find('span.dropdown button.dropdown-button').click
+      uncheck 'À relancer', allow_label_click: true
+
+      expect(page).to have_unchecked_field('À relancer')
+      expect(page).to have_checked_field('Complet')
+      expect(page).to have_css('.fr-tag', text: "À relancer", count: 1)
+      expect(page).to have_css('.fr-tag', text: "Complet", count: 2)
+      expect(dossier.dossier_labels.count).to eq(1)
+    end
   end
 
   def log_in(email, password, check_email: true)

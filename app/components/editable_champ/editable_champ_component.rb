@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class EditableChamp::EditableChampComponent < ApplicationComponent
   def initialize(form:, champ:, seen_at: nil)
     @form, @champ, @seen_at = form, champ, seen_at
@@ -82,6 +84,6 @@ class EditableChamp::EditableChampComponent < ApplicationComponent
   end
 
   def autosave_enabled?
-    !@champ.carte? && !@champ.block? && @champ.fillable?
+    !@champ.carte? && !@champ.repetition? && @champ.fillable?
   end
 end

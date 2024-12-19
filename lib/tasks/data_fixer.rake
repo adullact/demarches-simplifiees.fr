@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require Rails.root.join("lib", "tasks", "task_helper")
 
 namespace :data_fixer do
@@ -24,21 +26,6 @@ namespace :data_fixer do
       else
         rake_puts "Failed to fix #{fixable_phone_value}"
       end
-    end
-  end
-
-  desc <<~EOD
-    Given a dossier_id in argument, run the DossierChampsMissing.
-    ex: rails data_fixer:dossier_missing_champ\[1\]
-  EOD
-  task :dossier_missing_champ, [:dossier_id] => :environment do |_t, args|
-    dossier = Dossier.find(args[:dossier_id])
-    result = DataFixer::DossierChampsMissing.new(dossier:).fix
-
-    if result > 0
-      rake_puts "Dossier#[#{args[:dossier_id]}] fixed"
-    else
-      rake_puts "Dossier#[#{args[:dossier_id]}] not fixed"
     end
   end
 end

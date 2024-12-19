@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReaddSuperAdminToTheirProcedureWithoutInstructeur < ActiveRecord::Migration[6.1]
   def change
     Procedure.reset_column_information

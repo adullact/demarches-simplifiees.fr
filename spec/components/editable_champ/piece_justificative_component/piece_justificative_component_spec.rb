@@ -1,5 +1,11 @@
+# frozen_string_literal: true
+
 describe EditableChamp::PieceJustificativeComponent, type: :component do
-  let(:champ) { create(:champ_piece_justificative, dossier: create(:dossier)) }
+  let(:procedure) { create(:procedure, :published, types_de_champ_public:) }
+  let(:types_de_champ_public) { [{ type: :piece_justificative }] }
+  let(:dossier) { create(:dossier, :with_populated_champs, procedure:) }
+  let(:champ) { dossier.champs.first }
+
   let(:component) {
     described_class.new(form: instance_double(ActionView::Helpers::FormBuilder, object_name: "dossier[champs_public_attributes]"), champ:)
   }
@@ -9,7 +15,6 @@ describe EditableChamp::PieceJustificativeComponent, type: :component do
   }
 
   context 'when there is a template' do
-    let(:template) { champ.type_de_champ.piece_justificative_template }
     let(:profil) { :user }
 
     before do
@@ -17,14 +22,14 @@ describe EditableChamp::PieceJustificativeComponent, type: :component do
     end
 
     it 'renders a link to template' do
-      expect(subject).to have_link('Modèle à télécharger')
+      expect(subject).to have_link('Télécharger le modèle')
       expect(subject).not_to have_text("éphémère")
     end
 
     context 'as an administrator' do
       let(:profil) { :administrateur }
       it 'warn about ephemeral template url' do
-        expect(subject).to have_link('Modèle à télécharger')
+        expect(subject).to have_link('Télécharger le modèle')
         expect(subject).to have_text("éphémère")
       end
     end

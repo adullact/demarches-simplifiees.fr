@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DossierSectionsConcern
   extend ActiveSupport::Concern
 
@@ -17,7 +19,7 @@ module DossierSectionsConcern
     end
 
     def auto_numbering_section_headers_for?(type_de_champ)
-      return false if revision.child?(type_de_champ)
+      return false if type_de_champ.child?(revision)
 
       sections_for(type_de_champ)&.none? { _1.libelle =~ /^\d/ }
     end

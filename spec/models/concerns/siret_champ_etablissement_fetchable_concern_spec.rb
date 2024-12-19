@@ -1,9 +1,16 @@
+# frozen_string_literal: false
+
+# The 'siret' variables are literal here and mutated (normalized), so we cannot use frozen siret strings.
+# For simplicity, frozen strings are disabled in this entire file.
+
 RSpec.describe SiretChampEtablissementFetchableConcern do
   describe '.fetch_etablissement!' do
     let(:api_etablissement_status) { 200 }
     let(:api_etablissement_body) { File.read('spec/fixtures/files/api_entreprise/etablissements.json') }
     let(:token_expired) { false }
-    let!(:champ) { create(:champ_siret) }
+    let(:procedure) { create(:procedure, types_de_champ_public: [{ type: :siret }]) }
+    let(:dossier) { create(:dossier, procedure:) }
+    let!(:champ) { dossier.champs.first.tap { _1.update!(etablissement: create(:etablissement)) } }
 
     before do
       stub_request(:get, /https:\/\/entreprise.api.gouv.fr\/v3\/insee\/sirene\/etablissements\/#{siret}/)

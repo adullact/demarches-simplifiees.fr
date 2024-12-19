@@ -1,6 +1,19 @@
+# frozen_string_literal: true
+
 module Users
   class CommencerController < ApplicationController
     layout 'procedure_context'
+
+    before_action :path_rewrite, only: [:commencer, :commencer_test, :dossier_vide_pdf, :dossier_vide_pdf_test, :sign_in, :sign_up, :france_connect, :procedure_for_help, :closing_details]
+
+    # TODO: REMOVE THIS
+    # this was only added because a administration needed new urls
+    # check from 07/2025 if this is still needed
+    def path_rewrite
+      path_rewrite = PathRewrite.find_by(from: params[:path])
+
+      params[:path] = path_rewrite.to if path_rewrite.present?
+    end
 
     def commencer
       @procedure = retrieve_procedure
@@ -74,9 +87,7 @@ module Users
       retrieve_procedure
     end
 
-    def nav_bar_profile
-      current_user ? :user : :guest
-    end
+    def nav_bar_profile = nav_bar_user_or_guest
 
     def closing_details
       @procedure = Procedure.find_by(path: params[:path])
@@ -116,7 +127,7 @@ module Users
         state: Dossier.states.fetch(:brouillon),
         prefilled: true
       )
-      @prefilled_dossier.build_default_individual
+      @prefilled_dossier.build_default_values
       if @prefilled_dossier.save
         @prefilled_dossier.prefill!(PrefillChamps.new(@prefilled_dossier, params.to_unsafe_h).to_a, PrefillIdentity.new(@prefilled_dossier, params.to_unsafe_h).to_h)
       end

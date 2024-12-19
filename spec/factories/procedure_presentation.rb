@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :procedure_presentation do
     transient do
@@ -5,6 +7,5 @@ FactoryBot.define do
     end
 
     assign_to { association :assign_to, procedure: procedure, instructeur: procedure.instructeurs.first }
-    sort { { "table" => "user", "column" => "email", "order" => "asc" } }
   end
 end

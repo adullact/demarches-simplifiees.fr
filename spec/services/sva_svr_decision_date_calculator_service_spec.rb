@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 describe SVASVRDecisionDateCalculatorService do
@@ -136,6 +138,20 @@ describe SVASVRDecisionDateCalculatorService do
 
         it 'calculates the date based on SVA rules from the last resolved date' do
           expect(subject).to eq(Date.new(2023, 7, 26))
+        end
+
+        context 'and a pending correction' do
+          before do
+            travel_to Time.zone.local(2023, 5, 30, 18) do
+              dossier.flag_as_pending_correction!(build(:commentaire, dossier:))
+            end
+
+            travel_to Time.zone.local(2023, 6, 5, 8)
+          end
+
+          it 'calculates the date, like if resolution will be today and delay restarted' do
+            expect(subject).to eq(Date.new(2023, 8, 6))
+          end
         end
       end
 

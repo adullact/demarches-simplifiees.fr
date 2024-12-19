@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe PrefillChamps do
   describe "#to_a", vcr: { cassette_name: 'api_geo_all' } do
     let(:procedure) { create(:procedure, :published, types_de_champ_public:, types_de_champ_private:) }
@@ -122,12 +124,10 @@ RSpec.describe PrefillChamps do
     it_behaves_like "a champ public value that is authorized", :departements, "03"
     it_behaves_like "a champ public value that is authorized", :communes, ['01540', '01457']
     it_behaves_like "a champ public value that is authorized", :address, "20 avenue de Ségur 75007 Paris"
-    it_behaves_like "a champ public value that is authorized", :annuaire_education, "0050009H"
     it_behaves_like "a champ public value that is authorized", :multiple_drop_down_list, ["val1", "val2"]
     it_behaves_like "a champ public value that is authorized", :dossier_link, "1"
     it_behaves_like "a champ public value that is authorized", :epci, ['01', '200042935']
     it_behaves_like "a champ public value that is authorized", :siret, "13002526500013"
-    it_behaves_like "a champ public value that is authorized", :rna, "value"
 
     context "when the public type de champ is authorized (repetition)" do
       let(:types_de_champ_public) { [{ type: :repetition, children: [{ type: :text }] }] }
@@ -135,11 +135,12 @@ RSpec.describe PrefillChamps do
       let(:type_de_champ_child) { procedure.published_revision.children_of(type_de_champ).first }
       let(:type_de_champ_child_value) { "value" }
       let(:type_de_champ_child_value2) { "value2" }
+      let(:child_champs) { dossier.champs.where(stable_id: type_de_champ_child.stable_id) }
 
       let(:params) { { "champ_#{type_de_champ.to_typed_id_for_query}" => [{ "champ_#{type_de_champ_child.to_typed_id_for_query}" => type_de_champ_child_value }, { "champ_#{type_de_champ_child.to_typed_id_for_query}" => type_de_champ_child_value2 }] } }
 
       it "builds an array of hash(id, value) matching the given params" do
-        expect(prefill_champs_array).to match([{ id: type_de_champ_child.champ.first.id, value: type_de_champ_child_value }, { id: type_de_champ_child.champ.second.id, value: type_de_champ_child_value2 }])
+        expect(prefill_champs_array).to match([{ id: child_champs.first.id, value: type_de_champ_child_value }, { id: child_champs.second.id, value: type_de_champ_child_value2 }])
       end
     end
 
@@ -161,12 +162,10 @@ RSpec.describe PrefillChamps do
     it_behaves_like "a champ private value that is authorized", :checkbox, "false"
     it_behaves_like "a champ private value that is authorized", :drop_down_list, "value"
     it_behaves_like "a champ private value that is authorized", :regions, "93"
-    it_behaves_like "a champ private value that is authorized", :rna, "value"
     it_behaves_like "a champ private value that is authorized", :siret, "13002526500013"
     it_behaves_like "a champ private value that is authorized", :departements, "03"
     it_behaves_like "a champ private value that is authorized", :communes, ['01540', '01457']
     it_behaves_like "a champ private value that is authorized", :address, "20 avenue de Ségur 75007 Paris"
-    it_behaves_like "a champ private value that is authorized", :annuaire_education, "0050009H"
     it_behaves_like "a champ private value that is authorized", :multiple_drop_down_list, ["val1", "val2"]
     it_behaves_like "a champ private value that is authorized", :dossier_link, "1"
     it_behaves_like "a champ private value that is authorized", :epci, ['01', '200042935']
@@ -177,11 +176,12 @@ RSpec.describe PrefillChamps do
       let(:type_de_champ_child) { procedure.published_revision.children_of(type_de_champ).first }
       let(:type_de_champ_child_value) { "value" }
       let(:type_de_champ_child_value2) { "value2" }
+      let(:child_champs) { dossier.champs.where(stable_id: type_de_champ_child.stable_id) }
 
       let(:params) { { "champ_#{type_de_champ.to_typed_id_for_query}" => [{ "champ_#{type_de_champ_child.to_typed_id_for_query}" => type_de_champ_child_value }, { "champ_#{type_de_champ_child.to_typed_id_for_query}" => type_de_champ_child_value2 }] } }
 
       it "builds an array of hash(id, value) matching the given params" do
-        expect(prefill_champs_array).to match([{ id: type_de_champ_child.champ.first.id, value: type_de_champ_child_value }, { id: type_de_champ_child.champ.second.id, value: type_de_champ_child_value2 }])
+        expect(prefill_champs_array).to match([{ id: child_champs.first.id, value: type_de_champ_child_value }, { id: child_champs.second.id, value: type_de_champ_child_value2 }])
       end
     end
 
@@ -237,7 +237,7 @@ RSpec.describe PrefillChamps do
   private
 
   def find_champ_by_stable_id(dossier, stable_id)
-    dossier.champs.joins(:type_de_champ).find_by(types_de_champ: { stable_id: stable_id })
+    dossier.champs.find_by(stable_id:)
   end
 
   def attributes(champ, value)

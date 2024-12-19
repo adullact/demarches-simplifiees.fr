@@ -1,17 +1,13 @@
+# frozen_string_literal: true
+
 class TypesDeChamp::LinkedDropDownListTypeDeChamp < TypesDeChamp::TypeDeChampBase
   PRIMARY_PATTERN = /^--(.*)--$/
 
-  delegate :drop_down_list_options, to: :@type_de_champ
   validate :check_presence_of_primary_options
 
   def libelles_for_export
     path = paths.first
     [[path[:libelle], path[:path]]]
-  end
-
-  def add_blank_option_when_not_mandatory(options)
-    return options if mandatory
-    options.unshift('')
   end
 
   def primary_options
@@ -30,44 +26,106 @@ class TypesDeChamp::LinkedDropDownListTypeDeChamp < TypesDeChamp::TypeDeChampBas
     secondary_options
   end
 
-  class << self
-    def champ_value(champ)
-      [champ.primary_value, champ.secondary_value].filter(&:present?).join(' / ')
-    end
+  def champ_value(champ)
+    [primary_value(champ), secondary_value(champ)].filter(&:present?).join(' / ')
+  end
 
-    def champ_value_for_tag(champ, path = :value)
-      case path
-      when :primary
-        champ.primary_value
-      when :secondary
-        champ.secondary_value
-      when :value
-        champ_value(champ)
-      end
-    end
-
-    def champ_value_for_export(champ, path = :value)
-      case path
-      when :primary
-        champ.primary_value
-      when :secondary
-        champ.secondary_value
-      when :value
-        "#{champ.primary_value || ''};#{champ.secondary_value || ''}"
-      end
-    end
-
-    def champ_value_for_api(champ, version = 2)
-      case version
-      when 1
-        { primary: champ.primary_value, secondary: champ.secondary_value }
-      else
-        super
-      end
+  def champ_value_for_tag(champ, path = :value)
+    case path
+    when :primary
+      primary_value(champ)
+    when :secondary
+      secondary_value(champ)
+    when :value
+      champ_value(champ)
     end
   end
 
+  def champ_value_for_export(champ, path = :value)
+    case path
+    when :primary
+      primary_value(champ)
+    when :secondary
+      secondary_value(champ)
+    when :value
+      "#{primary_value(champ) || ''};#{secondary_value(champ) || ''}"
+    end
+  end
+
+  def champ_value_for_api(champ, version: 2)
+    case version
+    when 1
+      { primary: primary_value(champ), secondary: secondary_value(champ) }
+    else
+      super
+    end
+  end
+
+  def champ_blank?(champ)
+    primary_value(champ).blank? && secondary_value(champ).blank?
+  end
+
+  def champ_blank_or_invalid?(champ)
+    primary_value(champ).blank? ||
+      (has_secondary_options_for_primary?(champ) && secondary_value(champ).blank?)
+  end
+
+  def columns(procedure:, displayable: true, prefix: nil)
+    [
+      Columns::LinkedDropDownColumn.new(
+        procedure_id: procedure.id,
+        label: libelle_with_prefix(prefix),
+        stable_id:,
+        tdc_type: type_champ,
+        type: :text,
+        path: :value,
+        displayable:
+      ),
+      Columns::LinkedDropDownColumn.new(
+        procedure_id: procedure.id,
+        stable_id:,
+        tdc_type: type_champ,
+        label: "#{libelle_with_prefix(prefix)} (Primaire)",
+        type: :enum,
+        path: :primary,
+        displayable: false,
+        options_for_select: primary_options
+      ),
+      Columns::LinkedDropDownColumn.new(
+        procedure_id: procedure.id,
+        stable_id:,
+        tdc_type: type_champ,
+        label: "#{libelle_with_prefix(prefix)} (Secondaire)",
+        type: :enum,
+        path: :secondary,
+        displayable: false,
+        options_for_select: secondary_options.values.flatten.uniq.sort
+      )
+    ]
+  end
+
   private
+
+  def add_blank_option_when_not_mandatory(options)
+    return options if mandatory
+    options.unshift('')
+  end
+
+  def primary_value(champ) = unpack_value(champ.value, 0, primary_options)
+  def secondary_value(champ) = unpack_value(champ.value, 1, secondary_options.values.flatten)
+
+  def unpack_value(value, index, options)
+    value&.then do
+      unpacked_value = JSON.parse(_1)[index]
+      unpacked_value if options.include?(unpacked_value)
+    rescue
+      nil
+    end
+  end
+
+  def has_secondary_options_for_primary?(champ)
+    primary_value(champ).present? && secondary_options[primary_value(champ)]&.any?(&:present?)
+  end
 
   def paths
     paths = super
@@ -87,8 +145,8 @@ class TypesDeChamp::LinkedDropDownListTypeDeChamp < TypesDeChamp::TypeDeChampBas
   end
 
   def unpack_options
-    _, *options = drop_down_list_options
-    chunked = options.slice_before(PRIMARY_PATTERN)
+    chunked = drop_down_options.slice_before(PRIMARY_PATTERN)
+
     chunked.map do |chunk|
       primary, *secondary = chunk
       secondary = add_blank_option_when_not_mandatory(secondary)
@@ -97,7 +155,7 @@ class TypesDeChamp::LinkedDropDownListTypeDeChamp < TypesDeChamp::TypeDeChampBas
   end
 
   def check_presence_of_primary_options
-    if !PRIMARY_PATTERN.match?(drop_down_list_options.second)
+    if !PRIMARY_PATTERN.match?(drop_down_options.first)
       errors.add(libelle.presence || "La liste", "doit commencer par une entrée de menu primaire de la forme <code style='white-space: pre-wrap;'>--texte--</code>")
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Expired
   # User is considered inactive after two years of idleness regarding
   #   when he does not have a dossier en instruction
@@ -23,7 +25,7 @@ module Expired
     when 'Cron::ExpiredPrefilledDossiersDeletionJob'
       "every day at 3 am"
     when 'Cron::ExpiredDossiersTermineDeletionJob'
-      "every day at 7 am"
+      "every day at 1 am"
     when 'Cron::ExpiredDossiersBrouillonDeletionJob'
       "every day at 10 pm"
     when 'Cron::ExpiredUsersDeletionJob'

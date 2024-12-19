@@ -1,4 +1,6 @@
-describe 'The user' do
+# frozen_string_literal: true
+
+describe 'The user', js: true do
   let(:password) { SECURE_PASSWORD }
   let!(:user) { create(:user, password: password) }
 
@@ -6,7 +8,7 @@ describe 'The user' do
   let(:user_dossier) { user.dossiers.first }
   let!(:dossier_to_link) { create(:dossier) }
 
-  scenario 'fill a dossier', js: true, vcr: true do
+  scenario 'fill a dossier', vcr: true do
     log_in(user, procedure)
 
     fill_individual
@@ -17,9 +19,9 @@ describe 'The user' do
     # fill data
     fill_in('text', with: 'super texte', match: :first)
     fill_in('textarea', with: 'super textarea')
-    fill_in('date', with: '12-12-2012', match: :first)
+    fill_in('date', with: Date.parse('2012-12-12'), match: :first)
     fill_in('datetime', with: Time.zone.parse('2023-01-06T07:05'))
-    find("input[type=datetime-local]").send_keys(:arrow_up).send_keys(:arrow_down) # triggers onChange
+    find("input[type=datetime-local]").send_keys('ArrowUp').send_keys('ArrowDown') # triggers onChange
     # fill_in('number', with: '42'), deadchamp, should be migrated to textchamp
     fill_in('decimal_number', with: '17')
     fill_in('integer_number', with: '12')
@@ -123,7 +125,7 @@ describe 'The user' do
     expect(page).to have_text('file.pdf')
   end
 
-  scenario 'fill nothing and every error anchor links points to an existing element', js: true do
+  scenario 'fill nothing and every error anchor links points to an existing element' do
     log_in(user, procedure)
     fill_individual
     click_on 'Déposer le dossier'
@@ -139,7 +141,7 @@ describe 'The user' do
     create(:procedure, :published, :for_individual, types_de_champ_public: [{ type: :repetition, mandatory: true, children: [{ libelle: 'sub type de champ' }] }])
   end
 
-  scenario 'fill a dossier with repetition', js: true do
+  scenario 'fill a dossier with repetition' do
     log_in(user, procedure_with_repetition)
 
     fill_individual
@@ -182,7 +184,7 @@ describe 'The user' do
     ])
   }
 
-  scenario 'save an incomplete dossier as draft but cannot not submit it', js: true do
+  scenario 'save an incomplete dossier as draft but cannot not submit it' do
     log_in(user, simple_procedure)
     fill_individual
 
@@ -217,7 +219,7 @@ describe 'The user' do
     expect(page).to have_current_path(merci_dossier_path(user_dossier))
   end
 
-  scenario 'fill address not in BAN', js: true do
+  scenario 'fill address not in BAN' do
     log_in(user, simple_procedure)
     fill_individual
 
@@ -228,7 +230,7 @@ describe 'The user' do
     expect(champ_for('address').full_address?).to be_falsey
   end
 
-  scenario 'numbers champs formatting', js: true do
+  scenario 'numbers champs formatting' do
     log_in(user, simple_procedure)
     fill_individual
 
@@ -285,7 +287,7 @@ describe 'The user' do
     }
   end
 
-  scenario 'extends dossier experation date more than one time, ', js: true do
+  scenario 'extends dossier experation date more than one time, ' do
     simple_procedure.update(procedure_expires_when_termine_enabled: true)
     user_old_dossier = create(:dossier,
                               procedure: simple_procedure,
@@ -294,13 +296,13 @@ describe 'The user' do
     login_as(user, scope: :user)
     visit brouillon_dossier_path(user_old_dossier)
 
-    expect(page).to have_css('.fr-callout__title', text: 'Votre dossier va expirer', visible: true)
+    expect(page).to have_css('.fr-callout__title', text: 'Votre dossier a expiré', visible: true)
     find('#test-user-repousser-expiration').click
     expect(page).to have_no_selector('#test-user-repousser-expiration')
 
     Timecop.freeze(simple_procedure.duree_conservation_dossiers_dans_ds.month.from_now) do
       visit brouillon_dossier_path(user_old_dossier)
-      expect(page).to have_css('.fr-callout__title', text: 'Votre dossier va expirer', visible: true)
+      expect(page).to have_css('.fr-callout__title', text: 'Votre dossier a expiré', visible: true)
       find('#test-user-repousser-expiration').click
       expect(page).to have_no_selector('#test-user-repousser-expiration')
     end
@@ -310,7 +312,7 @@ describe 'The user' do
   let(:procedure_with_pjs) { create(:procedure, :published, :for_individual, types_de_champ_public: [{ type: :piece_justificative, mandatory: true, libelle: 'Pièce justificative 1' }, { type: :piece_justificative, mandatory: true, libelle: 'Pièce justificative 2' }]) }
   let(:old_procedure_with_disabled_pj_validation) { create(:procedure, :published, :for_individual, types_de_champ_public: [{ type: :piece_justificative, mandatory: true, libelle: 'Pièce justificative 1', skip_pj_validation: true }]) }
 
-  scenario 'add an attachment', js: true do
+  scenario 'add an attachment' do
     log_in(user, procedure_with_pjs)
     fill_individual
 
@@ -334,7 +336,7 @@ describe 'The user' do
     expect(page).to have_text('RIB.pdf')
   end
 
-  scenario 'add an invalid attachment on an old procedure where pj validation is disabled', js: true do
+  scenario 'add an invalid attachment on an old procedure where pj validation is disabled' do
     log_in(user, old_procedure_with_disabled_pj_validation)
     fill_individual
 
@@ -343,7 +345,7 @@ describe 'The user' do
     expect(page).to have_no_text('La pièce justificative n’est pas d’un type accepté')
   end
 
-  scenario 'retry on transcient upload error', js: true do
+  scenario 'retry on transcient upload error' do
     log_in(user, procedure_with_pjs)
     fill_individual
 
@@ -372,7 +374,7 @@ describe 'The user' do
     expect(page).to have_text('file.pdf')
   end
 
-  scenario "upload multiple pieces justificatives on same champ", js: true do
+  scenario "upload multiple pieces justificatives on same champ" do
     log_in(user, procedure_with_pjs)
     fill_individual
 
@@ -426,7 +428,7 @@ describe 'The user' do
       let(:procedure) do
         create(:procedure, :published, :for_individual,
           types_de_champ_public: [
-            { type: :integer_number, libelle: 'age', mandatory: false, stable_id: },
+            { type: :integer_number, libelle: 'UNIQ_LABEL', mandatory: false, stable_id: },
             {
               type: :repetition, libelle: 'repetition', condition:, children: [
                 { type: :text, libelle: 'nom', mandatory: true }
@@ -435,12 +437,11 @@ describe 'The user' do
           ])
       end
 
-      scenario 'submit a dossier with an hidden mandatory champ within a repetition', js: true do
+      scenario 'submit a dossier with an hidden mandatory champ within a repetition' do
         log_in(user, procedure)
 
         fill_individual
-
-        fill_in('age (facultatif)', with: 10)
+        fill_in('UNIQ_LABEL', with: 10)
         click_on 'Déposer le dossier'
         expect(page).to have_current_path(merci_dossier_path(user_dossier))
       end
@@ -465,7 +466,7 @@ describe 'The user' do
           ])
       end
 
-      scenario 'fill a dossier', js: true do
+      scenario 'fill a dossier' do
         log_in(user, procedure)
 
         fill_individual
@@ -492,12 +493,12 @@ describe 'The user' do
       let(:procedure) do
         create(:procedure, :published, :for_individual,
           types_de_champ_public: [
-            { type: :integer_number, libelle: 'age', mandatory: false, stable_id: },
+            { type: :integer_number, libelle: 'UNIQ_LABEL', mandatory: false, stable_id: },
             { type: :text, libelle: 'nom', mandatory: true, condition: }
           ])
       end
 
-      scenario 'submit a dossier with an hidden mandatory champ ', js: true do
+      scenario 'submit a dossier with an hidden mandatory champ ' do
         log_in(user, procedure)
 
         fill_individual
@@ -506,12 +507,12 @@ describe 'The user' do
         expect(page).to have_current_path(merci_dossier_path(user_dossier))
       end
 
-      scenario 'cannot submit a reveal dossier with a revealed mandatory champ ', js: true do
+      scenario 'cannot submit a reveal dossier with a revealed mandatory champ ' do
         log_in(user, procedure)
 
         fill_individual
 
-        fill_in('age (facultatif)', with: '18')
+        fill_in('UNIQ_LABEL', with: '18')
         expect(page).to have_css('label', text: 'nom', visible: :visible)
         expect(page).to have_css('.icon.mandatory')
         click_on 'Déposer le dossier'
@@ -538,7 +539,7 @@ describe 'The user' do
           ])
       end
 
-      scenario 'fill a dossier', js: true do
+      scenario 'fill a dossier' do
         log_in(user, procedure)
 
         fill_individual
@@ -548,7 +549,7 @@ describe 'The user' do
         expect(page).to have_no_css('legend', text: 'info voiture', visible: true)
         expect(page).to have_no_css('label', text: 'tonnage', visible: true)
 
-        fill_in('age du candidat (facultatif)', with: '18')
+        fill_in('age du candidat', with: '18')
         expect(page).to have_css('legend', text: 'permis de conduire', visible: true)
         expect(page).to have_css('legend', text: 'info voiture', visible: true)
         expect(page).to have_no_css('label', text: 'tonnage', visible: true)
@@ -561,10 +562,10 @@ describe 'The user' do
         expect(page).to have_css('label', text: 'parking', visible: true)
 
         # try to fill with invalid data
-        fill_in('tonnage (facultatif)', with: 'a')
+        fill_in('tonnage', with: 'a')
         expect(page).to have_no_css('label', text: 'parking', visible: true)
 
-        fill_in('age du candidat (facultatif)', with: '2')
+        fill_in('age du candidat', with: '2')
         expect(page).to have_no_css('legend', text: 'permis de conduire', visible: true)
         expect(page).to have_no_css('label', text: 'tonnage', visible: true)
 
@@ -576,7 +577,7 @@ describe 'The user' do
         expect(page).to have_no_css('legend', text: 'permis de conduire', visible: true)
         expect(page).to have_no_css('label', text: 'tonnage', visible: true)
 
-        fill_in('age du candidat (facultatif)', with: '18')
+        fill_in('age du candidat', with: '18')
         wait_for_autosave
 
         # the champ keeps their previous value so they are all displayed
@@ -587,7 +588,7 @@ describe 'The user' do
   end
 
   context 'draft autosave' do
-    scenario 'autosave a draft', js: true do
+    scenario 'autosave a draft' do
       log_in(user, simple_procedure)
       fill_individual
 
@@ -602,7 +603,7 @@ describe 'The user' do
       expect(page).to have_field('texte obligatoire', with: 'a valid user input')
     end
 
-    scenario 'retry on autosave error', :capybara_ignore_server_errors, js: true do
+    scenario 'retry on autosave error', :capybara_ignore_server_errors do
       log_in(user, simple_procedure)
       fill_individual
 
@@ -622,7 +623,7 @@ describe 'The user' do
       expect(page).to have_field('texte obligatoire', with: 'a valid user input')
     end
 
-    scenario 'autosave redirects to sign-in after being disconnected', js: true do
+    scenario 'autosave redirects to sign-in after being disconnected' do
       log_in(user, simple_procedure)
       fill_individual
 
@@ -630,7 +631,6 @@ describe 'The user' do
       # (either because signing-out in another tab, or because the session cookie expired)
       logout(:user)
       fill_in('texte obligatoire', with: 'a valid user input')
-      blur
 
       # … they are redirected to the sign-in page.
       expect(page).to have_current_path(new_user_session_path)
@@ -673,8 +673,9 @@ describe 'The user' do
   end
 
   def champ_for(libelle)
-    champs = user_dossier.reload.champs_public
-    champs.find { |c| c.libelle == libelle }
+    champs = user_dossier.reload.project_champs_public
+    champ = champs.find { |c| c.libelle == libelle }
+    champ.reload
   end
 
   def fill_individual

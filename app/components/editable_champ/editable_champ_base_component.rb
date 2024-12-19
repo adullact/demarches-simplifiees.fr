@@ -1,5 +1,14 @@
+# frozen_string_literal: true
+
 class EditableChamp::EditableChampBaseComponent < ApplicationComponent
   include Dsfr::InputErrorable
+
+  attr_reader :attribute
+
+  def initialize(form:, champ:, seen_at: nil, opts: {})
+    @form, @champ, @seen_at, @opts = form, champ, seen_at, opts
+    @attribute = :value
+  end
 
   def dsfr_champ_container
     :div
@@ -11,10 +20,5 @@ class EditableChamp::EditableChampBaseComponent < ApplicationComponent
 
   def describedby_id
     @champ.describedby_id
-  end
-
-  def initialize(form:, champ:, seen_at: nil, opts: {})
-    @form, @champ, @seen_at, @opts = form, champ, seen_at, opts
-    @attribute = :value
   end
 end

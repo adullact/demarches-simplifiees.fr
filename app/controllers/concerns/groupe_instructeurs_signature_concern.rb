@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GroupeInstructeursSignatureConcern
   extend ActiveSupport::Concern
 
@@ -17,9 +19,7 @@ module GroupeInstructeursSignatureConcern
         flash[:alert] = "Aucun fichier joint pour le tampon de l'attestation"
         render :show
       else
-        signature = uninterlace_png(signature_file)
-
-        if @groupe_instructeur.signature.attach(signature)
+        if @groupe_instructeur.signature.attach(signature_file)
           handle_redirect :success
         else
           handle_redirect :alert

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Instructeurs
   class DossiersController < ProceduresController
     include ActionView::Helpers::NumberHelper
@@ -11,14 +13,22 @@ module Instructeurs
 
     before_action :redirect_on_dossier_not_found, only: :show
     before_action :redirect_on_dossier_in_batch_operation, only: [:archive, :unarchive, :follow, :unfollow, :passer_en_instruction, :repasser_en_construction, :repasser_en_instruction, :terminer, :restore, :destroy, :extend_conservation]
+    before_action :set_gallery_attachments, only: [:show, :pieces_jointes, :annotations_privees, :avis, :messagerie, :personnes_impliquees, :reaffectation]
     after_action :mark_demande_as_read, only: :show
 
     after_action :mark_messagerie_as_read, only: [:messagerie, :create_commentaire, :pending_correction]
     after_action :mark_avis_as_read, only: [:avis, :create_avis]
     after_action :mark_annotations_privees_as_read, only: [:annotations_privees, :update_annotations]
+    after_action :mark_pieces_jointes_as_read, only: [:pieces_jointes]
 
     def extend_conservation
       dossier.extend_conservation(1.month)
+      flash[:notice] = t('views.instructeurs.dossiers.archived_dossier')
+      redirect_back(fallback_location: instructeur_dossier_path(@dossier.procedure, @dossier))
+    end
+
+    def extend_conservation_and_restore
+      dossier.extend_conservation_and_restore(1.month, current_instructeur)
       flash[:notice] = t('views.instructeurs.dossiers.archived_dossier')
       redirect_back(fallback_location: instructeur_dossier_path(@dossier.procedure, @dossier))
     end
@@ -51,6 +61,19 @@ module Instructeurs
         end
         format.all
       end
+    end
+
+    def dossier_labels
+      labels = params[:label_id]&.map(&:to_i) || []
+
+      @dossier = dossier
+      labels.each { |params_label| DossierLabel.find_or_create_by(dossier_id: @dossier.id, label_id: params_label) }
+
+      all_labels = DossierLabel.where(dossier_id: @dossier.id).pluck(:label_id)
+
+      (all_labels - labels).each { DossierLabel.find_by(dossier_id: @dossier.id, label_id: _1).destroy }
+
+      render :change_state
     end
 
     def messagerie
@@ -363,10 +386,8 @@ module Instructeurs
     end
 
     def pieces_jointes
-      @dossier = current_instructeur.dossiers.find(params[:dossier_id])
-      @champs_with_pieces_jointes = @dossier
-        .champs
-        .filter { _1.class.in?([Champs::PieceJustificativeChamp, Champs::TitreIdentiteChamp]) }
+      @dossier = dossier
+      @pieces_jointes_seen_at = current_instructeur.follows.find_by(dossier: dossier)&.pieces_jointes_seen_at
     end
 
     private
@@ -376,6 +397,10 @@ module Instructeurs
         Dossier
           .where(id: current_instructeur.dossiers.visible_by_administration)
           .or(Dossier.where(id: current_user.dossiers.for_procedure_preview))
+      elsif action_name == 'extend_conservation_and_restore'
+        Dossier
+          .where(id: current_instructeur.dossiers.visible_by_administration)
+          .or(Dossier.where(id: current_instructeur.dossiers.hidden_by_expired))
       else
         current_instructeur.dossiers.visible_by_administration
       end
@@ -444,6 +469,10 @@ module Instructeurs
       current_instructeur.mark_tab_as_seen(dossier, :annotations_privees)
     end
 
+    def mark_pieces_jointes_as_read
+      current_instructeur.mark_tab_as_seen(dossier, :pieces_jointes)
+    end
+
     def aasm_error_message(exception, target_state:)
       if exception.originating_state == target_state
         "Le dossier est déjà #{dossier_display_state(target_state, lower: true)}."
@@ -470,6 +499,37 @@ module Instructeurs
         flash.alert = "Votre action n'a pas été effectuée, ce dossier fait parti d'un traitement de masse."
         redirect_back(fallback_location: instructeur_dossier_path(procedure, dossier_in_batch))
       end
+    end
+
+    def set_gallery_attachments
+      gallery_attachments_ids = Rails.cache.fetch([dossier, "gallery_attachments"], expires_in: 10.minutes) do
+        champs_attachments_ids = dossier
+          .champs
+          .where(type: [Champs::PieceJustificativeChamp.name, Champs::TitreIdentiteChamp.name])
+          .flat_map(&:piece_justificative_file)
+          .map(&:id)
+
+        commentaires_attachments_ids = dossier
+          .commentaires
+          .includes(piece_jointe_attachments: :blob)
+          .map(&:piece_jointe)
+          .flat_map(&:attachments)
+          .map(&:id)
+
+        avis_attachments_ids = dossier
+          .avis.flat_map { [_1.introduction_file, _1.piece_justificative_file] }
+          .flat_map(&:attachments)
+          .compact
+          .map(&:id)
+
+        justificatif_motivation_id = dossier
+          .justificatif_motivation
+          &.attachment
+          &.id
+
+        champs_attachments_ids + commentaires_attachments_ids + avis_attachments_ids + [justificatif_motivation_id]
+      end
+      @gallery_attachments = ActiveStorage::Attachment.where(id: gallery_attachments_ids)
     end
   end
 end

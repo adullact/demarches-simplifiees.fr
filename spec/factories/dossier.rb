@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :dossier do
     autorisation_donnees { true }
@@ -9,12 +11,42 @@ FactoryBot.define do
     individual { association(:individual, :empty, dossier: instance, strategy: :build) if procedure.for_individual? }
 
     transient do
+      populate_champs { false }
+      populate_annotations { false }
       for_individual? { false }
       # For now a dossier must use a `create`d procedure, even if the dossier is only built (and not created).
       # This is because saving the dossier fails when the procedure has not been saved beforehand
       # (due to some internal ActiveRecord error).
       # TODO: find a way to find the issue and just `build` the procedure.
       procedure { create(:procedure, :published, :with_type_de_champ, :with_type_de_champ_private, for_individual: for_individual?) }
+    end
+
+    after(:create) do |dossier, evaluator|
+      if evaluator.populate_champs
+        dossier.revision.types_de_champ_public.each do |type_de_champ|
+          value = if type_de_champ.drop_down_list?
+            type_de_champ.drop_down_options.first
+          elsif type_de_champ.multiple_drop_down_list?
+            type_de_champ.drop_down_options.first(2).to_json
+          end
+          attrs = { stable_id: type_de_champ.stable_id, dossier:, value: }.compact
+          create(:"champ_do_not_use_#{type_de_champ.type_champ}", **attrs)
+        end
+      end
+
+      if evaluator.populate_annotations
+        dossier.revision.types_de_champ_private.each do |type_de_champ|
+          value = if type_de_champ.drop_down_list?
+            type_de_champ.drop_down_options.first
+          elsif type_de_champ.multiple_drop_down_list?
+            type_de_champ.drop_down_options.first(2).to_json
+          end
+          attrs = { stable_id: type_de_champ.stable_id, dossier:, private: true, value: }.compact
+          create(:"champ_do_not_use_#{type_de_champ.type_champ}", **attrs)
+        end
+      end
+
+      dossier.build_default_values
     end
 
     trait :with_entreprise do
@@ -110,44 +142,19 @@ FactoryBot.define do
       archived { false }
     end
 
-    trait :discarded do
-      hidden_at { Time.zone.now }
+    trait :hidden_by_expired do
+      hidden_by_expired_at { 1.day.ago }
+      hidden_by_reason { DeletedDossier.reasons.fetch(:expired) }
+    end
+
+    trait :hidden_by_user do
+      hidden_by_user_at { 1.day.ago }
+      hidden_by_reason { DeletedDossier.reasons.fetch(:user_request) }
     end
 
     trait :hidden_by_administration do
       hidden_by_administration_at { 1.day.ago }
       hidden_by_reason { DeletedDossier.reasons.fetch(:instructeur_request) }
-    end
-
-    trait :with_dossier_link do
-      after(:create) do |dossier, _evaluator|
-        # create linked dossier
-        linked_dossier = create(:dossier, :en_construction)
-
-        # find first type de champ dossier_link
-        type_de_champ = dossier.types_de_champ.find do |t|
-          t.type_champ == TypeDeChamp.type_champs.fetch(:dossier_link)
-        end
-
-        # if type de champ does not exist create it
-        if !type_de_champ
-          type_de_champ = create(:type_de_champ_dossier_link, procedure: dossier.procedure)
-        end
-
-        # find champ with the type de champ
-        champ = dossier.reload.champs_public.find do |c|
-          c.type_de_champ == type_de_champ
-        end
-
-        # if champ does not exist create it
-        if !champ
-          champ = create(:champ_dossier_link, dossier: dossier, type_de_champ: type_de_champ)
-        end
-
-        # set champ value with linked dossier
-        champ.value = linked_dossier.id
-        champ.save!
-      end
     end
 
     trait :with_commentaires do
@@ -282,35 +289,11 @@ FactoryBot.define do
     end
 
     trait :with_populated_champs do
-      after(:create) do |dossier, _evaluator|
-        dossier.champs_to_destroy.where(private: false).destroy_all
-        dossier.types_de_champ.each do |type_de_champ|
-          if type_de_champ.simple_drop_down_list?
-            create(:"champ_#{type_de_champ.type_champ}", dossier:, type_de_champ:, value: type_de_champ.drop_down_list_enabled_non_empty_options.first)
-          elsif type_de_champ.multiple_drop_down_list?
-            create(:"champ_#{type_de_champ.type_champ}", dossier:, type_de_champ:, value: type_de_champ.drop_down_list_enabled_non_empty_options.first(2).to_json)
-          else
-            create(:"champ_#{type_de_champ.type_champ}", dossier:, type_de_champ:)
-          end
-        end
-        dossier.reload
-      end
+      populate_champs { true }
     end
 
     trait :with_populated_annotations do
-      after(:create) do |dossier, _evaluator|
-        dossier.champs_to_destroy.where(private: true).destroy_all
-        dossier.types_de_champ_private.each do |type_de_champ|
-          if type_de_champ.simple_drop_down_list?
-            create(:"champ_#{type_de_champ.type_champ}", private: true, dossier:, type_de_champ:, value: type_de_champ.drop_down_list_enabled_non_empty_options.first)
-          elsif type_de_champ.multiple_drop_down_list?
-            create(:"champ_#{type_de_champ.type_champ}", private: true, dossier:, type_de_champ:, value: type_de_champ.drop_down_list_enabled_non_empty_options.first(2).to_json)
-          else
-            create(:"champ_#{type_de_champ.type_champ}", private: true, dossier:, type_de_champ:)
-          end
-        end
-        dossier.reload
-      end
+      populate_annotations { true }
     end
 
     trait :prefilled do

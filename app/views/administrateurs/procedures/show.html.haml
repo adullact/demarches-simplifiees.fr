@@ -27,6 +27,15 @@
         = link_to 'Clore', admin_procedure_close_path(procedure_id: @procedure.id), class: 'fr-btn fr-btn--tertiary fr-btn--icon-left fr-icon-calendar-close-fill', id: "close-procedure-link"
 
 .fr-container
+  - if @procedure.api_entreprise_token_expired_or_expires_soon?
+    = render Dsfr::AlertComponent.new(state: :error, title: t(:technical_issues, scope: [:administrateurs, :procedures]), extra_class_names: 'fr-mb-2w') do |c|
+      - c.with_body do
+        %ul.fr-mb-0
+          %li
+            Le
+            = link_to "Jeton API Entreprise", jeton_admin_procedure_path(@procedure), class: 'error-anchor'
+            est expiré ou va expirer prochainement
+
   - if @procedure.draft_changed?
     = render Dsfr::CalloutComponent.new(title: t(:has_changes, scope: [:administrateurs, :revision_changes]), icon: "fr-fi-information-line") do |c|
       - c.with_body do
@@ -76,7 +85,7 @@
     = render Procedure::Card::AdministrateursComponent.new(procedure: @procedure)
     = render Procedure::Card::InstructeursComponent.new(procedure: @procedure)
 
-  %h3.fr-h6 Pour aller plus loin
+  %h3.fr-h6 Autres paramètres
   .fr-grid-row.fr-grid-row--gutters.fr-mb-5w
     = render Procedure::Card::AttestationComponent.new(procedure: @procedure)
     = render Procedure::Card::ExpertsComponent.new(procedure: @procedure)
@@ -90,3 +99,4 @@
     = render Procedure::Card::DossierSubmittedMessageComponent.new(procedure: @procedure)
     = render Procedure::Card::ChorusComponent.new(procedure: @procedure)
     = render Procedure::Card::AccuseLectureComponent.new(procedure: @procedure)
+    = render Procedure::Card::LabelsComponent.new(procedure: @procedure)

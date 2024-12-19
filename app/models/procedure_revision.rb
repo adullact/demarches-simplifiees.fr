@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ProcedureRevision < ApplicationRecord
   include Logic
   self.implicit_order_column = :created_at
@@ -34,16 +36,6 @@ class ProcedureRevision < ApplicationRecord
     on: [:ineligibilite_rules_editor, :publication]
 
   serialize :ineligibilite_rules, LogicSerializer
-
-  def build_champs_public
-    # reload: it can be out of sync in test if some tdcs are added wihtout using add_tdc
-    types_de_champ_public.reload.map(&:build_champ)
-  end
-
-  def build_champs_private
-    # reload: it can be out of sync in test if some tdcs are added wihtout using add_tdc
-    types_de_champ_private.reload.map(&:build_champ)
-  end
 
   def add_type_de_champ(params)
     parent_stable_id = params.delete(:parent_stable_id)
@@ -170,26 +162,21 @@ class ProcedureRevision < ApplicationRecord
       .find_or_initialize_by(revision: self, user: user, for_procedure_preview: true, state: Dossier.states.fetch(:brouillon))
 
     if dossier.new_record?
-      dossier.build_default_individual
+      dossier.build_default_values
       dossier.save!
     end
 
     dossier
   end
 
-  def types_de_champ_for(scope: nil, root: false)
-    # We return an unordered collection
-    return types_de_champ if !root && scope.nil?
-    return types_de_champ.filter { scope == :public ? _1.public? : _1.private? } if !root
-
-    # We return an ordered collection
+  def types_de_champ_for(scope: nil)
     case scope
     when :public
-      types_de_champ_public
+      types_de_champ.filter(&:public?)
     when :private
-      types_de_champ_private
+      types_de_champ.filter(&:private?)
     else
-      types_de_champ_public + types_de_champ_private
+      types_de_champ
     end
   end
 
@@ -215,11 +202,6 @@ class ProcedureRevision < ApplicationRecord
   def parent_of(tdc)
     revision_types_de_champ
       .find { _1.type_de_champ_id == tdc.id }.parent&.type_de_champ
-  end
-
-  def child?(tdc)
-    revision_types_de_champ
-      .find { _1.type_de_champ_id == tdc.id }.child?
   end
 
   def remove_children_of(tdc)
@@ -248,7 +230,7 @@ class ProcedureRevision < ApplicationRecord
   end
 
   def coordinate_for(tdc)
-    revision_types_de_champ.find_by!(type_de_champ: tdc)
+    revision_types_de_champ.find { _1.stable_id == tdc.stable_id }
   end
 
   def carte?
@@ -265,8 +247,8 @@ class ProcedureRevision < ApplicationRecord
     [coordinate, coordinate&.type_de_champ]
   end
 
-  def routable_types_de_champ
-    types_de_champ_public.filter(&:routable?)
+  def simple_routable_types_de_champ
+    types_de_champ_public.filter(&:simple_routable?)
   end
 
   def conditionable_types_de_champ
@@ -409,12 +391,12 @@ class ProcedureRevision < ApplicationRecord
         to_type_de_champ.condition&.to_s(to_coordinates.map(&:type_de_champ)))
     end
 
-    if to_type_de_champ.drop_down_list?
-      if from_type_de_champ.drop_down_list_options != to_type_de_champ.drop_down_list_options
+    if to_type_de_champ.any_drop_down_list?
+      if from_type_de_champ.drop_down_options != to_type_de_champ.drop_down_options
         changes << ProcedureRevisionChange::UpdateChamp.new(from_type_de_champ,
           :drop_down_options,
-          from_type_de_champ.drop_down_list_options,
-          to_type_de_champ.drop_down_list_options)
+          from_type_de_champ.drop_down_options,
+          to_type_de_champ.drop_down_options)
       end
       if to_type_de_champ.linked_drop_down_list?
         if from_type_de_champ.drop_down_secondary_libelle != to_type_de_champ.drop_down_secondary_libelle
@@ -443,7 +425,7 @@ class ProcedureRevision < ApplicationRecord
           from_type_de_champ.carte_optional_layers,
           to_type_de_champ.carte_optional_layers)
       end
-    elsif to_type_de_champ.piece_justificative?
+    elsif to_type_de_champ.piece_justificative_or_titre_identite?
       if from_type_de_champ.checksum_for_attachment(:piece_justificative_template) != to_type_de_champ.checksum_for_attachment(:piece_justificative_template)
         changes << ProcedureRevisionChange::UpdateChamp.new(from_type_de_champ,
           :piece_justificative_template,
@@ -458,7 +440,7 @@ class ProcedureRevision < ApplicationRecord
           to_type_de_champ.filename_for_attachement(:notice_explicative))
       end
     elsif to_type_de_champ.textarea?
-      if from_type_de_champ.character_limit != to_type_de_champ.character_limit
+      if from_type_de_champ.character_limit.presence != to_type_de_champ.character_limit.presence
         changes << ProcedureRevisionChange::UpdateChamp.new(from_type_de_champ,
           :character_limit,
           from_type_de_champ.character_limit,

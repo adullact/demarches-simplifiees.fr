@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sidekiq/web'
 require 'sidekiq/cron/web'
 
@@ -30,6 +32,8 @@ Rails.application.routes.draw do
       resources :confirmation_urls, only: :new
       resources :administrateur_confirmations, only: [:new, :create]
     end
+
+    resources :procedure_tags, only: [:index, :show, :new, :create, :edit, :update, :destroy]
 
     resources :archives, only: [:index, :show]
 
@@ -111,8 +115,10 @@ Rails.application.routes.draw do
     end
 
     get 'data_exports' => 'administrateurs#data_exports'
-    get 'exports/administrateurs/last_month' => 'administrateurs#export_last_month'
-    get 'exports/instructeurs/last_month' => 'instructeurs#export_last_month'
+    get 'exports/administrateurs/last_half_year' => 'administrateurs#export_last_half_year'
+    get 'exports/instructeurs/last_half_year' => 'instructeurs#export_last_half_year'
+    get 'exports/administrateurs/with_publiee_procedure' => 'administrateurs#export_with_publiee_procedure'
+    get 'exports/instructeurs/currently_active' => 'instructeurs#export_currently_active'
 
     get 'import_procedure_tags' => 'procedures#import_data'
     post 'import_tags' => 'procedures#import_tags'
@@ -183,10 +189,26 @@ Rails.application.routes.draw do
   get '/stats' => 'stats#index'
   get '/stats/download' => 'stats#download'
 
+  namespace :france_connect do
+    get 'particulier' => 'particulier#login'
+    get 'particulier/callback' => 'particulier#callback'
+
+    post 'particulier/send_email_merge_request'
+
+    post 'particulier/merge_using_fc_email'
+    post 'particulier/merge_using_password'
+    get 'particulier/merge_using_email_link/:email_merge_token' => 'particulier#merge_using_email_link', as: :particulier_merge_using_email_link
+
+    get 'confirm_email/:token', to: 'particulier#confirm_email', as: :confirm_email
+  end
+
   namespace :agent_connect do
     get '' => 'agent#index'
     get 'login' => 'agent#login'
     get 'callback' => 'agent#callback'
+    get 'explanation_2fa' => 'agent#explanation_2fa'
+    get 'relogin_after_2fa_config' => 'agent#relogin_after_2fa_config'
+    get 'logout_from_mcp' => 'agent#logout_from_mcp'
   end
 
   constraints(lambda { |_request| FranceConnectService.enabled? }) do
@@ -229,10 +251,10 @@ Rails.application.routes.draw do
   get "suivi" => "root#suivi"
   post "save_locale" => "root#save_locale"
 
-  get "contact", to: "support#index"
-  post "contact", to: "support#create"
+  get "contact", to: "contact#index"
+  post "contact", to: "contact#create"
 
-  get "contact-admin", to: "support#admin"
+  get "contact-admin", to: "contact#admin"
 
   get "mentions-legales", to: "static_pages#legal_notice"
   get "declaration-accessibilite", to: "static_pages#accessibility_statement"
@@ -273,6 +295,7 @@ Rails.application.routes.draw do
       get '/carte' => 'carte#show'
       post '/carte' => 'carte#save'
       post '/repousser-expiration' => 'dossiers#extend_conservation'
+      post '/repousser-expiration-and-restore' => 'dossiers#extend_conservation_and_restore'
     end
 
     # Redirection of legacy "/users/dossiers" route to "/dossiers"
@@ -386,13 +409,13 @@ Rails.application.routes.draw do
       end
 
       collection do
-        get 'transferer', to: 'dossiers#transferer_all'
         resources :transfers, only: [:create, :update, :destroy]
       end
     end
 
     resource :feedback, only: [:create]
     get 'demarches' => 'demarches#index'
+    get 'deleted_dossiers' => 'dossiers#deleted_dossiers'
 
     get 'profil' => 'profil#show'
     patch 'update_email' => 'profil#update_email'
@@ -447,14 +470,23 @@ Rails.application.routes.draw do
   #
 
   scope module: 'instructeurs', as: 'instructeur' do
+    resources :procedures, only: [] do
+      resources :export_templates, only: [:new, :create, :edit, :update, :destroy] do
+        collection do
+          put 'preview'
+        end
+      end
+    end
+
+    resources :procedure_presentation, only: [:update] do
+      member do
+        get 'refresh_column_filter'
+      end
+    end
+
     resources :procedures, only: [:index, :show], param: :procedure_id do
       member do
         resources :archives, only: [:index, :create]
-        resources :export_templates, only: [:new, :create, :edit, :update, :destroy] do
-          collection do
-            get 'preview'
-          end
-        end
 
         resources :groupes, only: [:index, :show], controller: 'groupe_instructeurs' do
           resource :contact_information
@@ -473,11 +505,6 @@ Rails.application.routes.draw do
           end
         end
 
-        patch 'update_displayed_fields'
-        get 'update_sort/:table/:column' => 'procedures#update_sort', as: 'update_sort'
-        post 'add_filter'
-        post 'update_filter'
-        get 'remove_filter'
         get 'download_export'
         post 'download_export'
         get 'polling_last_export'
@@ -494,6 +521,8 @@ Rails.application.routes.draw do
           member do
             resources :commentaires, only: [:destroy]
             post 'repousser-expiration' => 'dossiers#extend_conservation'
+            post 'repousser-expiration-and-restore' => 'dossiers#extend_conservation_and_restore'
+            post 'dossier_labels' => 'dossiers#dossier_labels'
             get 'geo_data'
             get 'apercu_attestation'
             get 'bilans_bdf'
@@ -691,6 +720,8 @@ Rails.application.routes.draw do
         get 'preview', on: :member
       end
 
+      resources :labels, controller: 'labels'
+
       resource :attestation_template, only: [:show, :edit, :update, :create] do
         get 'preview', on: :member
       end
@@ -718,10 +749,14 @@ Rails.application.routes.draw do
     resources :services, except: [:show] do
       collection do
         patch 'add_to_procedure'
+        get ':procedure_id/prefill' => :prefill, as: :prefill
       end
     end
 
     resources :api_tokens, only: [:create, :destroy, :edit, :update] do
+      member do
+        delete 'remove_procedure'
+      end
       collection do
         get :nom
         get :autorisations

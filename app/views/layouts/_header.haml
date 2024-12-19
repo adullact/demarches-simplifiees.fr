@@ -1,12 +1,12 @@
--# We can't use &. because the controller may not implement #nav_bar_profile
-- nav_bar_profile = controller.try(:nav_bar_profile) || :guest
+-# We can't use &. or as helper methods because the controllers from view specs does not implement these methods
+- nav_bar_profile = controller.try(:nav_bar_profile) || controller.try(:fallback_nav_bar_profile) || :guest
 - dossier = controller.try(:dossier_for_help)
 - procedure = controller.try(:procedure_for_help)
 - is_instructeur_context = nav_bar_profile == :instructeur && instructeur_signed_in?
 - is_administrateur_context = nav_bar_profile == :administrateur && administrateur_signed_in?
 - is_expert_context = nav_bar_profile == :expert && expert_signed_in?
 - is_user_context = nav_bar_profile == :user
-- is_search_enabled = [params[:controller] == 'recherche', is_instructeur_context, is_expert_context, is_user_context && current_user.dossiers.count].any?
+- is_search_enabled = [params[:controller] == 'recherche', is_instructeur_context, is_expert_context].any?
 %header{ class: ["fr-header", content_for?(:notice_info) && "fr-header__with-notice-info"], role: "banner", "data-controller": "dsfr-header" }
   %nav{ :role => "navigation", "aria-label" => t('layouts.header.main_menu') }
     .fr-header__body
@@ -52,8 +52,8 @@
                   - elsif nav_bar_profile == :instructeur
                     = render partial: 'shared/help/help_dropdown_instructeur'
                   - else
-                    // NB: on mobile in order to have links correctly aligned, we need a left icon
-                    = link_to t('help'), t("links.common.faq.url"), class: 'fr-btn dropdown-button'
+                    -# NB: on mobile in order to have links correctly aligned, we need a left icon #
+                    = link_to t('help'), t("links.common.faq.url"), class: 'fr-btn'
 
 
 
@@ -61,13 +61,13 @@
                   %li= render partial: 'layouts/locale_dropdown'
 
 
-            - if params[:controller] == 'recherche'
-              = render partial: 'layouts/search_dossiers_form'
-
             - if is_instructeur_context
-              = render partial: 'layouts/search_dossiers_form'
+              = render partial: 'layouts/search_dossiers_form', locals: { context: :instructeur }
 
-            - if is_expert_context
+            - elsif is_expert_context
+              = render partial: 'layouts/search_dossiers_form', locals: { context: :expert }
+
+            - elsif params[:controller] == 'recherche'
               = render partial: 'layouts/search_dossiers_form'
 
     = render SwitchDomainBannerComponent.new(user: current_user)

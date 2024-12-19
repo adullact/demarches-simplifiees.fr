@@ -1,17 +1,20 @@
-describe 'Inviting an expert:' do
+# frozen_string_literal: true
+
+describe 'Inviting an expert:', js: true do
   include ActiveJob::TestHelper
   include ActionView::Helpers
 
   context 'as an invited Expert' do
     let(:expert) { create(:expert) }
     let(:instructeur) { create(:instructeur) }
-    let(:procedure) { create(:procedure, :published, types_de_champ_public: [{ type: :piece_justificative }], instructeurs: [instructeur]) }
-    let(:experts_procedure) { create(:experts_procedure, expert: expert, procedure: procedure) }
-    let(:dossier) { create(:dossier, :en_construction, :with_dossier_link, procedure: procedure) }
-    let(:champ) { dossier.champs_public.first }
+    let(:types_de_champ_private) { [] }
+    let(:procedure) { create(:procedure, :published, types_de_champ_public: [{ type: :piece_justificative }, { type: :dossier_link }], types_de_champ_private:, instructeurs: [instructeur]) }
+    let(:experts_procedure) { create(:experts_procedure, expert: expert, procedure:) }
+    let(:dossier) { create(:dossier, :en_construction, :with_populated_champs, :with_populated_annotations, procedure:) }
+    let(:champ) { dossier.champs.first }
     let(:avis) { create(:avis, dossier: dossier, claimant: instructeur, experts_procedure: experts_procedure, confidentiel: true) }
     let(:avis_with_question) { create(:avis, dossier: dossier, claimant: instructeur, experts_procedure: experts_procedure, confidentiel: true, question_label: 'Question ?') }
-    let(:dossier_accepte) { create(:dossier, :accepte, procedure: procedure) }
+    let(:dossier_accepte) { create(:dossier, :accepte, procedure:) }
     let(:avis_on_dossier_accepte) { create(:avis, dossier: dossier_accepte, claimant: instructeur, experts_procedure: experts_procedure, confidentiel: true) }
 
     context 'when I don’t already have an account' do
@@ -31,7 +34,8 @@ describe 'Inviting an expert:' do
       end
 
       scenario 'I can sign-in again afterwards' do
-        click_on 'Se déconnecter'
+        click_on(avis.expert.email.to_s, visible: true)
+        click_on('Se déconnecter', visible: true)
 
         visit new_user_session_path
         sign_in_with avis.expert.email, password
@@ -51,9 +55,10 @@ describe 'Inviting an expert:' do
 
         expect(page).to have_current_path(new_user_session_path)
         login_as avis.expert.user, scope: :user
-        sign_in_with(avis.expert.email, 'This is a very complicated password !')
+        sign_in_with(avis.expert.email, '{My-$3cure-p4ssWord}')
         expect(page).to have_content("connecté en tant qu’expert")
-        click_on 'Passer en usager'
+        click_on(avis.expert.email.to_s, visible: true)
+        click_on('Passer en usager', visible: true)
         expect(page).to have_current_path(dossiers_path)
       end
     end
@@ -67,7 +72,7 @@ describe 'Inviting an expert:' do
       expect(page).to have_text('1 avis à donner')
       expect(page).to have_text('0 avis donnés')
 
-      expect(page).to have_selector('.badge', text: 1)
+      expect(page).to have_selector('.fr-badge', text: 1)
       expect(page).to have_selector('.notifications')
 
       click_on '1 avis à donner'
@@ -88,7 +93,7 @@ describe 'Inviting an expert:' do
       expect(page).to have_text('0 avis à donner')
       expect(page).to have_text('1 avis donné')
 
-      expect(page).not_to have_selector('.badge', text: 1)
+      expect(page).not_to have_selector('.fr-badge', text: 1)
       expect(page).not_to have_selector('.notifications')
     end
 
@@ -108,10 +113,11 @@ describe 'Inviting an expert:' do
       expect(page).to have_text('Cet avis est confidentiel')
 
       # check validation
+      fill_in 'avis_answer', with: 'Ma réponse d’expert.'
       click_on 'Envoyer votre avis'
       expect(page).to have_content("Le champ « Réponse oui/non » n'est pas inclus(e) dans la liste")
 
-      choose 'non'
+      find('label', text: 'non').click
       fill_in 'avis_answer', with: 'Ma réponse d’expert.'
       click_on 'Envoyer votre avis'
 
@@ -133,25 +139,7 @@ describe 'Inviting an expert:' do
     context 'with dossiers having attached files', js: true do
       let(:path) { 'spec/fixtures/files/piece_justificative_0.pdf' }
       let(:commentaire) { create(:commentaire, instructeur: instructeur, dossier: dossier) }
-
-      before do
-        champ
-          .piece_justificative_file
-          .attach(io: File.open(path),
-                  filename: "piece_justificative_0.pdf",
-                  content_type: "application/pdf",
-                  metadata: { virus_scan_result: ActiveStorage::VirusScanner::SAFE })
-
-        dossier.champs_private << create(:champ_piece_justificative, private: true, dossier: dossier)
-
-        dossier.champs_private
-          .first
-          .piece_justificative_file
-          .attach(io: File.open(path),
-                  filename: "piece_justificative_0.pdf",
-                  content_type: "application/pdf",
-                  metadata: { virus_scan_result: ActiveStorage::VirusScanner::SAFE })
-      end
+      let(:types_de_champ_private) { [{ type: :piece_justificative }] }
 
       scenario 'An Expert can download an archive containing attachments without any private champ, bill signature and operations logs' do
         avis # create avis
@@ -162,17 +150,14 @@ describe 'Inviting an expert:' do
         click_on avis.dossier.user.email
 
         click_on 'Télécharger le dossier et toutes ses pièces jointes'
-        # For some reason, clicking the download link does not trigger the download in the headless browser ;
-        # So we need to go to the download link directly
-        visit telecharger_pjs_expert_avis_path(avis.dossier.procedure, avis)
 
         DownloadHelpers.wait_for_download
         files = ZipTricks::FileReader.read_zip_structure(io: File.open(DownloadHelpers.download))
         expect(DownloadHelpers.download).to include "dossier-#{dossier.id}.zip"
         expect(files.size).to be 2
         expect(files[0].filename.include?('export')).to be_truthy
-        expect(files[1].filename.include?('piece_justificative_0')).to be_truthy
-        expect(files[1].uncompressed_size).to be File.size(path)
+        expect(files[1].filename.include?('toto')).to be_truthy
+        expect(files[1].uncompressed_size).to be 4
       end
 
       before { DownloadHelpers.clear_downloads }
@@ -184,10 +169,10 @@ describe 'Inviting an expert:' do
     let(:expert_1) { create(:expert) }
     let(:expert_2) { create(:expert) }
     let(:instructeur) { create(:instructeur) }
-    let(:procedure) { create(:procedure, :published, instructeurs: [instructeur]) }
-    let(:experts_procedure_1) { create(:experts_procedure, expert: expert_1, procedure: procedure) }
-    let(:experts_procedure_2) { create(:experts_procedure, expert: expert_2, procedure: procedure) }
-    let(:dossier) { create(:dossier, :en_construction, :with_dossier_link, procedure: procedure) }
+    let(:procedure) { create(:procedure, :published, instructeurs: [instructeur], types_de_champ_public: [{ type: :dossier_link }]) }
+    let(:experts_procedure_1) { create(:experts_procedure, expert: expert_1, procedure:) }
+    let(:experts_procedure_2) { create(:experts_procedure, expert: expert_2, procedure:) }
+    let(:dossier) { create(:dossier, :en_construction, :with_populated_champs, procedure:) }
     let!(:avis_1) { create(:avis, dossier: dossier, claimant: instructeur, experts_procedure: experts_procedure_1, confidentiel: true) }
     let!(:avis_2) { create(:avis, dossier: dossier, claimant: instructeur, experts_procedure: experts_procedure_2, confidentiel: false) }
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'Creating a new dossier:', js: true do
   let(:user)  { create(:user) }
   let(:siret) { '41816609600051' }
@@ -42,11 +44,10 @@ describe 'Creating a new dossier:', js: true do
         let(:expected_birthday) { Date.new(1987, 12, 10) }
 
         before do
-          fill_in 'Date de naissance', with: birthday_format
+          fill_in 'Date de naissance', with: expected_birthday
         end
 
         context 'when the birthday is asked' do
-          let(:birthday_format) { '12-10-1987' }
           it_behaves_like 'the user can create a new draft'
         end
       end
@@ -77,7 +78,7 @@ describe 'Creating a new dossier:', js: true do
           find('label', text: 'Monsieur').click # force focus out
           within "#identite-form" do
             within '.suspect-email' do
-              expect(page).to have_content("Information : Voulez-vous dire ?")
+              expect(page).to have_content("L'adresse semble erronée Vouliez-vous écrire : prenom.nom@gmail.com ? Oui Non")
               click_button("Oui")
             end
             click_button("Continuer")

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'user access to the list of their dossiers', js: true do
   let(:user) { create(:user) }
   let(:procedure_accuse_lecture)    { create(:procedure, :accuse_lecture) }
@@ -12,6 +14,9 @@ describe 'user access to the list of their dossiers', js: true do
   let!(:dossier_for_tiers)          { create(:dossier, :en_instruction, :for_tiers_with_notification, user: user) }
   let!(:dossier_en_construction_with_accuse_lecture) { create(:dossier, :en_construction, user: user, procedure: procedure_accuse_lecture) }
   let!(:dossier_accepte_with_accuse_lecture) { create(:dossier, :accepte, user: user, procedure: procedure_accuse_lecture) }
+  let!(:dossier_en_construction_expire) { create(:dossier, :with_individual, :with_populated_champs, :en_construction, :hidden_by_expired, user: user) }
+  let!(:dossier_traite_expire) { create(:dossier, :accepte, :hidden_by_expired, user: user) }
+  let!(:dossier_en_construction_supprime) { create(:dossier, :with_individual, :with_populated_champs, :en_construction, :hidden_by_user, user: user) }
   let(:dossiers_per_page) { 25 }
   let(:last_updated_dossier) { dossier_en_construction }
 
@@ -179,12 +184,12 @@ describe 'user access to the list of their dossiers', js: true do
       expect(page).not_to have_link('Supprimer le dossier', href: dossier_path(dossier_en_instruction))
     end
 
-    context 'when user clicks on delete button', js: true do
+    context 'when user clicks on delete button' do
       scenario 'the dossier is deleted' do
         expect(page).to have_content(dossier_en_construction.procedure.libelle)
         within(:css, ".card", match: :first) do
           click_on 'Autres actions'
-          page.accept_alert('Confirmer la suppression ?') do
+          accept_alert('Confirmer la suppression ?') do
             click_on 'Supprimer le dossier'
           end
         end
@@ -193,23 +198,62 @@ describe 'user access to the list of their dossiers', js: true do
         expect(page).not_to have_content(dossier_en_construction.procedure.libelle)
       end
     end
+  end
 
-    describe 'clone' do
-      it 'should have links to clone dossiers' do
-        expect(page).to have_link(nil, href: clone_dossier_path(dossier_brouillon))
-        expect(page).to have_link(nil, href: clone_dossier_path(dossier_en_construction))
-        expect(page).to have_link(nil, href: clone_dossier_path(dossier_en_instruction))
-      end
+  describe 'clone' do
+    it 'should have links to clone dossiers' do
+      expect(page).to have_link(nil, href: clone_dossier_path(dossier_brouillon))
+      expect(page).to have_link(nil, href: clone_dossier_path(dossier_en_construction))
+      expect(page).to have_link(nil, href: clone_dossier_path(dossier_en_instruction))
+    end
 
-      context 'when user clicks on clone button', js: true do
-        scenario 'the dossier is cloned' do
-          within(:css, ".card", match: :first) do
-            click_on 'Autres actions'
-            expect { click_on 'Dupliquer ce dossier' }.to change { dossier_brouillon.user.dossiers.count }.by(1)
-          end
-
-          expect(page).to have_content("Votre dossier a bien été dupliqué. Vous pouvez maintenant le vérifier, l’adapter puis le déposer.")
+    context 'when user clicks on clone button' do
+      scenario 'the dossier is cloned' do
+        within(:css, ".card", match: :first) do
+          click_on 'Autres actions'
+          expect { click_on 'Dupliquer ce dossier' }.to change { dossier_brouillon.user.dossiers.count }.by(1)
         end
+
+        expect(page).to have_content("Votre dossier a bien été dupliqué. Vous pouvez maintenant le vérifier, l’adapter puis le déposer.")
+      end
+    end
+  end
+
+  describe 'restore' do
+    it 'should have links to restore dossiers' do
+      click_on "3 supprimés"
+      expect(page).to have_link('Restaurer', href: restore_dossier_path(dossier_en_construction_supprime))
+      expect(page).to have_button('Restaurer et étendre la conservation')
+      expect(page).to have_link('Télécharger mon dossier', href: dossier_path("#{dossier_traite_expire.id}.pdf"))
+    end
+
+    context 'when user clicks on restore button' do
+      scenario 'the dossier is restored' do
+        click_on "3 supprimés"
+        expect(page).to have_content(dossier_en_construction_supprime.procedure.libelle)
+        click_on 'Restaurer'
+
+        expect(page).to have_content('Votre dossier a bien été restauré')
+        expect(page).to have_content('2 supprimés')
+      end
+    end
+
+    context 'when user clicks on restore and extend button' do
+      scenario 'the dossier is restored and extended' do
+        click_on "3 supprimés"
+        expect(page).to have_content(dossier_en_construction_expire.procedure.libelle)
+        click_on 'Restaurer et étendre la conservation'
+
+        expect(page).to have_content('Votre dossier sera conservé 3 mois supplémentaire')
+        expect(page).to have_content('2 supprimés')
+      end
+    end
+
+    context 'when user download PDF of expired' do
+      scenario "generate PDF" do
+        click_on "3 supprimés"
+        click_on 'Télécharger mon dossier', match: :first
+        # Test fails when an error happens during PDF generation
       end
     end
   end
@@ -262,7 +306,7 @@ describe 'user access to the list of their dossiers', js: true do
 
     context "when user search for something inside the dossier" do
       before do
-        page.find_by_id('q').set(dossier_en_construction.champs_public.first.value)
+        page.find_by_id('q').set(dossier_en_construction.project_champs_public.first.value)
       end
 
       context 'when it matches multiple dossiers' do
@@ -292,7 +336,7 @@ describe 'user access to the list of their dossiers', js: true do
           click_on 'Afficher'
           expect(page).not_to have_link(String(dossier_en_construction.id))
           expect(page).not_to have_link(String(dossier_with_champs.id))
-          expect(page).to have_content("Résultat de la recherche pour « #{dossier_en_construction.champs_public.first.value} » et pour la procédure « #{dossier_brouillon.procedure.libelle} » ")
+          expect(page).to have_content("Résultat de la recherche pour « #{dossier_en_construction.project_champs_public.first.value} » et pour la procédure « #{dossier_brouillon.procedure.libelle} » ")
           expect(page).to have_text("Aucun dossier")
         end
       end

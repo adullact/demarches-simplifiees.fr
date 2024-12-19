@@ -15,7 +15,7 @@ categories:
 platforms:
   - web
 logo: |-
-  https://www.demarches-simplifiees.fr/assets/favicons/16x16-02811394c05c7c0c941c5a7404bd2939ee9bf04eae047a68a576c098307d416c.png
+  https://www.demarches-simplifiees.fr/logo-icon.png
 legal:
   license: GPL-3.0-or-later
 localisation:
@@ -46,3 +46,6 @@ description:
     genericName: Générateur de formulaire
     features:
       - réaliser une démarche en ligne
+fundedBy:
+  - name: Direction interministérielle du numérique
+    url: https://lannuaire.service-public.fr/gouvernement/d1a97841-b4bf-46df-a089-1003e4e266b4

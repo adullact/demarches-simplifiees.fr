@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Helpscout::API
   MAILBOXES = 'mailboxes'
   CONVERSATIONS = 'conversations'
@@ -8,6 +10,8 @@ class Helpscout::API
   OAUTH2_TOKEN = 'oauth2/token'
 
   RATELIMIT_KEY = "helpscout-rate-limit-remaining"
+
+  class RateLimitError < StandardError; end;
 
   def ready?
     required_secrets = [
@@ -64,8 +68,31 @@ class Helpscout::API
     [body[:_embedded][:conversations], body[:page]]
   end
 
+  def list_old_customers(before, page: 1)
+    body = {
+      page:,
+      query: "(
+        modifiedAt:[* TO #{before.iso8601}]
+      )",
+      sortField: "modifiedAt",
+      sortOrder: "desc"
+    }
+
+    response = call_api(:get, "#{CUSTOMERS}?#{body.to_query}")
+    if !response.success?
+      raise StandardError, "Error while listing customers: #{response.response_code} '#{response.body}'"
+    end
+
+    body = parse_response_body(response)
+    [body[:_embedded][:customers], body[:page]]
+  end
+
   def delete_conversation(conversation_id)
     call_api(:delete, "#{CONVERSATIONS}/#{conversation_id}")
+  end
+
+  def delete_customer(customer_id)
+    call_api(:delete, "#{CUSTOMERS}/#{customer_id}")
   end
 
   def add_phone_number(email, phone)
@@ -162,6 +189,10 @@ class Helpscout::API
       })
     end.tap do |response|
       Rails.cache.write(RATELIMIT_KEY, response.headers["X-Ratelimit-Remaining-Minute"], expires_in: 1.minute)
+
+      if response.response_code.to_i == 429
+        raise RateLimitError
+      end
     end
   end
 

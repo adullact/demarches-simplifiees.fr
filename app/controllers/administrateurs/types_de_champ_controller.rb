@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Administrateurs
   class TypesDeChampController < AdministrateurController
     before_action :retrieve_procedure
@@ -18,15 +20,14 @@ module Administrateurs
 
     def update
       type_de_champ = draft.find_and_ensure_exclusive_use(params[:stable_id])
+      @coordinate = draft.coordinate_for(type_de_champ)
 
-      if type_de_champ.revision_type_de_champ.used_by_routing_rules? && changing_of_type?(type_de_champ)
-        coordinate = draft.coordinate_for(type_de_champ)
+      if @coordinate.used_by_routing_rules? && changing_of_type?(type_de_champ)
         errors = "« #{type_de_champ.libelle} » est utilisé pour le routage, vous ne pouvez pas modifier son type."
-        @morphed = [champ_component_from(coordinate, focused: false, errors:)]
+        @morphed = [champ_component_from(@coordinate, focused: false, errors:)]
         flash.alert = errors
       elsif type_de_champ.update(type_de_champ_update_params)
         reload_procedure_with_includes
-        @coordinate = draft.coordinate_for(type_de_champ)
         @morphed = champ_components_starting_at(@coordinate)
       else
         flash.alert = type_de_champ.errors.full_messages
@@ -151,7 +152,7 @@ module Administrateurs
         :libelle,
         :description,
         :mandatory,
-        :drop_down_list_value,
+        :drop_down_options_from_text,
         :drop_down_other,
         :drop_down_secondary_libelle,
         :drop_down_secondary_description,

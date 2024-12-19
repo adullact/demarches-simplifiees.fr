@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   sequence(:instructeur_email) { |n| "inst#{n}@inst.com" }
 
@@ -8,7 +10,13 @@ FactoryBot.define do
 
     transient do
       email { generate(:instructeur_email) }
-      password { 'somethingverycomplated!' }
+      password { '{My-$3cure-p4ssWord}' }
+    end
+
+    trait :email_verified do
+      after(:create) do |instructeur|
+        instructeur.user.update(email_verified_at: Time.zone.now)
+      end
     end
 
     trait :with_agent_connect_information do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Instructeur, type: :model do
   let(:admin) { create :administrateur }
   let(:procedure) { create :procedure, :published, administrateur: admin }
@@ -165,20 +167,6 @@ describe Instructeur, type: :model do
       it { expect(errors).to be_nil }
     end
 
-    context 'with invalid presentation' do
-      let(:procedure_id) { procedure.id }
-      before do
-        pp = ProcedurePresentation.create(assign_to: procedure_assign, displayed_fields: [{ 'table' => 'invalid', 'column' => 'random' }])
-        pp.save(:validate => false)
-      end
-
-      it 'recreates a valid prsentation' do
-        expect(procedure_presentation).to be_persisted
-      end
-      it { expect(procedure_presentation).to be_valid }
-      it { expect(errors).to be_present }
-    end
-
     context 'with default presentation' do
       let(:procedure_id) { procedure_2.id }
 
@@ -194,38 +182,38 @@ describe Instructeur, type: :model do
     subject { instructeur.notifications_for_dossier(dossier) }
 
     context 'when the instructeur has just followed the dossier' do
-      it { is_expected.to match({ demande: false, annotations_privees: false, avis: false, messagerie: false }) }
+      it { is_expected.to match({ demande: false, annotations_privees: false, avis: false, messagerie: false, pieces_jointes: false }) }
     end
 
     context 'when there is a modification on public champs' do
       before {
-        dossier.champs_public.first.update(value: 'toto')
+        dossier.project_champs_public.first.update(value: 'toto')
         dossier.update(last_champ_updated_at: Time.zone.now)
       }
 
-      it { is_expected.to match({ demande: true, annotations_privees: false, avis: false, messagerie: false }) }
+      it { is_expected.to match({ demande: true, annotations_privees: false, avis: false, messagerie: false, pieces_jointes: false }) }
     end
 
     context 'when there is a modification on identity' do
       before { dossier.update(identity_updated_at: Time.zone.now) }
 
-      it { is_expected.to match({ demande: true, annotations_privees: false, avis: false, messagerie: false }) }
+      it { is_expected.to match({ demande: true, annotations_privees: false, avis: false, messagerie: false, pieces_jointes: false }) }
     end
 
     context 'when there is a modification on groupe instructeur' do
       let(:groupe_instructeur) { create(:groupe_instructeur, instructeurs: [instructeur], procedure: dossier.procedure) }
       before { dossier.assign_to_groupe_instructeur(groupe_instructeur, DossierAssignment.modes.fetch(:auto)) }
 
-      it { is_expected.to match({ demande: true, annotations_privees: false, avis: false, messagerie: false }) }
+      it { is_expected.to match({ demande: true, annotations_privees: false, avis: false, messagerie: false, pieces_jointes: false }) }
     end
 
     context 'when there is a modification on private champs' do
       before {
-        dossier.champs_private.first.update(value: 'toto')
+        dossier.project_champs_private.first.update(value: 'toto')
         dossier.update(last_champ_private_updated_at: Time.zone.now)
       }
 
-      it { is_expected.to match({ demande: false, annotations_privees: true, avis: false, messagerie: false }) }
+      it { is_expected.to match({ demande: false, annotations_privees: true, avis: false, messagerie: false, pieces_jointes: false }) }
     end
 
     context 'when there is a modification on avis' do
@@ -234,23 +222,34 @@ describe Instructeur, type: :model do
         dossier.update(last_avis_updated_at: Time.zone.now)
       }
 
-      it { is_expected.to match({ demande: false, annotations_privees: false, avis: true, messagerie: false }) }
+      it { is_expected.to match({ demande: false, annotations_privees: false, avis: true, messagerie: false, pieces_jointes: false }) }
     end
 
     context 'messagerie' do
       context 'when there is a new commentaire' do
-        before {
-          create(:commentaire, dossier: dossier, email: 'a@b.com')
-          dossier.update(last_commentaire_updated_at: Time.zone.now)
-        }
+        context 'without a file' do
+          before {
+            create(:commentaire, dossier: dossier, email: 'a@b.com')
+            dossier.update(last_commentaire_updated_at: Time.zone.now)
+          }
 
-        it { is_expected.to match({ demande: false, annotations_privees: false, avis: false, messagerie: true }) }
+          it { is_expected.to match({ demande: false, annotations_privees: false, avis: false, messagerie: true, pieces_jointes: false }) }
+        end
+
+        context 'with a file' do
+          before {
+            create(:commentaire, :with_file, dossier: dossier, email: 'a@b.com')
+            dossier.update(last_commentaire_updated_at: Time.zone.now, last_commentaire_piece_jointe_updated_at: Time.zone.now)
+          }
+
+          it { is_expected.to match({ demande: false, annotations_privees: false, avis: false, messagerie: true, pieces_jointes: true }) }
+        end
       end
 
       context 'when there is a new commentaire issued by tps' do
         before { create(:commentaire, dossier: dossier, email: CONTACT_EMAIL) }
 
-        it { is_expected.to match({ demande: false, annotations_privees: false, avis: false, messagerie: false }) }
+        it { is_expected.to match({ demande: false, annotations_privees: false, avis: false, messagerie: false, pieces_jointes: false }) }
       end
     end
   end
@@ -300,7 +299,7 @@ describe Instructeur, type: :model do
       it { expect(instructeur_on_procedure_2.notifications_for_groupe_instructeurs(gi_p2)[:en_cours]).to match([]) }
 
       context 'and there is a modification on private champs' do
-        before { dossier.champs_private.first.update_attribute('value', 'toto') }
+        before { dossier.project_champs_private.first.update_attribute('value', 'toto') }
 
         it { is_expected.to match([dossier.id]) }
       end
@@ -315,7 +314,7 @@ describe Instructeur, type: :model do
     end
 
     context 'when there is a modification on public champs on a followed dossier from another procedure' do
-      before { dossier_on_procedure_2.champs_public.first.update_attribute('value', 'toto') }
+      before { dossier_on_procedure_2.project_champs_public.first.update_attribute('value', 'toto') }
 
       it { is_expected.to match([]) }
     end
@@ -719,12 +718,15 @@ describe Instructeur, type: :model do
       context 'with an archives dossier' do
         let!(:archives_dossier) { create(:dossier, :en_instruction, procedure: procedure, archived: true) }
 
-        it { expect(subject['a_suivre']).to eq(0) }
-        it { expect(subject['suivis']).to eq(0) }
-        it { expect(subject['traites']).to eq(0) }
-        it { expect(subject['tous']).to eq(0) }
-        it { expect(subject['archives']).to eq(1) }
-        it { expect(subject['expirant']).to eq(0) }
+        it do
+          expect(subject['a_suivre']).to eq(0)
+          expect(subject['suivis']).to eq(0)
+          expect(subject['traites']).to eq(0)
+          expect(subject['tous']).to eq(0)
+          expect(subject['archives']).to eq(1)
+          expect(subject['supprimes']).to eq(0)
+          expect(subject['expirant']).to eq(0)
+        end
 
         context 'and terminer dossiers on each of the others groups' do
           let!(:archives_dossier_on_gi_2) { create(:dossier, :en_instruction, groupe_instructeur: gi_2, archived: true) }
@@ -736,16 +738,20 @@ describe Instructeur, type: :model do
 
       context 'with an expirants dossier' do
         let!(:expiring_dossier_termine_deleted) { create(:dossier, :accepte, procedure: procedure, processed_at: 175.days.ago, hidden_by_administration_at: 2.days.ago) }
+        let!(:expiring_dossier_termine_auto_deleted) { create(:dossier, :accepte, procedure: procedure, processed_at: 175.days.ago, hidden_by_expired_at: 2.days.ago) }
         let!(:expiring_dossier_termine) { create(:dossier, :accepte, procedure: procedure, processed_at: 175.days.ago) }
         let!(:expiring_dossier_en_construction) { create(:dossier, :en_construction, en_construction_at: 175.days.ago, procedure: procedure) }
         before { subject }
 
-        it { expect(subject['a_suivre']).to eq(1) }
-        it { expect(subject['suivis']).to eq(0) }
-        it { expect(subject['traites']).to eq(1) }
-        it { expect(subject['tous']).to eq(2) }
-        it { expect(subject['archives']).to eq(0) }
-        it { expect(subject['expirant']).to eq(2) }
+        it do
+          expect(subject['a_suivre']).to eq(1)
+          expect(subject['suivis']).to eq(0)
+          expect(subject['traites']).to eq(1)
+          expect(subject['tous']).to eq(2)
+          expect(subject['archives']).to eq(0)
+          expect(subject['supprimes']).to eq(2)
+          expect(subject['expirant']).to eq(2)
+        end
       end
     end
   end

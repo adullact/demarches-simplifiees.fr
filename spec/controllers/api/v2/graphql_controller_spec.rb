@@ -1,12 +1,15 @@
+# frozen_string_literal: true
+
 describe API::V2::GraphqlController do
   let(:admin) { administrateurs(:default_admin) }
   let(:generated_token) { APIToken.generate(admin) }
   let(:api_token) { generated_token.first }
   let(:token) { generated_token.second }
-  let(:procedure) { create(:procedure, :published, :for_individual, :with_service, administrateurs: [admin]) }
-  let(:dossier)  { create(:dossier, :en_construction, :with_individual, procedure: procedure) }
-  let(:dossier1) { create(:dossier, :en_construction, :with_individual, procedure: procedure, en_construction_at: 1.day.ago) }
-  let(:dossier2) { create(:dossier, :en_construction, :with_individual, :archived, procedure: procedure, en_construction_at: 3.days.ago) }
+  let(:types_de_champ_public) { [] }
+  let(:procedure) { create(:procedure, :published, :for_individual, :with_service, administrateurs: [admin], types_de_champ_public:) }
+  let(:dossier)  { create(:dossier, :en_construction, :with_individual, :with_populated_champs, procedure:) }
+  let(:dossier1) { create(:dossier, :en_construction, :with_individual, procedure:, en_construction_at: 1.day.ago) }
+  let(:dossier2) { create(:dossier, :en_construction, :with_individual, :archived, procedure:, en_construction_at: 3.days.ago) }
   let(:dossiers) { [dossier] }
   let(:instructeur) { create(:instructeur, followed_dossiers: dossiers) }
 
@@ -131,7 +134,7 @@ describe API::V2::GraphqlController do
         end
 
         it {
-          expect(gql_errors.first[:message]).to eq("An object of type Demarche was hidden due to permissions")
+          expect(gql_errors.first[:message]).to eq("Without a token, only persisted queries are allowed")
         }
       end
 
@@ -158,7 +161,7 @@ describe API::V2::GraphqlController do
 
         it {
           expect(token).not_to be_nil
-          expect(gql_errors.first[:message]).to eq("An object of type Demarche was hidden due to permissions")
+          expect(gql_errors.first[:message]).to eq("Without a token, only persisted queries are allowed")
         }
       end
 
@@ -216,7 +219,7 @@ describe API::V2::GraphqlController do
                 description: tdc.description,
                 required: tdc.mandatory?,
                 champDescriptors: tdc.repetition? ? procedure.active_revision.children_of(tdc.reload).map { { id: _1.to_typed_id, __typename: format_type_champ(_1.type_champ) } } : nil,
-                options: tdc.drop_down_list? ? tdc.drop_down_list_options.reject(&:empty?) : nil
+                options: tdc.any_drop_down_list? ? tdc.drop_down_options.reject(&:empty?) : nil
               }.compact
             end,
             dossiers: {
@@ -512,11 +515,11 @@ describe API::V2::GraphqlController do
             avis: []
           )
 
-          expected_champs = dossier.champs_public.map do |champ|
+          expected_champs = dossier.project_champs_public.map do |champ|
             {
               id: champ.to_typed_id,
               label: champ.libelle,
-              stringValue: champ.for_api_v2
+              stringValue: champ.type_de_champ.champ_value_for_api(champ)
             }
           end
           expect(gql_data[:dossier][:champs]).to match_array(expected_champs)
@@ -543,7 +546,7 @@ describe API::V2::GraphqlController do
           end
           expect(gql_data[:dossier][:messages]).to match_array(expected_messages)
 
-          expect(gql_data[:dossier][:champs][0][:id]).to eq(dossier.champs_public[0].type_de_champ.to_typed_id)
+          expect(gql_data[:dossier][:champs][0][:id]).to eq(dossier.project_champs_public[0].type_de_champ.to_typed_id)
         end
       end
 
@@ -684,8 +687,8 @@ describe API::V2::GraphqlController do
       context "champs" do
         let(:procedure) { create(:procedure, :published, :for_individual, administrateurs: [admin], types_de_champ_public: [{ type: :date }, { type: :datetime }]) }
         let(:dossier) { create(:dossier, :en_construction, procedure: procedure) }
-        let(:champ_date) { dossier.champs_public.first }
-        let(:champ_datetime) { dossier.champs_public.second }
+        let(:champ_date) { dossier.project_champs_public.first }
+        let(:champ_datetime) { dossier.project_champs_public.second }
 
         before do
           champ_date.update(value: '2019-07-10')
@@ -806,7 +809,8 @@ describe API::V2::GraphqlController do
     end
 
     describe "champ piece_justificative" do
-      let(:champ) { create(:champ_piece_justificative, dossier: dossier) }
+      let(:types_de_champ_public) { [{ type: :piece_justificative }] }
+      let(:champ) { dossier.champs.first }
       let(:byte_size) { 2712286911 }
 
       context "with deprecated file field" do
@@ -1228,14 +1232,18 @@ describe API::V2::GraphqlController do
       end
 
       describe 'dossierModifierAnnotation' do
-        let(:procedure) { create(:procedure, :published, :for_individual, :with_service, :with_all_annotations, administrateurs: [admin]) }
+        let(:procedure) do
+          create(:procedure, :published, :for_individual, :with_service, administrateurs: [admin], types_de_champ_private:)
+        end
 
         describe 'text' do
+          let(:types_de_champ_private) { [{ type: :text }] }
+
           let(:query) do
             "mutation {
               dossierModifierAnnotationText(input: {
                 dossierId: \"#{dossier.to_typed_id}\",
-                annotationId: \"#{dossier.champs_private.find { |c| c.type == 'Champs::TextChamp' }.to_typed_id}\",
+                annotationId: \"#{dossier.project_champs_private.find { |c| c.type == 'Champs::TextChamp' }.to_typed_id}\",
                 instructeurId: \"#{instructeur.to_typed_id}\",
                 value: \"hello\"
               }) {
@@ -1264,13 +1272,15 @@ describe API::V2::GraphqlController do
         end
 
         describe 'checkbox' do
+          let(:types_de_champ_private) { [{ type: :checkbox }] }
+
           let(:value) { 'true' }
 
           let(:query) do
             "mutation {
               dossierModifierAnnotationCheckbox(input: {
                 dossierId: \"#{dossier.to_typed_id}\",
-                annotationId: \"#{dossier.champs_private.find { |c| c.type_champ == 'checkbox' }.to_typed_id}\",
+                annotationId: \"#{dossier.project_champs_private.find { |c| c.type_champ == 'checkbox' }.to_typed_id}\",
                 instructeurId: \"#{instructeur.to_typed_id}\",
                 value: #{value}
               }) {
@@ -1314,13 +1324,14 @@ describe API::V2::GraphqlController do
         end
 
         describe 'yes_no' do
+          let(:types_de_champ_private) { [{ type: :yes_no }] }
           let(:value) { 'true' }
 
           let(:query) do
             "mutation {
               dossierModifierAnnotationCheckbox(input: {
                 dossierId: \"#{dossier.to_typed_id}\",
-                annotationId: \"#{dossier.champs_private.find { |c| c.type_champ == 'yes_no' }.to_typed_id}\",
+                annotationId: \"#{dossier.project_champs_private.find { |c| c.type_champ == 'yes_no' }.to_typed_id}\",
                 instructeurId: \"#{instructeur.to_typed_id}\",
                 value: #{value}
               }) {
@@ -1364,11 +1375,13 @@ describe API::V2::GraphqlController do
         end
 
         describe 'date' do
+          let(:types_de_champ_private) { [{ type: :date }] }
+
           let(:query) do
             "mutation {
               dossierModifierAnnotationDate(input: {
                 dossierId: \"#{dossier.to_typed_id}\",
-                annotationId: \"#{dossier.champs_private.find { |c| c.type_champ == 'date' }.to_typed_id}\",
+                annotationId: \"#{dossier.project_champs_private.find { |c| c.type_champ == 'date' }.to_typed_id}\",
                 instructeurId: \"#{instructeur.to_typed_id}\",
                 value: \"#{1.day.from_now.to_date.iso8601}\"
               }) {
@@ -1388,7 +1401,7 @@ describe API::V2::GraphqlController do
 
               expect(gql_data).to eq(dossierModifierAnnotationDate: {
                 annotation: {
-                  stringValue: dossier.reload.champs_private.find { |c| c.type_champ == 'date' }.to_s
+                  stringValue: dossier.reload.project_champs_private.find { |c| c.type_champ == 'date' }.to_s
                 },
                 errors: nil
               })
@@ -1397,11 +1410,13 @@ describe API::V2::GraphqlController do
         end
 
         describe 'datetime' do
+          let(:types_de_champ_private) { [{ type: :datetime }] }
+
           let(:query) do
             "mutation {
               dossierModifierAnnotationDatetime(input: {
                 dossierId: \"#{dossier.to_typed_id}\",
-                annotationId: \"#{dossier.champs_private.find { |c| c.type_champ == 'datetime' }.to_typed_id}\",
+                annotationId: \"#{dossier.project_champs_private.find { |c| c.type_champ == 'datetime' }.to_typed_id}\",
                 instructeurId: \"#{instructeur.to_typed_id}\",
                 value: \"#{1.day.from_now.iso8601}\"
               }) {
@@ -1421,7 +1436,7 @@ describe API::V2::GraphqlController do
 
               expect(gql_data).to eq(dossierModifierAnnotationDatetime: {
                 annotation: {
-                  stringValue: dossier.reload.champs_private.find { |c| c.type_champ == 'datetime' }.to_s
+                  stringValue: dossier.reload.project_champs_private.find { |c| c.type_champ == 'datetime' }.to_s
                 },
                 errors: nil
               })
@@ -1429,12 +1444,60 @@ describe API::V2::GraphqlController do
           end
         end
 
+        describe 'drop_down_list' do
+          let(:drop_down_options) { ['bijour'] }
+          let(:types_de_champ_private) { [{ type: :drop_down_list, options: drop_down_options }] }
+          let(:query) do
+            "mutation {
+              dossierModifierAnnotationDropDownList(input: {
+                dossierId: \"#{dossier.to_typed_id}\",
+                annotationId: \"#{dossier.project_champs_private.find { |c| c.type_champ == 'drop_down_list' }.to_typed_id}\",
+                instructeurId: \"#{instructeur.to_typed_id}\",
+                value: \"#{value}\"
+              }) {
+                annotation {
+                  stringValue
+                }
+                errors {
+                  message
+                }
+              }
+            }"
+          end
+
+          context "success" do
+            let(:value) { drop_down_options.first }
+            it 'should be a success' do
+              expect(gql_errors).to eq(nil)
+
+              expect(gql_data).to eq(dossierModifierAnnotationDropDownList: {
+                annotation: {
+                  stringValue: dossier.reload.project_champs_private.find { |c| c.type_champ == 'drop_down_list' }.to_s
+                },
+                errors: nil
+              })
+            end
+          end
+          context "failure" do
+            let(:value) { drop_down_options.first.reverse }
+            it 'should be a success' do
+              expect(gql_errors).to eq(nil)
+
+              expect(gql_data).to eq(dossierModifierAnnotationDropDownList: {
+                annotation: nil,
+                errors: [{ message: "doit être dans les options proposées" }]
+              })
+            end
+          end
+        end
+
         describe 'integer_number' do
+          let(:types_de_champ_private) { [{ type: :integer_number }] }
           let(:query) do
             "mutation {
               dossierModifierAnnotationIntegerNumber(input: {
                 dossierId: \"#{dossier.to_typed_id}\",
-                annotationId: \"#{dossier.champs_private.find { |c| c.type_champ == 'integer_number' }.to_typed_id}\",
+                annotationId: \"#{dossier.project_champs_private.find { |c| c.type_champ == 'integer_number' }.to_typed_id}\",
                 instructeurId: \"#{instructeur.to_typed_id}\",
                 value: 42
               }) {
@@ -1461,45 +1524,6 @@ describe API::V2::GraphqlController do
             end
           end
         end
-      end
-    end
-  end
-
-  context "when not authenticated" do
-    it "should return error" do
-      expect(gql_data).to eq(nil)
-      expect(gql_errors).not_to eq(nil)
-    end
-
-    describe "dossier" do
-      let(:query) { "{ dossier(number: #{dossier.id}) { id number usager { email } } }" }
-
-      it "should return error" do
-        expect(gql_data).to eq(nil)
-        expect(gql_errors).not_to eq(nil)
-      end
-    end
-
-    describe "mutation" do
-      let(:query) do
-        "mutation {
-          dossierEnvoyerMessage(input: {
-            dossierId: \"#{dossier.to_typed_id}\",
-            instructeurId: \"#{instructeur.to_typed_id}\",
-            body: \"Bonjour\"
-          }) {
-            message {
-              body
-            }
-            errors {
-              message
-            }
-          }
-        }"
-      end
-
-      it "should return error" do
-        expect(gql_data[:dossierEnvoyerMessage][:errors].first[:message]).to eq("Le jeton utilisé est configuré seulement en lecture")
       end
     end
   end

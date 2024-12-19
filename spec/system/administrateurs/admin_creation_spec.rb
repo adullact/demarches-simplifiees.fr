@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 describe 'As an administrateur', js: true do
   let(:super_admin) { create(:super_admin) }
   let(:admin_email) { 'new_admin@gouv.fr' }
   let(:new_admin) { Administrateur.by_email(admin_email) }
-  let(:weak_password) { '12345678' }
+  let(:weak_password) { '000000000000' }
   let(:strong_password) { 'a new, long, and complicated password!' }
 
   before do
@@ -15,7 +17,7 @@ describe 'As an administrateur', js: true do
     end
   end
 
-  scenario 'I can register', js: true do
+  scenario 'I can register' do
     expect(new_admin.reload.user.active?).to be(false)
 
     confirmation_email = open_email(admin_email)

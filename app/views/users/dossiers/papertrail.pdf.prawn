@@ -1,4 +1,5 @@
-require "open-uri"
+# frozen_string_literal: true
+
 require 'prawn/measurement_extensions'
 
 def maybe_open(src)

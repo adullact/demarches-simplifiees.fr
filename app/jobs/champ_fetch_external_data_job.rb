@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 class ChampFetchExternalDataJob < ApplicationJob
   discard_on ActiveJob::DeserializationError
+  queue_as :critical # ui feedback, asap
 
   include Dry::Monads[:result]
 

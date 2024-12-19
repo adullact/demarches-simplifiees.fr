@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe MailTemplateConcern do
   let(:procedure) { create(:procedure) }
   let(:dossier) { create(:dossier, procedure: procedure) }
@@ -138,6 +140,14 @@ describe MailTemplateConcern do
     context 'in without continuation mail' do
       let(:mail) { create(:without_continuation_mail, procedure: procedure) }
       it_behaves_like 'inserting the --lien document justificatif-- tag'
+    end
+
+    context 'sva/svr' do
+      let(:procedure) { create(:procedure, :sva) }
+      let(:received_mail) { create(:received_mail, procedure:) }
+      it "treats date de passage en instruction as a tag" do
+        expect(received_mail.tags).to include(include({ libelle: 'date prévisionnelle SVA/SVR' }))
+      end
     end
   end
 

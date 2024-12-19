@@ -1,11 +1,29 @@
+# frozen_string_literal: true
+
 class RechercheController < ApplicationController
   before_action :authenticate_logged_user!
   ITEMS_PER_PAGE = 25
+
+  # the columns are generally procedure specific
+  # but in the search context, we are looking for dossiers from multiple procedures
+  # so we are faking the columns with a random procedure_id
   PROJECTIONS = [
-    { "table" => 'procedure', "column" => 'libelle' },
-    { "table" => 'user', "column" => 'email' },
-    { "table" => 'procedure', "column" => 'procedure_id' }
+    Column.new(procedure_id: 666, table: 'procedure', column: 'libelle'),
+    Column.new(procedure_id: 666, table: 'user', column: 'email'),
+    Column.new(procedure_id: 666, table: 'procedure', column: 'procedure_id')
   ]
+
+  def nav_bar_profile
+    return super if request.blank? # Controller introspection does not contains params/request, see NavBarProfileConcern
+
+    context_params = params[:context]&.to_sym
+    case context_params
+    when :instructeur, :expert
+      context_params
+    else
+      :user
+    end
+  end
 
   def index
     @search_terms = search_terms

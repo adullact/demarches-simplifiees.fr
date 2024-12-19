@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :after_party do
   desc 'Deployment task: migrate_remaining_data_for_routing_with_dropdown_list'
   task migrate_remaining_data_for_routing_with_dropdown_list: :environment do
@@ -27,7 +29,7 @@ namespace :after_party do
     procedure_ids = Procedure.with_discarded
       .where(routing_enabled: true)
       .where(migrated_champ_routage: [nil, false])
-      .filter { |p| p.active_revision.types_de_champ.none?(&:used_by_routing_rules?) }
+      .filter { |p| p.active_revision.revision_types_de_champ_public.none?(&:used_by_routing_rules?) }
       .filter { |p| p.groupe_instructeurs.active.count > 1 }
       .pluck(:id)
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Run a virus scan on all attachments after they are analyzed.
 #
 # We're using a class extension to ensure that all attachments get scanned,
@@ -16,8 +18,10 @@ module AttachmentImageProcessorConcern
 
   def process_image
     return if blob.nil?
-    return if blob.attachments.size > 1
-    return if blob.attachments.last.record_type == "Export"
+    return if blob.attachments.size != 1
+    return if blob.attachments.any? { _1.record_type == "Export" }
+    return if !blob.content_type.in?(PROCESSABLE_TYPES)
+    return if blob.byte_size.zero? # some empty files may be considered as image depending on filename
 
     ImageProcessorJob.perform_later(blob)
   end

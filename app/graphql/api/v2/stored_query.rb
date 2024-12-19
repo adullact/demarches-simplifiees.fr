@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class API::V2::StoredQuery
   def self.get(query_id)
     case query_id
@@ -507,6 +509,9 @@ class API::V2::StoredQuery
     ... on CheckboxChamp {
       checked: value
     }
+    ... on YesNoChamp {
+      selected: value
+    }
     ... on DecimalNumberChamp {
       decimalNumber: value
     }
@@ -728,6 +733,18 @@ class API::V2::StoredQuery
     }
   }
 
+  mutation dossierDesarchiver($input: DossierDesarchiverInput!) {
+    dossierDesarchiver(input: $input) {
+      dossier {
+        id
+        archived
+      }
+      errors {
+        message
+      }
+    }
+  }
+
   mutation dossierPasserEnInstruction($input: DossierPasserEnInstructionInput!) {
     dossierPasserEnInstruction(input: $input) {
       dossier {
@@ -887,6 +904,20 @@ class API::V2::StoredQuery
         ... on DatetimeChamp {
           value: datetime
         }
+      }
+      errors {
+        message
+      }
+    }
+  }
+
+  mutation dossierModifierAnnotationDropDownList(
+    $input: DossierModifierAnnotationDropDownListInput!
+  ) {
+    dossierModifierAnnotationDropDownList(input: $input) {
+      annotation {
+        id
+        value: stringValue
       }
       errors {
         message

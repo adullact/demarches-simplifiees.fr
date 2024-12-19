@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReleaseNotesController < ApplicationController
   before_action :ensure_access_allowed!
   after_action :touch_default_categories_seen_at
@@ -20,8 +22,6 @@ class ReleaseNotesController < ApplicationController
 
     render "scrollable_list" if params[:page].present?
   end
-
-  def nav_bar_profile = try_nav_bar_profile_from_referrer
 
   private
 

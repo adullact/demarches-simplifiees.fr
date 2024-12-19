@@ -1,6 +1,8 @@
-describe 'wcag rules for usager', js: true do
+# frozen_string_literal: true
+
+describe 'wcag rules for usager', chrome: true do
   let(:procedure) { create(:procedure, :published, :with_service, :for_individual) }
-  let(:password) { 'a very complicated password' }
+  let(:password) { SECURE_PASSWORD }
   let(:litteraire_user) { create(:user, password: password) }
 
   def test_external_links_have_title_says_it_opens_in_a_new_tab
@@ -101,7 +103,7 @@ describe 'wcag rules for usager', js: true do
     scenario 'commencer page, help dropdown' do
       visit commencer_path(path: procedure.reload.path)
 
-      page.find("#help-menu_button").click
+      page.find(".fr-header__body .help-btn").click
       test_expect_axe_clean_without_main_navigation
     end
   end

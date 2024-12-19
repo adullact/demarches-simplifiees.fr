@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe APIGeoService do
   describe 'pays' do
     it 'countrie_code' do
@@ -30,9 +32,8 @@ describe APIGeoService do
   describe 'departements' do
     it 'return sorted results' do
       expect(APIGeoService.departements.size).to eq(110)
-      expect(APIGeoService.departements.first).to eq(code: '99', name: 'Etranger')
-      expect(APIGeoService.departements.second).to eq(code: '01', name: 'Ain', region_code: "84")
-      expect(APIGeoService.departements.last).to eq(code: '989', name: 'Île de Clipperton', region_code: "989")
+      expect(APIGeoService.departements.first).to eq(code: '01', name: 'Ain', region_code: "84")
+      expect(APIGeoService.departements.last).to eq(code: '99', name: 'Etranger')
     end
   end
 

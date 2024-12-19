@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Preview all emails at http://localhost:3000/rails/mailers/user_mailer
 class UserMailer < ApplicationMailer
   helper MailerHelper
@@ -34,6 +36,12 @@ class UserMailer < ApplicationMailer
     mail(to: email, subject: @subject)
   end
 
+  def custom_confirmation_instructions(user, token)
+    @user = user
+    @token = token
+    mail(to: @user.email, subject: 'Confirmez votre email')
+  end
+
   def invite_instructeur(user, reset_password_token)
     @reset_password_token = reset_password_token
     @user = user
@@ -52,6 +60,20 @@ class UserMailer < ApplicationMailer
     @token = token
     @user = user
     @dossier = dossier
+    subject = "Vérification de votre mail"
+
+    configure_defaults_for_user(user)
+
+    bypass_unverified_mail_protection!
+
+    mail(to: user.email,
+      subject: subject,
+      reply_to: Current.contact_email)
+  end
+
+  def resend_confirmation_email(user, token)
+    @token = token
+    @user = user
     subject = "Vérification de votre mail"
 
     configure_defaults_for_user(user)
@@ -123,7 +145,8 @@ class UserMailer < ApplicationMailer
       'france_connect_merge_confirmation',
       "new_account_warning",
       "ask_for_merge",
-      "invite_instructeur"
+      "invite_instructeur",
+      "custom_confirmation_instructions"
     ].include?(action_name)
   end
 end

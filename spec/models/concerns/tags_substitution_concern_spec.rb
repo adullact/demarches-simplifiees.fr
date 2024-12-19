@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe TagsSubstitutionConcern, type: :model do
   let(:types_de_champ_public) { [] }
   let(:types_de_champ_private) { [] }
@@ -167,11 +169,11 @@ describe TagsSubstitutionConcern, type: :model do
 
         context 'and their value in the dossier are not nil' do
           before do
-            dossier.champs_public
+            dossier.project_champs_public
               .find { |champ| champ.libelle == 'libelleA' }
               .update(value: 'libelle1')
 
-            dossier.champs_public
+            dossier.project_champs_public
               .find { |champ| champ.libelle == "libelle\xc2\xA0B".encode('utf-8') }
               .update(value: 'libelle2')
           end
@@ -193,7 +195,7 @@ describe TagsSubstitutionConcern, type: :model do
 
         context 'and their value in the dossier are not nil' do
           before do
-            dossier.champs_public
+            dossier.project_champs_public
               .find { |champ| champ.libelle == "Intitulé de l'‘«\"évènement\"»’" }
               .update(value: 'ceci est mon évènement')
           end
@@ -215,7 +217,7 @@ describe TagsSubstitutionConcern, type: :model do
 
         context 'and their value in the dossier are not nil' do
           before do
-            dossier.champs_public
+            dossier.project_champs_public
               .find { |champ| champ.libelle == "bon pote -- c'est top" }
               .update(value: 'ceci est mon évènement')
           end
@@ -231,9 +233,8 @@ describe TagsSubstitutionConcern, type: :model do
       let(:dossier) { create(:dossier, procedure:) }
 
       before do
-        repetition = dossier.champs_public
-          .find { |champ| champ.libelle == 'Répétition' }
-        repetition.add_row(dossier.revision)
+        repetition = dossier.project_champs_public.find(&:repetition?)
+        repetition.add_row(updated_by: 'test')
         paul_champs, pierre_champs = repetition.rows
 
         paul_champs.first.update(value: 'Paul')
@@ -248,7 +249,7 @@ describe TagsSubstitutionConcern, type: :model do
 
     context 'when the procedure has a linked drop down menus type de champ' do
       let(:type_de_champ) { procedure.draft_revision.types_de_champ.first }
-      let(:types_de_champ_public) { [{ type: :linked_drop_down_list, libelle: 'libelle' }] }
+      let(:types_de_champ_public) { [{ type: :linked_drop_down_list, libelle: 'libelle', options: ["--primo--", "secundo"] }] }
       let(:template) { 'tout : --libelle--, primaire : --libelle/primaire--, secondaire : --libelle/secondaire--' }
 
       context 'and the champ has no value' do
@@ -257,7 +258,7 @@ describe TagsSubstitutionConcern, type: :model do
 
       context 'and the champ has a primary value' do
         before do
-          dossier.champs_public.find_by(type_de_champ: type_de_champ).update(primary_value: 'primo')
+          dossier.champs.find_by(stable_id: type_de_champ.stable_id).update(primary_value: 'primo')
           dossier.reload
         end
 
@@ -265,7 +266,7 @@ describe TagsSubstitutionConcern, type: :model do
 
         context 'and the champ has a secondary value' do
           before do
-            dossier.champs_public.find_by(type_de_champ: type_de_champ).update(secondary_value: 'secundo')
+            dossier.champs.find_by(stable_id: type_de_champ.stable_id).update(secondary_value: 'secundo')
             dossier.reload
           end
 
@@ -274,7 +275,7 @@ describe TagsSubstitutionConcern, type: :model do
           context 'and the same libelle is used by a header' do
             let(:types_de_champ_public) do
               [
-                { type: :linked_drop_down_list, libelle: 'libelle' },
+                { type: :linked_drop_down_list, libelle: 'libelle', options: ["--primo--", "secundo"] },
                 { type: :header_section, libelle: 'libelle' }
               ]
             end
@@ -315,7 +316,7 @@ describe TagsSubstitutionConcern, type: :model do
         let(:template) { '--libelleA--' }
 
         context 'and its value in the dossier is not nil' do
-          before { dossier.champs_private.first.update(value: 'libelle1') }
+          before { dossier.project_champs_private.first.update(value: 'libelle1') }
 
           it { is_expected.to eq('libelle1') }
         end
@@ -338,7 +339,7 @@ describe TagsSubstitutionConcern, type: :model do
       context 'champs publics are valid tags' do
         let(:types_de_champ_public) { [{ libelle: 'libelleA' }] }
 
-        before { dossier.champs_public.first.update(value: 'libelle1') }
+        before { dossier.project_champs_public.first.update(value: 'libelle1') }
 
         it { is_expected.to eq('libelle1') }
       end
@@ -357,11 +358,11 @@ describe TagsSubstitutionConcern, type: :model do
 
         context 'and its value in the dossier are not nil' do
           before do
-            dossier.champs_public
+            dossier.project_champs_public
               .find { |champ| champ.type_champ == TypeDeChamp.type_champs.fetch(:date) }
               .update(value: '2017-04-15')
 
-            dossier.champs_public
+            dossier.project_champs_public
               .find { |champ| champ.type_champ == TypeDeChamp.type_champs.fetch(:datetime) }
               .update(value: '2017-09-13 09:00')
           end
@@ -373,13 +374,17 @@ describe TagsSubstitutionConcern, type: :model do
 
     context "when using a date tag" do
       before do
-        Timecop.freeze(Time.zone.local(2001, 2, 3))
+        travel_to Time.zone.local(2001, 2, 3)
         dossier.passer_en_construction!
-        Timecop.freeze(Time.zone.local(2004, 5, 6))
+
+        travel_to Time.zone.local(2003, 1, 3)
+        dossier.touch(:last_champ_updated_at)
+
+        travel_to Time.zone.local(2004, 5, 6)
         dossier.passer_en_instruction!(instructeur: instructeur)
-        Timecop.freeze(Time.zone.local(2007, 8, 9))
+
+        travel_to Time.zone.local(2007, 8, 9)
         dossier.accepter!(instructeur: instructeur)
-        Timecop.return
       end
 
       context "with date de dépôt" do
@@ -399,6 +404,26 @@ describe TagsSubstitutionConcern, type: :model do
 
         it { is_expected.to eq('09/08/2007') }
       end
+
+      context "with date last ,champ updated at" do
+        let(:template) { '--date de mise à jour--' }
+
+        it { is_expected.to eq('03/01/2003') }
+      end
+    end
+
+    context "with date decision sva/svr" do
+      let(:template) { '--date prévisionnelle SVA/SVR--' }
+      let(:procedure) { create(:procedure, :published, :sva) }
+      let(:state) { dossier.state }
+
+      before do
+        dossier.passer_en_construction!
+        dossier.process_sva_svr!
+        dossier.update(sva_svr_decision_on: Date.parse("2024-09-20"))
+      end
+
+      it { is_expected.to eq('20/09/2024') }
     end
 
     context "when the template has a libellé démarche tag" do
@@ -408,7 +433,7 @@ describe TagsSubstitutionConcern, type: :model do
     end
 
     context "match breaking and non breaking spaces" do
-      before { dossier.champs_public.first.update(value: 'valeur') }
+      before { dossier.project_champs_public.first.update(value: 'valeur') }
 
       shared_examples "treat all kinds of space as equivalent" do
         context 'and the champ has a non breaking space' do
@@ -455,7 +480,7 @@ describe TagsSubstitutionConcern, type: :model do
 
       before do
         draft_type_de_champ.update(libelle: 'mon nouveau libellé')
-        dossier.champs_public.first.update(value: 'valeur')
+        dossier.project_champs_public.first.update(value: 'valeur')
         procedure.update!(draft_revision: procedure.create_new_revision, published_revision: procedure.draft_revision)
       end
 
@@ -488,7 +513,7 @@ describe TagsSubstitutionConcern, type: :model do
       context 'in a champ' do
         let(:types_de_champ_public) { [{ libelle: 'libelleA' }] }
 
-        before { dossier.champs_public.first.update(value: 'hey <a href="https://oops.com">anchor</a>') }
+        before { dossier.project_champs_public.first.update(value: 'hey <a href="https://oops.com">anchor</a>') }
 
         it { is_expected.to eq('hey &lt;a href=&quot;https://oops.com&quot;&gt;anchor&lt;/a&gt; --nom--') }
       end

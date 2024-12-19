@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe DossierChampsConcern do
   let(:procedure) do
     create(:procedure, types_de_champ_public:, types_de_champ_private:)
@@ -33,7 +35,6 @@ RSpec.describe DossierChampsConcern do
     let(:type_de_champ_repetition) { dossier.find_type_de_champ_by_stable_id(993) }
     let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(99) }
     let(:type_de_champ_private) { dossier.find_type_de_champ_by_stable_id(995) }
-    let(:row_ids) { dossier.project_champ(type_de_champ_repetition, nil).row_ids }
 
     context "public champ" do
       let(:row_id) { nil }
@@ -43,32 +44,47 @@ RSpec.describe DossierChampsConcern do
 
       context "in repetition" do
         let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(994) }
-        let(:row_id) { row_ids.first }
+        let(:row_id) { dossier.project_champ(type_de_champ_repetition, nil).row_ids.first }
 
         it {
           expect(subject.persisted?).to be_truthy
           expect(subject.row_id).to eq(row_id)
-          expect(subject.parent_id).not_to be_nil
         }
+
+        context "invalid row_id" do
+          let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(99) }
+          it {
+            expect { subject }.to raise_error("type_de_champ #{type_de_champ_public.stable_id} in revision #{dossier.revision_id} can not have a row_id because it is not part of a repetition")
+          }
+        end
       end
 
       context "missing champ" do
-        before { dossier; Champs::TextChamp.destroy_all }
+        before { dossier.champs.where(type: 'Champs::TextChamp').destroy_all; dossier.reload }
 
         it {
           expect(subject.new_record?).to be_truthy
           expect(subject.is_a?(Champs::TextChamp)).to be_truthy
+          expect(subject.updated_at).not_to be_nil
         }
 
         context "in repetition" do
           let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(994) }
-          let(:row_id) { row_ids.first }
+          let(:row_id) { ULID.generate }
 
           it {
             expect(subject.new_record?).to be_truthy
             expect(subject.is_a?(Champs::TextChamp)).to be_truthy
             expect(subject.row_id).to eq(row_id)
+            expect(subject.updated_at).not_to be_nil
           }
+
+          context "invalid row_id" do
+            let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(99) }
+            it {
+              expect { subject }.to raise_error("type_de_champ #{type_de_champ_public.stable_id} in revision #{dossier.revision_id} can not have a row_id because it is not part of a repetition")
+            }
+          end
         end
       end
     end
@@ -79,18 +95,96 @@ RSpec.describe DossierChampsConcern do
       it { expect(subject.persisted?).to be_truthy }
 
       context "missing champ" do
-        before { dossier; Champs::TextChamp.destroy_all }
+        before { dossier.champs.where(type: 'Champs::TextChamp').destroy_all; dossier.reload }
 
         it {
           expect(subject.new_record?).to be_truthy
           expect(subject.is_a?(Champs::TextChamp)).to be_truthy
+          expect(subject.updated_at).not_to be_nil
         }
       end
     end
   end
 
-  describe "#champs_for_export" do
-    subject { dossier.champs_for_export(dossier.revision.types_de_champ_public) }
+  describe '#project_champs_public' do
+    subject { dossier.project_champs_public }
+
+    it { expect(subject.size).to eq(4) }
+    it { expect(subject.find { _1.libelle == 'Nom' }).to be_falsey }
+  end
+
+  describe '#project_champs_private' do
+    subject { dossier.project_champs_private }
+
+    it { expect(subject.size).to eq(1) }
+  end
+
+  describe '#filled_champs_public' do
+    let(:types_de_champ_public) do
+      [
+        { type: :header_section },
+        { type: :text, libelle: "Un champ text" },
+        { type: :text, libelle: "Un autre champ text" },
+        { type: :yes_no, libelle: "Un champ yes no" },
+        { type: :repetition, libelle: "Un champ répétable", mandatory: true, children: [{ type: :text, libelle: 'Nom' }] },
+        { type: :explication }
+      ]
+    end
+    subject { dossier.filled_champs_public }
+
+    it { expect(subject.size).to eq(4) }
+    it { expect(subject.find { _1.libelle == 'Nom' }).to be_truthy }
+  end
+
+  describe '#filled_champs_private' do
+    let(:types_de_champ_private) do
+      [
+        { type: :header_section },
+        { type: :text, libelle: "Une annotation" },
+        { type: :explication }
+      ]
+    end
+    subject { dossier.filled_champs_private }
+
+    it { expect(subject.size).to eq(1) }
+  end
+
+  describe '#repetition_row_ids' do
+    let(:type_de_champ_repetition) { dossier.find_type_de_champ_by_stable_id(993) }
+    subject { dossier.repetition_row_ids(type_de_champ_repetition) }
+
+    it { expect(subject.size).to eq(1) }
+  end
+
+  describe '#project_rows_for' do
+    let(:type_de_champ_repetition) { dossier.find_type_de_champ_by_stable_id(993) }
+    subject { dossier.project_rows_for(type_de_champ_repetition) }
+
+    it { expect(subject.size).to eq(1) }
+    it { expect(subject.first.size).to eq(1) }
+  end
+
+  describe '#repetition_add_row' do
+    let(:type_de_champ_repetition) { dossier.find_type_de_champ_by_stable_id(993) }
+    let(:row_ids) { dossier.repetition_row_ids(type_de_champ_repetition) }
+    subject { dossier.repetition_add_row(type_de_champ_repetition, updated_by: 'test') }
+
+    it { expect { subject }.to change { dossier.repetition_row_ids(type_de_champ_repetition).size }.by(1) }
+    it { expect(subject).to be_in(row_ids) }
+  end
+
+  describe '#repetition_remove_row' do
+    let(:type_de_champ_repetition) { dossier.find_type_de_champ_by_stable_id(993) }
+    let(:row_id) { dossier.repetition_row_ids(type_de_champ_repetition).first }
+    let(:row_ids) { dossier.repetition_row_ids(type_de_champ_repetition) }
+    subject { dossier.repetition_remove_row(type_de_champ_repetition, row_id, updated_by: 'test') }
+
+    it { expect { subject }.to change { dossier.repetition_row_ids(type_de_champ_repetition).size }.by(-1) }
+    it { row_id; subject; expect(row_id).not_to be_in(row_ids) }
+  end
+
+  describe "#champ_values_for_export" do
+    subject { dossier.champ_values_for_export(dossier.revision.types_de_champ_public, format: :xlsx) }
 
     it { expect(subject.size).to eq(4) }
     it { expect(subject.first).to eq(["Un champ text", nil]) }
@@ -120,7 +214,6 @@ RSpec.describe DossierChampsConcern do
     let(:type_de_champ_repetition) { dossier.find_type_de_champ_by_stable_id(993) }
     let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(99) }
     let(:type_de_champ_private) { dossier.find_type_de_champ_by_stable_id(995) }
-    let(:row_ids) { dossier.project_champ(type_de_champ_repetition, nil).row_ids }
     let(:row_id) { nil }
 
     context "public champ" do
@@ -133,12 +226,11 @@ RSpec.describe DossierChampsConcern do
 
       context "in repetition" do
         let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(994) }
-        let(:row_id) { row_ids.first }
+        let(:row_id) { ULID.generate }
 
         it {
           expect(subject.persisted?).to be_truthy
           expect(subject.row_id).to eq(row_id)
-          expect(subject.parent_id).not_to be_nil
         }
       end
 
@@ -152,13 +244,12 @@ RSpec.describe DossierChampsConcern do
 
         context "in repetition" do
           let(:type_de_champ_public) { dossier.find_type_de_champ_by_stable_id(994) }
-          let(:row_id) { row_ids.first }
+          let(:row_id) { ULID.generate }
 
           it {
             expect(subject.persisted?).to be_truthy
             expect(subject.is_a?(Champs::TextChamp)).to be_truthy
             expect(subject.row_id).to eq(row_id)
-            expect(subject.parent_id).not_to be_nil
           }
         end
       end
@@ -176,8 +267,7 @@ RSpec.describe DossierChampsConcern do
 
   describe "#update_champs_attributes(public)" do
     let(:type_de_champ_repetition) { dossier.find_type_de_champ_by_stable_id(993) }
-    let(:row_ids) { dossier.project_champ(type_de_champ_repetition, nil).row_ids }
-    let(:row_id) { row_ids.first }
+    let(:row_id) { ULID.generate }
 
     let(:attributes) do
       {

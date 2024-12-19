@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe RechercheController, type: :controller do
   let(:procedure) {
     create(:procedure, :published,
@@ -16,16 +18,16 @@ describe RechercheController, type: :controller do
   before do
     instructeur.assign_to_procedure(dossier.procedure)
 
-    dossier.champs_public[0].value = "Name of district A"
-    dossier.champs_public[1].value = "Name of city A"
-    dossier.champs_private[0].value = "Dossier A is complete"
-    dossier.champs_private[1].value = "Dossier A is valid"
+    dossier.project_champs_public[0].value = "Name of district A"
+    dossier.project_champs_public[1].value = "Name of city A"
+    dossier.project_champs_private[0].value = "Dossier A is complete"
+    dossier.project_champs_private[1].value = "Dossier A is valid"
     dossier.save!
 
-    dossier_with_expert.champs_public[0].value = "Name of district B"
-    dossier_with_expert.champs_public[1].value = "name of city B"
-    dossier_with_expert.champs_private[0].value = "Dossier B is incomplete"
-    dossier_with_expert.champs_private[1].value = "Dossier B is invalid"
+    dossier_with_expert.project_champs_public[0].value = "Name of district B"
+    dossier_with_expert.project_champs_public[1].value = "name of city B"
+    dossier_with_expert.project_champs_private[0].value = "Dossier B is incomplete"
+    dossier_with_expert.project_champs_private[1].value = "Dossier B is invalid"
     dossier_with_expert.save!
 
     perform_enqueued_jobs(only: DossierIndexSearchTermsJob)
@@ -199,11 +201,42 @@ describe RechercheController, type: :controller do
     context 'with no query param it does not crash' do
       subject { get :index, params: {} }
 
-      it { is_expected.to have_http_status(200) }
-
       it 'returns 0 dossier' do
-        subject
+        expect(subject).to have_http_status(200)
         expect(assigns(:projected_dossiers).count).to eq(0)
+      end
+    end
+
+    context 'nav bar profile in user context' do
+      subject { get(:index, params: {}).body }
+      render_views
+
+      it 'define user nav' do
+        expect(subject).to include "Mes dossiers"
+        expect(subject).to include "usager"
+      end
+    end
+
+    context 'nav bar profile in instructeur context' do
+      subject { get(:index, params: { context: :instructeur }).body }
+      render_views
+
+      it 'define instructeur nav' do
+        expect(subject).to include "Démarches"
+        expect(subject).to include "instructeur"
+        expect(subject).not_to include "Mes dossiers"
+      end
+    end
+
+    context 'nav bar profile in expert context' do
+      before { user.create_expert }
+      subject { get(:index, params: { context: :expert }).body }
+      render_views
+
+      it 'define expert nav' do
+        expect(subject).to include "Avis"
+        expect(subject).to include "expert"
+        expect(subject).not_to include "Mes dossiers"
       end
     end
   end

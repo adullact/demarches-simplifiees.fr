@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FranceConnectService
   def initialize(code: nil, identifier: nil, secret: nil)
     @code = code

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Be sure to restart your server when you modify this file.
 
 # Define an application-wide content security policy
@@ -22,7 +24,7 @@ Rails.application.config.content_security_policy do |policy|
 
   connect_whitelist = ["wss://*.crisp.chat", "*.crisp.chat", "app.franceconnect.gouv.fr", "openmaptiles.geo.data.gouv.fr", "openmaptiles.github.io", "tiles.geo.api.gouv.fr", "data.geopf.fr"]
   connect_whitelist << ENV.fetch('APP_HOST')
-  connect_whitelist << ENV.fetch('APP_HOST_LEGACY') if ENV.key?('APP_HOST_LEGACY')
+  connect_whitelist << ENV.fetch('APP_HOST_LEGACY') if ENV.key?('APP_HOST_LEGACY') && ENV['APP_HOST_LEGACY'] != ENV['APP_HOST']
   connect_whitelist << "*.amazonaws.com" if Rails.configuration.active_storage.service == :amazon
   connect_whitelist << "s3.fr-par.scw.cloud" if Rails.configuration.active_storage.service == :scaleway
   connect_whitelist += [URI(ENV["SENTRY_DSN_JS"]).host, URI(ENV["SENTRY_DSN_RAILS"]).host].compact.uniq
@@ -39,6 +41,7 @@ Rails.application.config.content_security_policy do |policy|
   frame_whitelist << URI(MATOMO_IFRAME_URL).host if Rails.application.secrets.matomo[:enabled]
   # allow pdf iframes in the PJ gallery
   frame_whitelist << URI(DS_PROXY_URL).host if DS_PROXY_URL.present?
+  frame_whitelist << "*.crisp.help" if Rails.application.secrets.crisp[:enabled]
   policy.frame_src(:self, *frame_whitelist)
 
   # Everything else: allow us

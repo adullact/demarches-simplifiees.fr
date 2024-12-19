@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe 'Dossier::Recovery::LifeCycle' do
   describe '.load_export_destroy_and_import' do
     let(:procedure) do
@@ -15,7 +17,7 @@ describe 'Dossier::Recovery::LifeCycle' do
     let(:dossier) do
       d = create(:dossier, procedure:)
 
-      repetition(d).add_row(d.revision)
+      repetition(d).add_row(updated_by: 'test')
       pj_champ(d).piece_justificative_file.attach(some_file)
       carte(d).update(geo_areas: [geo_area])
       d.etablissement = create(:etablissement, :with_exercices)
@@ -81,7 +83,7 @@ describe 'Dossier::Recovery::LifeCycle' do
 
       expect(reloaded_dossier.champs.count).not_to be(0)
 
-      expect(repetition(reloaded_dossier).champs.map(&:type)).to match_array(["Champs::PieceJustificativeChamp"])
+      expect(repetition(reloaded_dossier).rows.flatten.map(&:type)).to match_array(["Champs::PieceJustificativeChamp"])
       expect(pj_champ(reloaded_dossier).piece_justificative_file).to be_attached
       expect(carte(reloaded_dossier).geo_areas).to be_present
 

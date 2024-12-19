@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 describe Champs::CarteChamp do
-  let(:champ) { build(:champ_carte, geo_areas:) }
+  let(:champ) { Champs::CarteChamp.new(geo_areas:) }
+  before { allow(champ).to receive(:type_de_champ).and_return(build(:type_de_champ_carte)) }
   let(:value) { '' }
   let(:coordinates) { [[[2.3859214782714844, 48.87442541960633], [2.3850631713867183, 48.87273183590832], [2.3809432983398438, 48.87081237174292], [2.3859214782714844, 48.87442541960633]]] }
   let(:geo_json) do
@@ -47,7 +50,7 @@ describe Champs::CarteChamp do
       let(:geo_areas) { [build(:geo_area, :selection_utilisateur, :point)] }
 
       it "returns point label" do
-        expect(champ.for_export).to eq("Un point situé à 46°32'19\"N 2°25'42\"E")
+        expect(champ.type_de_champ.champ_value_for_export(champ)).to eq("Un point situé à 46°32'19\"N 2°25'42\"E")
       end
     end
 
@@ -55,7 +58,7 @@ describe Champs::CarteChamp do
       let(:geo_areas) { [build(:geo_area, :selection_utilisateur, :cadastre)] }
 
       it "returns cadastre parcelle label" do
-        expect(champ.for_export).to match(/Parcelle n° 42/)
+        expect(champ.type_de_champ.champ_value_for_export(champ)).to match(/Parcelle n° 42/)
       end
     end
   end

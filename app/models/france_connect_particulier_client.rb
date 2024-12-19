@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FranceConnectParticulierClient < OpenIDConnect::Client
   def initialize(code = nil, credentials = nil)
     credentials ||= Rails.application.secrets.france_connect_particulier

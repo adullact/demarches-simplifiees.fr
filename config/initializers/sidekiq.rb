@@ -1,4 +1,6 @@
-SIDEKIQ_ENABLED = ENV.key?('REDIS_SIDEKIQ_SENTINELS') || ENV.key?('REDIS_URL') || ENV['RAILS_QUEUE_ADAPTER'] == 'sidekiq' || ENV.has_key?('REDIS_SSL_CA_FILE')
+# frozen_string_literal: true
+
+SIDEKIQ_ENABLED = ENV.key?('REDIS_SIDEKIQ_SENTINELS') || ENV.key?('REDIS_URL') || ENV['RAILS_QUEUE_ADAPTER'] == 'sidekiq'
 
 return if !SIDEKIQ_ENABLED
 
@@ -30,13 +32,14 @@ end
 
 Sidekiq.configure_server do |config|
   config.redis = sidekiq_redis
-
   if ENV['PROMETHEUS_EXPORTER_ENABLED'] == 'enabled'
     Yabeda.configure!
     Yabeda::Prometheus::Exporter.start_metrics_server!
   end
 
   if ENV['SKIP_RELIABLE_FETCH'].blank?
+    config[:strict] = true
+
     Sidekiq::ReliableFetch.setup_reliable_fetch!(config)
   end
 end

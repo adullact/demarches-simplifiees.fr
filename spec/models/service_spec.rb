@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Service, type: :model do
   describe 'validation' do
     let(:administrateur) { administrateurs(:default_admin) }
@@ -11,7 +13,7 @@ describe Service, type: :model do
         horaires: 'du lundi au vendredi',
         adresse: '12 rue des schtroumpfs',
         administrateur_id: administrateur.id,
-        siret: "35600082800018"
+        siret: "35600011719156"
       }
     end
 
@@ -84,6 +86,15 @@ describe Service, type: :model do
       it 'should belong to the enum' do
         expect { Service.new(params.merge(type_organisme: 'choucroute')) }.to raise_error(ArgumentError)
       end
+    end
+  end
+
+  describe 'validation on update' do
+    subject { create(:service) }
+
+    it 'should not allow to have a test siret' do
+      subject.siret = Service::SIRET_TEST
+      expect(subject).not_to be_valid
     end
   end
 

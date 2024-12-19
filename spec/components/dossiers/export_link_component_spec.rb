@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Dossiers::ExportLinkComponent, type: :component do
   let(:procedure) { create(:procedure) }
   let(:groupe_instructeur) { create(:groupe_instructeur, procedure: procedure, instructeurs: [build(:instructeur)]) }
@@ -34,9 +36,9 @@ RSpec.describe Dossiers::ExportLinkComponent, type: :component do
         end
       end
 
-      context 'when export is for a presentation' do
+      context 'when export is from a presentation' do
         before do
-          export.update!(procedure_presentation: procedure_presentation)
+          export.update!(sorted_column: procedure.default_sorted_column)
         end
 
         it 'display the persisted dossiers count' do
@@ -46,7 +48,7 @@ RSpec.describe Dossiers::ExportLinkComponent, type: :component do
     end
 
     context "when the export is not available" do
-      let(:export) { create(:export, :pending, groupe_instructeurs: [groupe_instructeur], procedure_presentation: procedure_presentation, created_at: 10.minutes.ago) }
+      let(:export) { create(:export, :pending, groupe_instructeurs: [groupe_instructeur], sorted_column: procedure.default_sorted_column, created_at: 10.minutes.ago) }
 
       before do
         create_list(:dossier, 3, :en_construction, procedure: procedure, groupe_instructeur: groupe_instructeur)

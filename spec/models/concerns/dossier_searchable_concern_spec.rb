@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 describe DossierSearchableConcern do
-  let(:champ_public) { dossier.champs_public.first }
-  let(:champ_private) { dossier.champs_private.first }
+  let(:champ_public) { dossier.project_champs_public.first }
+  let(:champ_private) { dossier.project_champs_private.first }
 
   describe '#index_search_terms' do
     let(:etablissement) { dossier.etablissement }
@@ -36,10 +38,8 @@ describe DossierSearchableConcern do
       end
 
       it "update columns en construction" do
-        dossier.update(
-          champs_public_attributes: [{ id: champ_public.id, value: 'nouvelle valeur publique' }],
-          champs_private_attributes: [{ id: champ_private.id, value: 'nouvelle valeur privee' }]
-        )
+        dossier.update_champs_attributes({ champ_public.public_id => { value: 'nouvelle valeur publique' } }, :public, updated_by: 'test')
+        dossier.update_champs_attributes({ champ_private.public_id => { value: 'nouvelle valeur privee' } }, :private, updated_by: 'test')
 
         assert_enqueued_jobs(1, only: DossierIndexSearchTermsJob) do
           dossier.passer_en_construction

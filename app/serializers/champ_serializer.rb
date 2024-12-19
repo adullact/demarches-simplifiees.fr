@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChampSerializer < ActiveModel::Serializer
   include Rails.application.routes.url_helpers
 
@@ -15,7 +17,7 @@ class ChampSerializer < ActiveModel::Serializer
     when GeoArea
       object.geometry
     else
-      object.for_api
+      object.type_de_champ.champ_value_for_api(object, version: 1)
     end
   end
 
@@ -46,11 +48,7 @@ class ChampSerializer < ActiveModel::Serializer
   end
 
   def rows
-    object.dossier
-      .champs_for_revision(scope: object.type_de_champ)
-      .group_by(&:row_id)
-      .values
-      .map.with_index(1) { |champs, index| Row.new(index:, champs:) }
+    object.rows.map.with_index(1) { |champs, index| Row.new(index:, champs:) }
   end
 
   def include_etablissement?

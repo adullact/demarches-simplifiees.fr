@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 AUTHORIZED_PDF_TYPES = [
   'application/pdf', # text x 4628654
   'application/x-pdf', # text x 30
@@ -19,7 +21,9 @@ RARE_IMAGE_TYPES = [
   'image/tiff' # multimedia x 3985
 ]
 
-AUTHORIZED_CONTENT_TYPES = AUTHORIZED_IMAGE_TYPES + AUTHORIZED_PDF_TYPES + [
+PROCESSABLE_TYPES = AUTHORIZED_IMAGE_TYPES + AUTHORIZED_PDF_TYPES
+
+AUTHORIZED_CONTENT_TYPES = PROCESSABLE_TYPES + [
   # multimedia
   'video/mp4', # multimedia x 2075
   'video/quicktime', # multimedia x 486

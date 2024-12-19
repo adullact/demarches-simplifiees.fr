@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Invite do
   describe 'an email can be used for multiple dossier' do
     let(:email1) { 'plop@octo.com' }
@@ -31,7 +33,7 @@ describe Invite do
 
         it do
           expect(invite.save).to be false
-          expect(invite.errors.full_messages).to eq(["Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : john.doe@exemple.fr"])
+          expect(invite.errors.full_messages).to eq(["Le champ « Email » est invalide. Saisir une adresse électronique valide, exemple : adresse@mail.com"])
         end
 
         context 'when an email is empty' do

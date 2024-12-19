@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   module ChampType
     include Types::BaseInterface
@@ -5,9 +7,13 @@ module Types
     global_id_field :id
     field :champ_descriptor_id, String, "L'identifiant du champDescriptor de ce champ", null: false
     field :label, String, "Libellé du champ.", null: false, method: :libelle
-    field :string_value, String, "La valeur du champ sous forme texte.", null: true, method: :for_api_v2
+    field :string_value, String, "La valeur du champ sous forme texte.", null: true
     field :updated_at, GraphQL::Types::ISO8601DateTime, "Date de dernière modification du champ.", null: false
     field :prefilled, Boolean, null: false, method: :prefilled?
+
+    def string_value
+      object.type_de_champ.champ_value_for_api(object)
+    end
 
     definition_methods do
       def resolve_type(object, context)
@@ -18,8 +24,14 @@ module Types
           else
             Types::Champs::TextChampType
           end
-        when ::Champs::YesNoChamp, ::Champs::CheckboxChamp
+        when ::Champs::CheckboxChamp
           Types::Champs::CheckboxChampType
+        when ::Champs::YesNoChamp
+          if context.has_fragment?(:YesNoChamp)
+            Types::Champs::YesNoChampType
+          else
+            Types::Champs::CheckboxChampType
+          end
         when ::Champs::DateChamp
           Types::Champs::DateChampType
         when ::Champs::DatetimeChamp

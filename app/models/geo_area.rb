@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class GeoArea < ApplicationRecord
   include ActionView::Helpers::NumberHelper
   belongs_to :champ, optional: false
@@ -63,7 +65,7 @@ class GeoArea < ApplicationRecord
   def label
     case source
     when GeoArea.sources.fetch(:cadastre)
-      I18n.t("cadastre", scope: 'geo_area.label', numero: numero, prefixe: prefixe, section: section, surface: surface.round, commune: commune)
+      I18n.t("cadastre", scope: 'geo_area.label', numero: numero, prefixe: prefixe, section: section, surface: surface&.round, commune: commune)
     when GeoArea.sources.fetch(:selection_utilisateur)
       if polygon?
         if area > 0

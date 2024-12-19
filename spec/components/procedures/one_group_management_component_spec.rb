@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Procedure::OneGroupeManagementComponent, type: :component do
   include Logic
 
@@ -17,7 +19,7 @@ describe Procedure::OneGroupeManagementComponent, type: :component do
         procedure.draft_revision.add_type_de_champ({
           type_champ: :drop_down_list,
           libelle: 'Votre ville',
-          drop_down_list_value: "Paris\nLyon\nMarseille"
+          drop_down_options: ["Paris", "Lyon", "Marseille"]
         })
         procedure.publish_revision!
         procedure.reload

@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 describe 'The routing with rules', js: true do
-  let(:password) { 'a very complicated password' }
+  let(:password) { SECURE_PASSWORD }
 
   let(:procedure) do
     create(:procedure, :with_service, :for_individual, :with_zone, types_de_champ_public: [
@@ -51,8 +53,13 @@ describe 'The routing with rules', js: true do
     expect(page).to have_text('Gestion des groupes')
     expect(page).to have_text('règle invalide')
 
+    # close modal
+    expect(page).to have_selector("#routing-mode-modal", visible: true)
+    within("#routing-mode-modal") { click_on "Fermer" }
+    expect(page).to have_selector("#routing-mode-modal", visible: false)
+
     # update defaut groupe
-    click_on 'défaut'
+    click_on 'Groupe 1 (à renommer et configurer)'
     expect(page).to have_text('Paramètres du groupe')
     fill_in 'Nom du groupe', with: 'littéraire'
     click_on 'Renommer'
@@ -73,7 +80,7 @@ describe 'The routing with rules', js: true do
     alain = User.find_by(email: 'alain@gouv.fr').instructeur
 
     # add inactive groupe
-    click_on 'Ajout de groupes'
+    visit ajout_admin_procedure_groupe_instructeurs_path(procedure)
     fill_in 'Nouveau groupe', with: 'non visible car inactif'
     click_on 'Ajouter'
     expect(page).to have_text('Le groupe d’instructeurs « non visible car inactif » a été créé. ')
@@ -81,7 +88,7 @@ describe 'The routing with rules', js: true do
 
     # # add scientifique groupe
     click_on '3 groupes'
-    click_on 'défaut bis'
+    click_on 'Groupe 2 (à renommer et configurer)'
     fill_in 'Nom du groupe', with: 'scientifique'
     click_on 'Renommer'
     expect(page).to have_text('Le nom est à présent « scientifique ». ')
@@ -119,11 +126,14 @@ describe 'The routing with rules', js: true do
     procedure.groupe_instructeurs.where(closed: false).each { |gi| wait_until { gi.reload.routing_rule.present? } }
 
     # add a group without routing rules
-    click_on 'Ajout de groupes'
+    visit ajout_admin_procedure_groupe_instructeurs_path(procedure)
     fill_in 'Nouveau groupe', with: 'artistique'
     click_on 'Ajouter'
     expect(page).to have_text('Le groupe d’instructeurs « artistique » a été créé. ')
     expect(procedure.groupe_instructeurs.count).to eq(4)
+
+    # add contact_information to all groupes instructeur
+    procedure.groupe_instructeurs.each { |gi| gi.update!(contact_information: create(:contact_information)) }
 
     # publish
     publish_procedure(procedure)
@@ -181,7 +191,7 @@ describe 'The routing with rules', js: true do
     click_on litteraire_user.dossiers.first.procedure.libelle
     click_on 'Modifier mon dossier'
 
-    fill_in litteraire_user.dossiers.first.champs_public.first.libelle, with: 'some value'
+    fill_in litteraire_user.dossiers.first.project_champs_public.first.libelle, with: 'some value'
     wait_for_autosave
 
     click_on 'Déposer les modifications'
@@ -199,7 +209,7 @@ describe 'The routing with rules', js: true do
     ## on the dossiers list
     click_on procedure.libelle
     expect(page).to have_current_path(instructeur_procedure_path(procedure))
-    expect(find('.fr-tabs')).to have_css('span.notifications')
+    expect(find('nav.fr-tabs')).to have_css('span.notifications')
 
     ## on the dossier itself
     click_on 'suivi'
@@ -267,8 +277,17 @@ describe 'The routing with rules', js: true do
     # the old system should not be present
     expect(page).not_to have_selector("#dossier_groupe_instructeur_id")
 
+    dossier = user.dossiers.first
+
+    expect(dossier.groupe_instructeur_id).to be_nil
+    expect(page).to have_text(procedure.service.nom)
+
     choose(groupe)
     wait_for_autosave
+
+    expect(dossier.reload.groupe_instructeur_id).not_to be_nil
+    expect(page).to have_text(dossier.service.nom)
+    expect(page).not_to have_text(procedure.service.nom)
 
     click_on 'Déposer le dossier'
     expect(page).to have_text('Merci')

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Administrateurs
   class ArchivesController < AdministrateurController
     before_action :retrieve_procedure
@@ -6,7 +8,7 @@ module Administrateurs
     helper_method :create_archive_url
 
     def index
-      @exports = Export.ante_chronological.by_key(all_groupe_instructeurs.map(&:id), nil)
+      @exports = Export.ante_chronological.by_key(all_groupe_instructeurs.map(&:id))
       @average_dossier_weight = @procedure.average_dossier_weight
       @count_dossiers_termines_by_month = @procedure.dossiers.processed_by_month(all_groupe_instructeurs).count
       @archives = Archive.for_groupe_instructeur(all_groupe_instructeurs).to_a

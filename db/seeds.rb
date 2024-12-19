@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file should contain all the record creation needed to seed the database with its default values.
 # The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
 
@@ -18,3 +20,9 @@ user = User.create!(
 )
 user.create_instructeur!
 user.create_administrateur!
+
+user_fixer = User.create(email: ENV.fetch('DEFAULT_INSTRUCTEUR_EMAIL') { CONTACT_EMAIL },
+  password: Random.srand,
+  confirmed_at: Time.zone.now,
+  email_verified_at: Time.zone.now)
+user_fixer.create_instructeur!

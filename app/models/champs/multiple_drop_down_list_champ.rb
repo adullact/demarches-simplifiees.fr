@@ -1,13 +1,7 @@
+# frozen_string_literal: true
+
 class Champs::MultipleDropDownListChamp < Champ
   validate :values_are_in_options, if: -> { value.present? && validate_champ_value_or_prefill? }
-
-  def options?
-    drop_down_list_options?
-  end
-
-  def enabled_non_empty_options
-    drop_down_list_enabled_non_empty_options
-  end
 
   THRESHOLD_NB_OPTIONS_AS_CHECKBOX = 5
 
@@ -20,7 +14,7 @@ class Champs::MultipleDropDownListChamp < Champ
   end
 
   def render_as_checkboxes?
-    enabled_non_empty_options.size <= THRESHOLD_NB_OPTIONS_AS_CHECKBOX
+    drop_down_options.size <= THRESHOLD_NB_OPTIONS_AS_CHECKBOX
   end
 
   def html_label?
@@ -35,25 +29,12 @@ class Champs::MultipleDropDownListChamp < Champ
     render_as_checkboxes?
   end
 
-  def blank?
-    selected_options.blank?
-  end
-
   def in?(options)
     (selected_options - options).size != selected_options.size
   end
 
-  def remove_option(options, touch = false)
-    value = (selected_options - options).to_json
-    if touch
-      update(value:)
-    else
-      update_columns(value:)
-    end
-  end
-
   def focusable_input_id
-    render_as_checkboxes? ? checkbox_id(enabled_non_empty_options.first) : input_id
+    render_as_checkboxes? ? checkbox_id(drop_down_options.first) : input_id
   end
 
   def checkbox_id(value)
@@ -69,7 +50,7 @@ class Champs::MultipleDropDownListChamp < Champ
   end
 
   def unselected_options
-    enabled_non_empty_options - selected_options
+    drop_down_options - selected_options
   end
 
   def value=(value)
@@ -95,7 +76,7 @@ class Champs::MultipleDropDownListChamp < Champ
   def values_are_in_options
     json = selected_options.compact_blank
     return if json.empty?
-    return if (json - enabled_non_empty_options).empty?
+    return if (json - drop_down_options).empty?
 
     errors.add(:value, :not_in_options)
   end

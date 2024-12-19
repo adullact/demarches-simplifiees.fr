@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Users::SessionsController < Devise::SessionsController
   include ProcedureContextConcern
   include TrustedDeviceConcern
@@ -58,7 +60,8 @@ class Users::SessionsController < Devise::SessionsController
       end
 
       if agent_connect_id_token.present?
-        return redirect_to build_agent_connect_logout_url(agent_connect_id_token), allow_other_host: true
+        return redirect_to AgentConnectService.logout_url(agent_connect_id_token, host_with_port: request.host_with_port),
+          allow_other_host: true
       end
     end
 
@@ -91,6 +94,8 @@ class Users::SessionsController < Devise::SessionsController
       # redirect to root_path otherwise
 
       if instructeur_signed_in?
+        current_user.update!(email_verified_at: Time.zone.now)
+
         redirect_to after_sign_in_path_for(:user)
       else
         redirect_to new_user_session_path
@@ -105,13 +110,12 @@ class Users::SessionsController < Devise::SessionsController
 
   # agent connect callback
   def logout
+    if cookies.encrypted[AgentConnect::AgentController::REDIRECT_TO_AC_LOGIN_COOKIE_NAME].present?
+      cookies.delete(AgentConnect::AgentController::REDIRECT_TO_AC_LOGIN_COOKIE_NAME)
+
+      return redirect_to agent_connect_relogin_after_2fa_config_path
+    end
+
     redirect_to root_path, notice: I18n.t('devise.sessions.signed_out')
-  end
-
-  private
-
-  def build_agent_connect_logout_url(id_token)
-    h = { id_token_hint: id_token, post_logout_redirect_uri: logout_url }
-    "#{AGENT_CONNECT[:end_session_endpoint]}?#{h.to_query}"
   end
 end

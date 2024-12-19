@@ -1,5 +1,10 @@
+# frozen_string_literal: true
+
 RSpec.describe Attachment::EditComponent, type: :component do
-  let(:champ) { create(:champ_titre_identite, dossier: create(:dossier)) }
+  let(:procedure) { create(:procedure, :published, types_de_champ_public:) }
+  let(:types_de_champ_public) { [{ type: :titre_identite }] }
+  let(:dossier) { create(:dossier, :with_populated_champs, procedure:) }
+  let(:champ) { dossier.champs.first }
   let(:attached_file) { champ.piece_justificative_file }
   let(:attachment) { attached_file.attachments.first }
   let(:filename) { attachment.filename.to_s }
@@ -20,7 +25,7 @@ RSpec.describe Attachment::EditComponent, type: :component do
     let(:attachment) { nil }
 
     it 'renders a form field for uploading a file' do
-      expect(subject).to have_selector('input[type=file]:not(.hidden)')
+      expect(subject).to have_selector('input[type=file]:not([disabled])')
     end
 
     it 'renders max size' do
@@ -37,8 +42,8 @@ RSpec.describe Attachment::EditComponent, type: :component do
       expect(subject).to have_content(attachment.filename.to_s)
     end
 
-    it 'hides the file field by default' do
-      expect(subject).to have_selector('input[type=file].hidden')
+    it 'disabled the file field by default' do
+      expect(subject).to have_selector('input[type=file][disabled]')
     end
 
     it 'shows the Delete button by default' do
@@ -98,8 +103,6 @@ RSpec.describe Attachment::EditComponent, type: :component do
     end
 
     context 'when watermark is pending' do
-      let(:champ) { create(:champ_titre_identite) }
-
       it 'displays the filename, but doesn’t allow to download the file' do
         expect(attachment.watermark_pending?).to be_truthy
         expect(subject).to have_text(filename)

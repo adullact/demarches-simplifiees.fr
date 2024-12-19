@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 RSpec.describe GalleryHelper, type: :helper do
-  let(:procedure) { create(:procedure_with_dossiers) }
-  let(:type_de_champ_pj) { create(:type_de_champ_piece_justificative, stable_id: 3, libelle: 'Justificatif de domicile', procedure:) }
-  let(:champ_pj) { create(:champ_piece_justificative, type_de_champ: type_de_champ_pj) }
+  let(:procedure) { create(:procedure, :published, types_de_champ_public:) }
+  let(:types_de_champ_public) { [{ type: :piece_justificative, stable_id: 3, libelle: 'Justificatif de domicile' }] }
+  let(:dossier) { create(:dossier, :with_populated_champs, procedure:) }
+  let(:champ_pj) { dossier.champs.first }
+
   let(:blob_info) do
     {
       filename: file.original_filename,
@@ -67,6 +71,22 @@ RSpec.describe GalleryHelper, type: :helper do
       let(:file) { fixture_file_upload('spec/fixtures/files/instructeurs-file.csv', 'text/csv') }
 
       it { expect { subject }.not_to change { ActiveStorage::VariantRecord.count } }
+      it { is_expected.to eq("pdf-placeholder.png") }
+    end
+  end
+
+  describe ".representation_url_for" do
+    subject { representation_url_for(attachment) }
+
+    context "when attachment is an image with no variant" do
+      let(:file) { fixture_file_upload('spec/fixtures/files/logo_test_procedure.png', 'image/png') }
+
+      it { is_expected.to eq("apercu-indisponible.png") }
+    end
+
+    context "when attachment is a pdf with no preview" do
+      let(:file) { fixture_file_upload('spec/fixtures/files/RIB.pdf', 'application/pdf') }
+
       it { is_expected.to eq("pdf-placeholder.png") }
     end
   end

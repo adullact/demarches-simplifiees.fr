@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe TiptapService do
   let(:json) do
     {
@@ -137,6 +139,19 @@ RSpec.describe TiptapService do
           ]
         },
         {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'Langages de prédilection:'
+            },
+            {
+              type: 'mention',
+              attrs: { id: 'languages', label: 'Langages' }
+            }
+          ]
+        },
+        {
           type: 'footer',
           content: [{ type: 'text', text: 'Footer' }]
         }
@@ -145,7 +160,7 @@ RSpec.describe TiptapService do
   end
 
   describe '.to_html' do
-    let(:substitutions) { { 'name' => 'Paul' } }
+    let(:substitutions) { { 'name' => 'Paul', 'languages' => ChampPresentations::MultipleDropDownListPresentation.new(['ruby', 'rust']) } }
     let(:html) do
       [
         '<header><div>Left</div><div>Right</div></header>',
@@ -156,6 +171,7 @@ RSpec.describe TiptapService do
         '<p><s><em>Bonjour </em></s><u><strong>Paul</strong></u> <mark>!</mark></p>',
         '<ul><li><p>Item 1</p></li><li><p>Item 2</p></li></ul>',
         '<ol><li><p>Item 1</p></li><li><p>Item 2</p></li></ol>',
+        '<p>Langages de prédilection:</p><ul><li><p>ruby</p></li><li><p>rust</p></li></ul>',
         '<footer>Footer</footer>'
       ].join
     end
@@ -185,27 +201,82 @@ RSpec.describe TiptapService do
         expect(described_class.new.to_html(json, substitutions)).to eq("<h1>The Title</h1><p class=\"body-start\">First paragraph</p>")
       end
     end
+
+    context 'ordered list with custom classes' do
+      let(:json) do
+        {
+          type: 'doc',
+          content: [
+            {
+              type: 'orderedList',
+              attrs: { class: "my-class" },
+              content: [
+                {
+                  type: 'listItem',
+                  content: [
+                    {
+                      type: 'paragraph',
+                      content: [
+                        {
+                          type: 'text',
+                          text: 'Item 1'
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      end
+
+      it "set class attribute" do
+        expect(described_class.new.to_html(json, substitutions)).to eq('<ol class="my-class"><li><p>Item 1</p></li></ol>')
+      end
+    end
   end
 
   describe '#used_tags' do
     it 'returns used tags' do
-      expect(described_class.used_tags_and_libelle_for(json)).to eq(Set.new([['name', 'Nom']]))
+      expect(described_class.used_tags_and_libelle_for(json)).to eq(Set.new([['name', 'Nom'], ['languages', 'Langages']]))
     end
   end
 
-  describe '.to_path' do
-    let(:substitutions) { { "dossier_number" => "42" } }
-    let(:json) do
-      {
-        "content" => [
-          { "type" => "paragraph", "content" => [{ "text" => "export_", "type" => "text" }, { "type" => "mention", "attrs" => { "id" => "dossier_number", "label" => "numéro du dossier" } }, { "text" => " .pdf", "type" => "text" }] }
-        ]
+  describe '.to_texts_and_tags' do
+    subject { described_class.new.to_texts_and_tags(json, substitutions) }
 
-      }.deep_symbolize_keys
+    context 'nominal' do
+      let(:json) do
+        {
+          "content" => [
+            { "type" => "paragraph", "content" => [{ "text" => "export_", "type" => "text" }, { "type" => "mention", "attrs" => { "id" => "dossier_number", "label" => "numéro du dossier" } }, { "text" => " .pdf", "type" => "text" }] }
+          ]
+
+        }.deep_symbolize_keys
+      end
+
+      context 'with substitutions' do
+        let(:substitutions) { { "dossier_number" => "42" } }
+        it 'returns texts_and_tags' do
+          is_expected.to eq("export_42.pdf")
+        end
+      end
+
+      context 'without substitutions' do
+        let(:substitutions) { nil }
+
+        it 'returns texts_and_tags' do
+          is_expected.to eq("export_<span class='fr-tag fr-tag--sm'>numéro du dossier</span>.pdf")
+        end
+      end
     end
 
-    it 'returns path' do
-      expect(described_class.new.to_path(json, substitutions)).to eq("export_42.pdf")
+    context 'empty paragraph' do
+      let(:json) { { content: [{ type: 'paragraph' }] } }
+      let(:substitutions) { {} }
+
+      it { is_expected.to eq('') }
     end
   end
 end

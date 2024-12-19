@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Users::TransfersController, type: :controller do
   let(:sender_user) { create(:user) }
   let(:recipient_user) { create(:user) }
@@ -98,7 +100,7 @@ describe Users::TransfersController, type: :controller do
     context "when email is invalid" do
       let(:email) { "not-an-email" }
       it_behaves_like 'email error' do
-        let(:expected_error) { "L’adresse email est invalide. Saisir une adresse électronique valide, exemple : john.doe@exemple.fr" }
+        let(:expected_error) { "L’adresse email est invalide. Saisir une adresse électronique valide, exemple : adresse@mail.com" }
       end
     end
   end

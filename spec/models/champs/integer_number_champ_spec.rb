@@ -1,5 +1,11 @@
+# frozen_string_literal: true
+
 describe Champs::IntegerNumberChamp do
-  let(:champ) { build(:champ_integer_number, value:) }
+  let(:champ) { Champs::IntegerNumberChamp.new(value:, dossier: build(:dossier)) }
+  before do
+    allow(champ).to receive(:visible?).and_return(true)
+    allow(champ).to receive(:in_dossier_revision?).and_return(true)
+  end
   subject { champ.validate(:champs_public_value) }
 
   describe '#valid?' do

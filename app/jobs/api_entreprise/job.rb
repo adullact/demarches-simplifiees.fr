@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class APIEntreprise::Job < ApplicationJob
   DEFAULT_MAX_ATTEMPTS_API_ENTREPRISE_JOBS = 5
 
-  queue_as :api_entreprise
+  queue_as :default
 
   # BadGateway could mean
   # - acoss: réessayer ultérieurement

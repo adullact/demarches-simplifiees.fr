@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 describe PasswordComplexityController, type: :controller do
   describe '#show' do
     let(:params) do
-      { user: { password: 'moderately complex password' } }
+      { user: { password: 'motDePasseTropFacile' } }
     end
 
     subject { get :show, format: :turbo_stream, params: params }
@@ -13,7 +15,7 @@ describe PasswordComplexityController, type: :controller do
 
     context 'with a different resource name' do
       let(:params) do
-        { super_admin: { password: 'moderately complex password' } }
+        { super_admin: { password: 'motDePasseTropFacile' } }
       end
 
       it 'computes a password score' do

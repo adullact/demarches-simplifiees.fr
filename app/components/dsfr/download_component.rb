@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Dsfr::DownloadComponent < ApplicationComponent
   attr_reader :attachment
   attr_reader :html_class
@@ -7,7 +9,7 @@ class Dsfr::DownloadComponent < ApplicationComponent
   attr_reader :new_tab
   attr_reader :truncate
 
-  def initialize(attachment:, name: nil, url: nil, ephemeral_link: false, virus_not_analyzed: false, new_tab: false, truncate: false)
+  def initialize(attachment:, name: nil, url: nil, ephemeral_link: false, virus_not_analyzed: false, new_tab: false, truncate: false, title: nil)
     @attachment = attachment
     @name = name || attachment.filename.to_s
     @url = url
@@ -15,10 +17,11 @@ class Dsfr::DownloadComponent < ApplicationComponent
     @virus_not_analyzed = virus_not_analyzed
     @new_tab = new_tab
     @truncate = truncate
+    @title = title
   end
 
   def title
-    t(".title", filename: attachment.filename.to_s)
+    @title || t(".title", filename: attachment.filename.to_s)
   end
 
   def url

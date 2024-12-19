@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 class ResetExpiringDossiersJob < ApplicationJob
+  queue_as :low
   def perform(procedure)
     procedure
       .dossiers

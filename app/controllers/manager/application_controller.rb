@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Manager
   class ApplicationController < Administrate::ApplicationController
     before_action :authenticate_super_admin!
@@ -53,6 +55,15 @@ module Manager
       end
 
       payload[:to_log] = to_log
+    end
+
+    def generate_csv(users)
+      CSV.generate(headers: true) do |csv|
+        csv << ['ID', 'Email', 'Date de création']
+        users.each do |user|
+          csv << [user.id, user.email, user.created_at]
+        end
+      end
     end
   end
 end

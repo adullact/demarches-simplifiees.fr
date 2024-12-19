@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class PersonneMoraleType < Types::BaseObject
     class EntrepriseType < Types::BaseObject
@@ -122,16 +124,13 @@ module Types
     field :complement_adresse, String, null: true, deprecation_reason: "Utilisez le champ `address` à la place."
 
     def address
-      {
-        label: object.adresse,
-        type: "housenumber",
-        street_number: object.numero_voie,
-        street_name: object.nom_voie,
-        street_address: object.nom_voie.present? ? [object.numero_voie, object.type_voie, object.nom_voie].compact.join(' ') : nil,
-        postal_code: object.code_postal.presence || '',
-        city_name: object.localite.presence || '',
-        city_code: object.code_insee_localite.presence || ''
-      }.with_indifferent_access
+      address = object.champ&.value_json
+      if address.blank? || !address.key?("departement_code")
+        address = APIGeoService.parse_etablissement_address(object)
+      end
+      address
+        .merge(label: object.adresse, type: "housenumber")
+        .with_indifferent_access
     end
 
     def entreprise

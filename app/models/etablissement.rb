@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Etablissement < ApplicationRecord
   belongs_to :dossier, optional: true
 
@@ -50,7 +52,8 @@ class Etablissement < ApplicationRecord
       adresse,
       code_postal,
       localite,
-      code_insee_localite
+      code_insee_localite,
+      nom_pays
     ]
   end
 

@@ -1,6 +1,6 @@
-class Instructeur < ApplicationRecord
-  self.ignored_columns += [:agent_connect_id]
+# frozen_string_literal: true
 
+class Instructeur < ApplicationRecord
   include UserFindByConcern
   has_and_belongs_to_many :administrateurs
 
@@ -125,10 +125,11 @@ class Instructeur < ApplicationRecord
       annotations_privees = dossier.last_champ_private_updated_at&.>(follow.annotations_privees_seen_at) || false
       avis_notif = dossier.last_avis_updated_at&.>(follow.avis_seen_at) || false
       messagerie = dossier.last_commentaire_updated_at&.>(follow.messagerie_seen_at) || false
+      pieces_jointes = dossier.last_champ_piece_jointe_updated_at&.>(follow.pieces_jointes_seen_at) || dossier.last_commentaire_piece_jointe_updated_at&.>(follow.pieces_jointes_seen_at) || dossier.last_avis_piece_jointe_updated_at&.>(follow.pieces_jointes_seen_at) || false
 
-      annotations_hash(demande, annotations_privees, avis_notif, messagerie)
+      annotations_hash(demande, annotations_privees, avis_notif, messagerie, pieces_jointes)
     else
-      annotations_hash(false, false, false, false)
+      annotations_hash(false, false, false, false, false)
     end
   end
 
@@ -212,6 +213,11 @@ class Instructeur < ApplicationRecord
     trusted_device_token&.token_young?
   end
 
+  def should_receive_email_activation?
+    # if was recently created or received an activation email more than 7 days ago
+    previously_new_record? || user.reset_password_sent_at.nil? || user.reset_password_sent_at < Devise.reset_password_within.ago
+  end
+
   def can_be_deleted?
     user.administrateur.nil? && procedures.all? { |p| p.defaut_groupe_instructeur.instructeurs.count > 1 }
   end
@@ -227,18 +233,18 @@ class Instructeur < ApplicationRecord
   def dossiers_count_summary(groupe_instructeur_ids)
     query = <<~EOF
       SELECT
-        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND not archived AND dossiers.state in ('en_construction', 'en_instruction') AND follows.id IS NULL) AS a_suivre,
-        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND not archived AND dossiers.state in ('en_construction', 'en_instruction') AND follows.instructeur_id = :instructeur_id) AS suivis,
-        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND not archived AND dossiers.state in ('accepte', 'refuse', 'sans_suite')) AS traites,
-        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND not archived) AS tous,
-        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND archived) AS archives,
-        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NOT NULL AND not archived AND dossiers.state in ('accepte', 'refuse', 'sans_suite')) AS supprimes_recemment,
-        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND procedures.procedure_expires_when_termine_enabled
+        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND dossiers.hidden_by_expired_at IS NULL AND not archived AND dossiers.state in ('en_construction', 'en_instruction') AND follows.id IS NULL) AS a_suivre,
+        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND dossiers.hidden_by_expired_at IS NULL AND not archived AND dossiers.state in ('en_construction', 'en_instruction') AND follows.instructeur_id = :instructeur_id) AS suivis,
+        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND dossiers.hidden_by_expired_at IS NULL AND not archived AND dossiers.state in ('accepte', 'refuse', 'sans_suite')) AS traites,
+        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND dossiers.hidden_by_expired_at IS NULL AND not archived) AS tous,
+        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND dossiers.hidden_by_expired_at IS NULL AND archived) AS archives,
+        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NOT NULL AND not archived OR dossiers.hidden_by_expired_at IS NOT NULL) AS supprimes,
+        COUNT(DISTINCT dossiers.id) FILTER (where dossiers.hidden_by_administration_at IS NULL AND dossiers.hidden_by_expired_at IS NULL AND procedures.procedure_expires_when_termine_enabled
           AND (
             dossiers.state in ('accepte', 'refuse', 'sans_suite')
               AND dossiers.processed_at + dossiers.conservation_extension + (procedures.duree_conservation_dossiers_dans_ds * INTERVAL '1 month') - INTERVAL :expires_in < :now
           ) OR (
-            dossiers.state in ('en_construction')
+            dossiers.state in ('en_construction') AND dossiers.hidden_by_expired_at IS NULL
               AND dossiers.en_construction_at + dossiers.conservation_extension + (duree_conservation_dossiers_dans_ds * INTERVAL '1 month') - INTERVAL :expires_in < :now
           )
         ) AS expirant
@@ -309,12 +315,13 @@ class Instructeur < ApplicationRecord
 
   private
 
-  def annotations_hash(demande, annotations_privees, avis, messagerie)
+  def annotations_hash(demande, annotations_privees, avis, messagerie, pieces_jointes)
     {
       demande: demande,
       annotations_privees: annotations_privees,
       avis: avis,
-      messagerie: messagerie
+      messagerie: messagerie,
+      pieces_jointes: pieces_jointes
     }
   end
 

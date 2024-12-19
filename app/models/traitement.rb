@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 class Traitement < ApplicationRecord
   belongs_to :dossier, optional: false
-
   scope :en_construction, -> { where(state: Dossier.states.fetch(:en_construction)) }
   scope :en_instruction, -> { where(state: Dossier.states.fetch(:en_instruction)) }
   scope :termine, -> { where(state: Dossier::TERMINE) }

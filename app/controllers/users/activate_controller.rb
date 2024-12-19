@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Users::ActivateController < ApplicationController
   include TrustedDeviceConcern
 
@@ -34,13 +36,13 @@ class Users::ActivateController < ApplicationController
     user = User.find_by(confirmation_token: params[:token])
     if user && user.email_verified_at
       flash[:notice] = "Votre email est déjà vérifié"
-    elsif user && 2.days.ago < user.confirmation_sent_at
+    elsif user && user.confirmation_sent_at >= 2.days.ago
       user.update!(email_verified_at: Time.zone.now)
       flash[:notice] = 'Votre email a bien été vérifié'
     else
       if user.present?
         flash[:alert] = "Ce lien n'est plus valable, un nouveau lien a été envoyé à l'adresse #{user.email}"
-        User.create_or_promote_to_tiers(user.email, SecureRandom.hex)
+        user.resend_confirmation_email!
       else
         flash[:alert] = "Un problème est survenu, vous pouvez nous contacter sur #{Current.contact_email}"
       end

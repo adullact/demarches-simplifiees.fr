@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Champs::CarteChamp < Champ
   # Default map location. Center of the World, ahm, France...
   DEFAULT_LON = 2.428462
@@ -14,8 +16,10 @@ class Champs::CarteChamp < Champ
   # We are not using scopes here as we want to access
   # the following collections on unsaved records.
   def cadastres
-    geo_areas.filter do |area|
-      area.source == GeoArea.sources.fetch(:cadastre)
+    if cadastres?
+      geo_areas.filter { _1.source == GeoArea.sources.fetch(:cadastre) }
+    else
+      []
     end
   end
 
@@ -81,10 +85,6 @@ class Champs::CarteChamp < Champ
         geometry: geometry
       )
     end
-  end
-
-  def blank?
-    geo_areas.blank?
   end
 
   private

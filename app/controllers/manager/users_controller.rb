@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Manager
   class UsersController < Manager::ApplicationController
     def update
@@ -78,14 +80,17 @@ module Manager
         Mailjet::API.new,
         Sendinblue::API.new,
         Dolist::API.new
-      ]
+      ].filter(&:properly_configured?)
 
-      @sent_mails = email_services
-        .filter(&:properly_configured?)
-        .map { |api| api.sent_mails(@user.email) }
-        .flatten
-        .sort_by(&:delivered_at)
-        .reverse
+      @sent_mails = Concurrent::Array.new
+      email_services.map do |api|
+        Thread.new do
+          mails = api.sent_mails(@user.email)
+          @sent_mails.concat(mails)
+        end
+      end.each(&:join)
+
+      @sent_mails.sort_by!(&:delivered_at).reverse!
     end
 
     def unblock_email

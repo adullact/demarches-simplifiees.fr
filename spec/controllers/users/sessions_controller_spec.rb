@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Users::SessionsController, type: :controller do
   let(:email) { 'unique@plop.com' }
   let(:password) { SECURE_PASSWORD }
@@ -214,6 +216,7 @@ describe Users::SessionsController, type: :controller do
           it { is_expected.to redirect_to root_path }
           it { expect(controller.current_instructeur).to eq(instructeur) }
           it { expect(controller).to have_received(:trust_device) }
+          it { expect(controller.current_instructeur.user.email_verified_at).not_to be_nil }
         end
 
         context 'when the token is invalid' do
@@ -304,6 +307,23 @@ describe Users::SessionsController, type: :controller do
       it 'send InstructeurMailer.send_login_token' do
         expect(InstructeurMailer).to receive(:send_login_token).with(instructeur, anything).and_return(double(deliver_later: true))
         expect { subject }.to change { instructeur.trusted_device_tokens.count }.by(1)
+      end
+    end
+  end
+
+  describe '#logout' do
+    subject { get :logout }
+
+    it 'redirects to root_path' do
+      expect(subject).to redirect_to(root_path)
+    end
+
+    context 'when the cookie redirect_to_ac_login is present' do
+      before { cookies.encrypted[AgentConnect::AgentController::REDIRECT_TO_AC_LOGIN_COOKIE_NAME] = true }
+
+      it 'redirects to relogin_after_2fa_config' do
+        expect(subject).to redirect_to(agent_connect_relogin_after_2fa_config_path)
+        expect(cookies.encrypted[AgentConnect::AgentController::REDIRECT_TO_AC_LOGIN_COOKIE_NAME]).to be_nil
       end
     end
   end

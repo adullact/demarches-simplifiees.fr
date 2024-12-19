@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   sequence(:gestionnaire_email) { |n| "gestionnaire#{n}@demarches-simplifiees.fr" }
 
@@ -6,7 +8,7 @@ FactoryBot.define do
 
     transient do
       email { generate(:gestionnaire_email) }
-      password { 'somethingverycomplated!' }
+      password { '{My-$3cure-p4ssWord}' }
     end
   end
 end

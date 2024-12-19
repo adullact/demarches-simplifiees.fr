@@ -1,7 +1,16 @@
+# frozen_string_literal: true
+
 class Champs::DossierLinkChamp < Champ
   validate :value_integerable, if: -> { value.present? }, on: :prefill
+  validate :dossier_exists, if: -> { validate_champ_value? && !value.nil? }
 
   private
+
+  def dossier_exists
+    if mandatory? && !Dossier.exists?(value)
+      errors.add(:value, :not_found)
+    end
+  end
 
   def value_integerable
     Integer(value)

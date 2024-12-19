@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # complexity of the required password for the three kinds of users (user, instructeur, admnistrateur)
 # valid values are from 0 to 4, 0 means very simple, 4 means high level of complexity.
 if !defined?(PASSWORD_MIN_LENGTH)
@@ -5,5 +7,5 @@ if !defined?(PASSWORD_MIN_LENGTH)
   # PASSWORD_COMPLEXITY_FOR_INSTRUCTEUR = ENV.fetch('PASSWORD_COMPLEXITY_FOR_INSTRUCTEUR', '3').to_i
   PASSWORD_COMPLEXITY_FOR_ADMIN = ENV.fetch('PASSWORD_COMPLEXITY_FOR_ADMIN', '4').to_i
   # password minimum length
-  PASSWORD_MIN_LENGTH = ENV.fetch('PASSWORD_MIN_LENGTH', '8').to_i
+  PASSWORD_MIN_LENGTH = ENV.fetch('PASSWORD_MIN_LENGTH', '12').to_i
 end

@@ -47,7 +47,7 @@ en:
         published_procedure_html: "This procedure is <strong>published</strong>, some elements can no longer be modified. To access it you can use the link:"
         public_link_procedure_html: "Be careful, always post the <strong>full link</strong> displayed above, and not a generic link to %{link}"
         missing_information_title: missing information
-        missing_information_content: "To be able to test this procedure, you must first assign it:"
+        missing_information_content: "To be able to publish this procedure, you must first assign it:"
         missing_information_service: You must provide the contact details of your Administrative Department before you can publish your procedure.
         missing_information_instructeurs: You must assign instructors before you can publish your procedure.
         missing_link: This procedure does not yet have a link, and is not accessible to the public.
@@ -67,7 +67,12 @@ en:
         dpd_part_4: How to do ? You can either send him the link to the procedure on test stage by email, or name him "administrator". In any case, publish your approach only after having had his opinion.
         back_to_procedure: 'Cancel and return to the procedure page'
         submit: Publish
+      technical_issues: "Issues are affecting the proper functioning of the process"
       check_path:
         path_not_available:
           owner: This URL is identical to another of your published procedures. If you publish this procedure, the old one will be unpublished and will no longer be accessible to the public.
           not_owner: This URL is identical to another procedure, you must modify it.
+      unpublished_changes_sticky_header:
+        intro_html: Changes made will only be visible <strong>after the next publication</strong>
+        see_changes: View changes
+        publish_changes: Publish changes

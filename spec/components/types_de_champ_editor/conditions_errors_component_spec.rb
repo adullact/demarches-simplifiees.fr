@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Conditions::ConditionsErrorsComponent, type: :component do
   include Logic
 
@@ -22,13 +24,13 @@ describe Conditions::ConditionsErrorsComponent, type: :component do
     end
 
     context 'when the targeted_champ is unmanaged' do
-      let(:tdc) { create(:type_de_champ_address) }
+      let(:tdc) { create(:type_de_champ_email) }
       let(:source_tdcs) { [tdc] }
       let(:conditions) { [ds_eq(champ_value(tdc.stable_id), constant(1))] }
 
       it do
         expect(page).to have_css('.errors-summary')
-        expect(page).to have_content("Le champ « #{tdc.libelle} » est de type « adresse » et ne peut pas être utilisé comme champ cible.")
+        expect(page).to have_content("Le champ « #{tdc.libelle} » est de type « adresse électronique » et ne peut pas être utilisé comme champ cible.")
       end
     end
 
@@ -75,7 +77,7 @@ describe Conditions::ConditionsErrorsComponent, type: :component do
     context 'when an eq operator applies to a multiple_drop_down' do
       let(:tdc) { create(:type_de_champ_multiple_drop_down_list) }
       let(:source_tdcs) { [tdc] }
-      let(:conditions) { [ds_eq(champ_value(tdc.stable_id), constant(tdc.drop_down_list_enabled_non_empty_options.first))] }
+      let(:conditions) { [ds_eq(champ_value(tdc.stable_id), constant(tdc.drop_down_options.first))] }
 
       it { expect(page).to have_content("« est » ne s'applique pas au choix multiple.") }
     end
@@ -83,7 +85,7 @@ describe Conditions::ConditionsErrorsComponent, type: :component do
     context 'when an not_eq operator applies to a multiple_drop_down' do
       let(:tdc) { create(:type_de_champ_multiple_drop_down_list) }
       let(:source_tdcs) { [tdc] }
-      let(:conditions) { [ds_not_eq(champ_value(tdc.stable_id), constant(tdc.drop_down_list_enabled_non_empty_options.first))] }
+      let(:conditions) { [ds_not_eq(champ_value(tdc.stable_id), constant(tdc.drop_down_options.first))] }
 
       it { expect(page).to have_content("« n’est pas » ne s'applique pas au choix multiple.") }
     end

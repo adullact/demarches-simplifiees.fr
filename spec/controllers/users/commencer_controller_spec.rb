@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Users::CommencerController, type: :controller do
   let(:user) { create(:user) }
   let(:published_procedure) { create(:procedure, :for_individual, :published) }
@@ -10,6 +12,18 @@ describe Users::CommencerController, type: :controller do
       let(:path) { published_procedure.path }
 
       it 'renders the view' do
+        expect(subject.status).to eq(200)
+        expect(subject).to render_template('show')
+        expect(assigns(:procedure)).to eq published_procedure
+        expect(assigns(:revision)).to eq published_procedure.published_revision
+      end
+    end
+
+    context 'when a path rewrite is present' do
+      let(:path) { 'from' }
+      let!(:path_rewrite) { PathRewrite.create(from: 'from', to: published_procedure.path) }
+
+      it 'redirects to the new path' do
         expect(subject.status).to eq(200)
         expect(subject).to render_template('show')
         expect(assigns(:procedure)).to eq published_procedure
@@ -159,7 +173,7 @@ describe Users::CommencerController, type: :controller do
             expect(Dossier.count).to eq(1)
             expect(session[:prefill_token]).to eq(Dossier.last.prefill_token)
             expect(session[:prefill_params_digest]).to eq(PrefillChamps.digest({ "champ_#{type_de_champ_text.to_typed_id}" => "blabla" }))
-            expect(Dossier.last.champs.where(type_de_champ: type_de_champ_text).first.value).to eq("blabla")
+            expect(Dossier.last.champs.where(stable_id: type_de_champ_text.stable_id).first.value).to eq("blabla")
             expect(Dossier.last.individual.nom).to eq("Dupont")
           end
         end
@@ -190,8 +204,8 @@ describe Users::CommencerController, type: :controller do
         subject { get :commencer, params: { path: path, prefill_token: "token", "champ_#{type_de_champ_text.to_typed_id}" => "blabla" } }
 
         context "when the associated dossier exists" do
-          let!(:dossier) { create(:dossier, :prefilled, prefill_token: "token") }
-          let!(:champ_text) { create(:champ_text, dossier: dossier, type_de_champ: type_de_champ_text) }
+          let(:procedure) { create(:procedure, types_de_champ_public: [{}]) }
+          let!(:dossier) { create(:dossier, :prefilled, procedure:, prefill_token: "token") }
 
           it "does not create a new dossier" do
             subject
