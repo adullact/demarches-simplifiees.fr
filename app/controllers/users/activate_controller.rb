@@ -22,6 +22,7 @@ class Users::ActivateController < ApplicationController
     })
 
     if user.valid?
+      user.update(email_verified_at: Time.zone.now)
       sign_in(user, scope: :user)
 
       trust_device(Time.zone.now) if user.instructeur.present?
