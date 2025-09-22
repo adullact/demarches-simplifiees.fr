@@ -1,8 +1,21 @@
-# Object Storange And Data Encryption
+# Object Storage And Data Encryption
 
-## Object Storage
+## Object Storage configuration
 
-By default, demarche.numerique.gouv.fr uses an [OVH Object Storage](https://www.ovhcloud.com/en/public-cloud/object-storage/) backend. The hard-drives are encrypted at rest, but to protect user files even better, demarche.numerique.gouv.fr can also use an external encryption proxy, that will encrypt and decrypt files on the fly:
+By default, demarche-numerique uses an S3-compatible Object Storage (this can be genuine Amazon Web Services S3 service, or any compatible object storage, hosted by OVH, Scaleway, or other).
+
+demarche-numerique allows users to directly upload files to the Object Storage, without going through the application stack (this is often called "Direct Upload"). For this to work, the Object Storage needs to **allow CORS requests from the application domain**.
+
+For this, you may want to configure your Object Storage using the `aws` command-line tool:
+
+```shell
+export CORS='{"CORSRules":[{"AllowedHeaders":["*"],"AllowedMethods":["*"],"AllowedOrigins":["https://ds.example.org"]}]}'
+aws --endpoint https://object-storage.example.org s3api put-bucket-cors --bucket ds-bucket --cors-configuration $CORS
+```
+
+## Object Storage and encryption
+
+The Object Storage hard-drives are usually encrypted at rest. To protect user files even better, demarche-numerique can also use an external encryption proxy, that will encrypt and decrypt files on the fly:
 
 * Encryption is done via our [proxy](https://github.com/betagouv/ds_proxy) when the file is uploaded by a client.
 * Decryption is done via the same proxy when the file is downloaded to a client

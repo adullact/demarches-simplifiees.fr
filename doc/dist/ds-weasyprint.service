@@ -1,0 +1,25 @@
+[Unit]
+Description="demarche-numerique Weasyprint server"
+After=network.target
+
+[Service]
+Type=notify
+User=ds
+WorkingDirectory=/opt/weasyprint/app
+ExecStart=/opt/weasyprint/app/.venv/bin/uwsgi
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -INT $MAINPID
+Environment="BASE_URL=http://127.0.0.1:8080"
+Environment="UWSGI_HTTP_SOCKET=0.0.0.0:5000"
+Environment="UWSGI_STATS=0.0.0.0:9191"
+Environment="UWSGI_PROCESSES=1"
+Environment="UWSGI_CHDIR=/opt/weasyprint/app"
+Environment="UWSGI_ENABLE_THREADS=true"
+Environment="UWSGI_MODULE=wsgi:app"
+WatchdogSec=10
+Restart=always
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

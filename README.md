@@ -23,9 +23,6 @@ Would you like to make changes or improvements? Read our [contribution guide](CO
 - libvips-dev (image processing and watermark generation)
 - gsfonts (fonts for watermark text rendering)
 
-We are currently migrating from `delayed_job` to `sidekiq` for asynchronous job processing.
-To run sidekiq, you will need:
-
 - redis
 
 - lightgallery: a license has been purchased to support the project, but it is not required if the library is used as part of an open source application.

@@ -1,0 +1,19 @@
+# Use in staging environments to catch and display all emails.
+# Install mailcatcher with:
+#   gem install mailcatcher && rbenv rehash
+# Then configure the application to send mails to mailcatcher in .env.production:
+#   MAILCATCHER_ENABLED="enabled"
+[Unit]
+Description="Mailcatcher SMTP and HTTP server"
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/ds
+ExecStart=/home/ds/.rbenv/shims/mailcatcher --foreground --http-ip 0.0.0.0 --http-port 1080
+ExecStartPost=/usr/bin/timeout 10 /bin/sh -c 'while ! nc -z localhost 1080; do sleep 0.2; done'
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

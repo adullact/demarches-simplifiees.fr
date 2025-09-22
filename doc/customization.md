@@ -34,6 +34,9 @@ $ cp config/locales/links.fr.yml config/custom_locales
 
 And _voila!_ You can now edit your own locales.
 
+> [!NOTE]
+> Locales defined inside ViewComponents cannot currently be customized (see #13261).
+
 ## Step 4. Customize institution logos and document headers
 
 Institution logos are used in **emails** and **PDF documents** (deposit receipt, etc.).
