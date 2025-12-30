@@ -37,7 +37,7 @@ module Administrateurs
                          allowed_procedure_ids:, authorized_networks:,
                          requires_ip_filtering: true)
 
-      @curl_command = curl_command(@packed_token, @api_token.procedure_ids.first)
+      @curl_command = curl_command(@packed_token, @api_token.procedure_ids.first, @api_token.authorized_networks.first)
     end
 
     def edit
@@ -103,12 +103,13 @@ module Administrateurs
 
     private
 
-    def curl_command(packed_token, procedure_id)
+    def curl_command(packed_token, procedure_id, authorized_ip = nil)
+      ip_header = authorized_ip ? "-H 'X-Forwarded-For: #{authorized_ip.to_string}' \\\n        " : ""
       <<~EOF
         curl \\
         -H 'Content-Type: application/json' \\
         -H 'Authorization: Bearer #{packed_token}' \\
-        --data '{ "query": "{ demarche(number: #{procedure_id}) { title } }" }' \\
+        #{ip_header}--data '{ "query": "{ demarche(number: #{procedure_id}) { title } }" }' \\
         '#{api_v2_graphql_url}'
       EOF
     end
