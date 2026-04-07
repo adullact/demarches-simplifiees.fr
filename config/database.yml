@@ -1,7 +1,7 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  max_connections: <%= ENV["DB_POOL"].presence || 5 %>
+  max_connections: <%= ENV["DB_POOL"].presence || 25 %>
   # sql queries will be killed after 60s
   # we should reduce this number
   # A bigger timeout can be set for jobs
