@@ -3,10 +3,10 @@
 require "rails_helper"
 
 module Maintenance
-  RSpec.describe MigrateExistingProcedurePathsTask do
+  RSpec.describe T20250130MigrateExistingProcedurePathsTask do
     before(:context) do
       FactoryBot.define do
-        factory :migration_procedure, class: Maintenance::MigrateExistingProcedurePathsTask::Procedure, parent: :procedure do
+        factory :migration_procedure, class: Maintenance::T20250130MigrateExistingProcedurePathsTask::Procedure, parent: :procedure do
         end
       end
     end

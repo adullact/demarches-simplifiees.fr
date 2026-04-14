@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Maintenance
-  class MigrateExistingProcedurePathsTask < MaintenanceTasks::Task
+  class T20250130MigrateExistingProcedurePathsTask < MaintenanceTasks::Task
     include RunnableOnDeployConcern
 
     run_on_first_deploy
