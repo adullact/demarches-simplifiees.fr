@@ -5,6 +5,6 @@ class BackfillAttestationTemplatesKindTask < ActiveRecord::Migration[7.2]
 
   def up
     ActiveRecord::Base.descendants.each(&:reset_column_information)
-    MaintenanceTasks::Runner.run_sync(name: "Maintenance::T20250909backfillAttestationTemplatesKindTask")
+    MaintenanceTasks::Runner.run_sync(name: "Maintenance::T20250908backfillAttestationTemplatesKindTask")
   end
 end

@@ -5,6 +5,6 @@ class NullifyRowIdTask < ActiveRecord::Migration[7.2]
 
   def up
     ActiveRecord::Base.descendants.each(&:reset_column_information)
-    MaintenanceTasks::Runner.run_sync(name: "Maintenance::T20250519NullifyRowIdTask")
+    MaintenanceTasks::Runner.run_sync(name: "Maintenance::T20250526NullifyRowIdTask")
   end
 end
