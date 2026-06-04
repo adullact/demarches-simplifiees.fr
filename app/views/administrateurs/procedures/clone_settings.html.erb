@@ -309,7 +309,7 @@
       <div class="fr-container">
         <ul class="fr-btns-group fr-btns-group--inline-md fr-ml-0">
           <li>
-            <%= link_to t('administrateurs.procedures.clone.actions.cancel'), params[:from_new_from_existing] ? all_admin_procedures_path(zone_ids: :admin_default) : admin_procedure_path(@procedure), class: 'fr-btn fr-btn--secondary fr-ml-0' %>
+            <%= link_to t('administrateurs.procedures.clone.actions.cancel'), params[:from_new_from_existing] && Rails.application.config.ds_zonage_enabled ? all_admin_procedures_path(zone_ids: :admin_default) : admin_procedures_path, class: 'fr-btn fr-btn--secondary fr-ml-0' %>
           </li>
 
           <li>
