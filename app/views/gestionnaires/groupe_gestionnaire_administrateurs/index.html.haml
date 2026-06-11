@@ -3,19 +3,23 @@
   locals: { steps: [["#{@groupe_gestionnaire.name.truncate_words(10)}", gestionnaire_groupe_gestionnaire_path(@groupe_gestionnaire)],
                     ['Administrateurs']] }
 
-.container
-  %h1 Gérer les administrateurs de « #{@groupe_gestionnaire.name} »
+.fr-container
+  %h1.fr-h2 Gérer les administrateurs de « #{@groupe_gestionnaire.name} »
 
-  %table.table
-    %thead
-      %tr
-        %th= 'Adresse électronique'
-        %th= 'Enregistré le'
-        %th= 'État'
-        %th
-        %th
-    %tbody#administrateurs
-      = render(GroupeGestionnaire::GroupeGestionnaireAdministrateurs::AdministrateurComponent.with_collection(@groupe_gestionnaire.administrateurs.order('users.email'), groupe_gestionnaire: @groupe_gestionnaire))
+  .fr-table
+    .fr-table__wrapper
+      .fr-table__container
+        .fr-table__content
+          %table
+            %thead
+              %tr
+                %th= 'Adresse électronique'
+                %th= 'Enregistré le'
+                %th= 'État'
+                %th
+                %th
+            %tbody#administrateurs
+              = render(GroupeGestionnaire::GroupeGestionnaireAdministrateurs::AdministrateurComponent.with_collection(@groupe_gestionnaire.administrateurs.order('users.email'), groupe_gestionnaire: @groupe_gestionnaire))
 
   .fr-mt-4w
     = render 'add_administrateur_form', groupe_gestionnaire: @groupe_gestionnaire

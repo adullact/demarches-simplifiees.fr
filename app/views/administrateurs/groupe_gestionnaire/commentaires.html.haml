@@ -3,7 +3,8 @@
                     ['Messagerie']] }
 
 .fr-container
-  %h1 Messagerie de « #{@groupe_gestionnaire.name} »
+  %h1.fr-h2 Messagerie de « #{@groupe_gestionnaire.name} »
+
   .messagerie
     - if current_administrateur.commentaire_groupe_gestionnaires.where(groupe_gestionnaire: @groupe_gestionnaire).present?
       %ol.messages-list{ data: { controller: 'scroll-to' } }

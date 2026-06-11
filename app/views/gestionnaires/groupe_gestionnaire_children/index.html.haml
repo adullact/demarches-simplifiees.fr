@@ -3,8 +3,8 @@
   locals: { steps: [["#{@groupe_gestionnaire.name.truncate_words(10)}", gestionnaire_groupe_gestionnaire_path(@groupe_gestionnaire)],
                     ['Groupes enfants']] }
 
-.container
-  %h1 Gérer les groupes enfants de « #{@groupe_gestionnaire.name} »
+.fr-container
+  %h1.fr-h2 Gérer les groupes enfants de « #{@groupe_gestionnaire.name} »
 
   .fr-mt-4w
     = link_to 'Afficher l’arborescence', tree_structure_gestionnaire_groupe_gestionnaire_path(@groupe_gestionnaire)
@@ -12,10 +12,14 @@
   .fr-mt-4w
     = render 'add_child_form', groupe_gestionnaire: @groupe_gestionnaire
 
-  %table.table
-    %thead
-      %tr
-        %th= 'Nom'
-        %th= 'Enregistré le'
-    %tbody#children
-      = render(GroupeGestionnaire::GroupeGestionnaireChildren::ChildComponent.with_collection(@groupe_gestionnaire.children.order(:name), groupe_gestionnaire: @groupe_gestionnaire))
+  .fr-table
+    .fr-table__wrapper
+      .fr-table__container
+        .fr-table__content
+          %table
+            %thead
+              %tr
+                %th= 'Nom'
+                %th= 'Enregistré le'
+            %tbody#children
+              = render(GroupeGestionnaire::GroupeGestionnaireChildren::ChildComponent.with_collection(@groupe_gestionnaire.children.order(:name), groupe_gestionnaire: @groupe_gestionnaire))

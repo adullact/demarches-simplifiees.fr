@@ -2,8 +2,8 @@
   locals: { steps: [["#{@groupe_gestionnaire.name.truncate_words(10)}", gestionnaire_groupe_gestionnaire_path(@groupe_gestionnaire)],
                     ["Messagerie"]] }
 
-.container
-  %h1 Messagerie de « #{@groupe_gestionnaire.name} »
+.fr-container
+  %h1.fr-h2 Messagerie de « #{@groupe_gestionnaire.name} »
 
   = render partial: 'list_commentaires', locals: { commentaires: @commentaires, groupe_gestionnaire: @groupe_gestionnaire }
 
@@ -16,14 +16,18 @@
     - if @commentaires_parent_group.present?
       = render partial: 'list_commentaires', locals: { commentaires: @commentaires_parent_group, groupe_gestionnaire: @groupe_gestionnaire }
     - else
-      %table.fr-table.width-100.fr-mt-6v
-        %thead
-          %tr
-            %th= 'Adresse électronique'
-            %th= 'Dernier message'
-            %th
-          %tr
-            %td= "Messages avec le groupe gestionnaire parent"
-            %td
-            %td
-              = link_to 'Voir', parent_groupe_gestionnaire_gestionnaire_groupe_gestionnaire_commentaires_path(@groupe_gestionnaire), class: 'fr-btn'
+      .fr-table
+        .fr-table__wrapper
+          .fr-table__container
+            .fr-table__content
+              %table
+                %thead
+                  %tr
+                    %th= 'Adresse électronique'
+                    %th= 'Dernier message'
+                    %th
+                  %tr
+                    %td= "Messages avec le groupe gestionnaire parent"
+                    %td
+                    %td
+                      = link_to 'Voir', parent_groupe_gestionnaire_gestionnaire_groupe_gestionnaire_commentaires_path(@groupe_gestionnaire), class: 'fr-btn'
