@@ -4,6 +4,7 @@ module Administrateurs
   class ServicesController < AdministrateurController
     skip_before_action :alert_for_missing_siret_service, only: :edit
     skip_before_action :alert_for_missing_service, only: :edit
+
     def index
       @procedure = procedure
       @services = ([procedure.service].compact + services.ordered).uniq
@@ -16,7 +17,8 @@ module Administrateurs
       siret = current_administrateur.user.last_pro_connect_information&.siret
       if siret
         @service.siret = siret
-        @prefilled = handle_siret_prefill
+        prefilled_result = @service.prefill_from_siret
+        @prefilled = handle_siret_prefill(prefilled_result)
       end
     end
 
@@ -63,15 +65,21 @@ module Administrateurs
     def prefill
       @procedure = procedure
       @service = Service.new(siret: params[:siret])
+      prefilled = nil
 
-      prefilled = handle_siret_prefill
+      validate_siret_for_prefill
+
+      if !@service.errors.include?(:siret)
+        prefilled_result = @service.prefill_from_siret
+        prefilled = handle_siret_prefill(prefilled_result)
+      end
 
       render turbo_stream: turbo_stream.replace(
         "service_form",
         partial: "administrateurs/services/form",
         locals: { service: @service, prefilled:, procedure: @procedure }
       )
-        end
+    end
 
     def add_to_procedure
       procedure = current_administrateur.procedures.find(procedure_params[:id])
@@ -80,7 +88,7 @@ module Administrateurs
       procedure.update(service: service)
 
       redirect_to admin_procedure_path(procedure.id),
-        notice: "service affecté : #{procedure.service.nom}"
+        notice: "Service affecté : #{procedure.service.nom}"
     end
 
     def destroy
@@ -88,9 +96,9 @@ module Administrateurs
 
       if service_to_destroy.procedures.present?
         if service_to_destroy.procedures.count == 1
-          message = "la démarche #{service_to_destroy.procedures.first.libelle} utilise encore le service #{service_to_destroy.nom}. Veuillez l’affecter à un autre service avant de pouvoir le supprimer"
+          message = "La démarche #{service_to_destroy.procedures.first.libelle} utilise encore le service #{service_to_destroy.nom}. Veuillez l’affecter à un autre service avant de pouvoir le supprimer"
         else
-          message = "les démarches #{service_to_destroy.procedures.map(&:libelle).join(', ')} utilisent encore le service #{service.nom}. Veuillez les affecter à un autre service avant de pouvoir le supprimer"
+          message = "Les démarches #{service_to_destroy.procedures.map(&:libelle).join(', ')} utilisent encore le service #{service.nom}. Veuillez les affecter à un autre service avant de pouvoir le supprimer"
         end
         flash[:alert] = message
         redirect_to admin_services_path(procedure_id: params[:procedure_id])
@@ -134,27 +142,24 @@ module Administrateurs
       current_administrateur.procedures.find(params[:procedure_id])
     end
 
-    def handle_siret_prefill
-      @service.validate
-
-      if !@service.errors.include?(:siret)
-        prefilled = case @service.prefill_from_siret
-        in [Dry::Monads::Result::Success, Dry::Monads::Result::Success]
-          :success
-        in [Dry::Monads::Result::Failure, Dry::Monads::Result::Success] | [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
-          :partial
-        else
-          :failure
-        end
-      end
-
+    def validate_siret_for_prefill
       # On prefill from SIRET, we only want to display errors for the SIRET input
       # so we have to remove other errors (ie. required attributes not yet filled)
+      @service.validate
       siret_errors = @service.errors.where(:siret)
       @service.errors.clear
       siret_errors.each { @service.errors.import(_1) }
+    end
 
-      prefilled
+    def handle_siret_prefill(prefill_result)
+      case prefill_result
+      in [Dry::Monads::Result::Success, Dry::Monads::Result::Success]
+        :success
+      in [Dry::Monads::Result::Failure, Dry::Monads::Result::Success] | [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
+        :partial
+      else
+        :failure
+      end
     end
   end
 end
