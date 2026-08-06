@@ -15,10 +15,14 @@ module Administrateurs
       @service = Service.new
 
       siret = current_administrateur.user.last_pro_connect_information&.siret
+
       if siret
         @service.siret = siret
-        prefilled_result = @service.prefill_from_siret
-        @prefilled = handle_siret_prefill(prefilled_result)
+
+        if @service.valid_siret?
+          prefilled_result = @service.prefill_from_siret
+          @prefilled = handle_siret_prefill(prefilled_result)
+        end
       end
     end
 
@@ -69,9 +73,7 @@ module Administrateurs
 
       prefilled = nil
 
-      validate_siret_for_prefill
-
-      if !@service.errors.include?(:siret)
+      if @service.valid_siret?
         prefilled_result = @service.prefill_from_siret
         prefilled = handle_siret_prefill(prefilled_result)
       end
@@ -146,15 +148,6 @@ module Administrateurs
 
     def siret_params
       params.require(:service).permit(:siret)
-    end
-
-    def validate_siret_for_prefill
-      # On prefill from SIRET, we only want to display errors for the SIRET input
-      # so we have to remove other errors (ie. required attributes not yet filled)
-      @service.validate
-      siret_errors = @service.errors.where(:siret)
-      @service.errors.clear
-      siret_errors.each { @service.errors.import(_1) }
     end
 
     def handle_siret_prefill(prefill_result)
