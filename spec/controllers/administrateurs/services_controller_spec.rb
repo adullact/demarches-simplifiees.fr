@@ -367,7 +367,7 @@ describe Administrateurs::ServicesController, type: :controller do
         service.save(validate: false)
         get :index, params: { procedure_id: procedure.id }
         expect(flash.alert.first).to eq "Vous n’avez pas renseigné le siret du service pour certaines de vos démarches. Merci de les modifier."
-        expect(flash.alert.last).to include(service.nom)
+        expect(flash.alert.last).to include(procedure.libelle)
       end
     end
 
