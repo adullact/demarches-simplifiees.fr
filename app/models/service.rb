@@ -32,6 +32,8 @@ class Service < ApplicationRecord
   validates :administrateur, presence: { message: 'doit être renseigné' }, allow_nil: false
   validate :at_least_one_contact
 
+  normalizes :siret, with: -> (siret) { siret&.delete(" ") }
+
   def at_least_one_contact
     if email.blank? && contact_link.blank?
       errors.add(:email, :at_least_one_contact)
