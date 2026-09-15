@@ -147,7 +147,7 @@ module Experts
       procedure_id = params[:procedure_id]
       avis_id = params[:id]
       email = params[:email]
-      confirmation_token = params.dig(:user, :confirmation_token).presence
+      confirmation_token = String.try_convert(params.dig(:user, :confirmation_token)).presence
       if confirmation_token.nil?
         return redirect_to root_path, alert: "Vous n’avez pas accès à cet avis."
       end
@@ -244,7 +244,8 @@ module Experts
 
     def redirect_if_no_sign_up_needed
       avis = Avis.find(params[:id])
-      submitted_token = params[:confirmation_token] || params.dig(:user, :confirmation_token)
+      submitted_token = String.try_convert(params[:confirmation_token]) ||
+        String.try_convert(params.dig(:user, :confirmation_token))
 
       if current_expert.present?
         # an expert is authenticated ... lets see if it can view the dossier
