@@ -772,6 +772,7 @@ describe Experts::AvisController, type: :controller do
         # deux doivent lire la même valeur. Requêtes envoyées comme le
         # formulaire (form data), sauf celle qui passe en JSON.
         context 'when the parameters are crafted' do
+          let(:other_token) { nil }
           let(:posted_token) { valid_confirmation_token }
           let(:request_format) { nil }
 
@@ -780,6 +781,7 @@ describe Experts::AvisController, type: :controller do
               id: avis_id,
               procedure_id:,
               email:,
+              confirmation_token: other_token,
               user: { password:, confirmation_token: posted_token },
             }, as: request_format
           end
@@ -803,6 +805,12 @@ describe Experts::AvisController, type: :controller do
             let(:valid_confirmation_token) { '1234' }
             let(:request_format) { :json }
             let(:posted_token) { valid_confirmation_token.to_i }
+
+            it_behaves_like 'a request that opens nothing'
+          end
+
+          context 'with another token in the query' do
+            let(:other_token) { 'not-the-token' }
 
             it_behaves_like 'a request that opens nothing'
           end
