@@ -11,7 +11,7 @@
     - pj_hint_id = "#{pj_input_id}-hint"
     - pj_error_id = "#{pj_input_id}-error"
     - pj_error = commentaire.errors.messages_for(:piece_jointe).first
-    - pj_describedby_id = [pj_hint_id, (pj_error_id if pj_error.present?)].compact.join(' ')
+    - pj_describedby_id = token_list(pj_hint_id, pj_error_id => pj_error.present?)
     - pj_field = Attachment::FileFieldComponent.new(context: Attachment::Context.new(attached_file: commentaire.piece_jointe, parent_hint_id: pj_describedby_id), drop_zone: :none, hidden: true, id: pj_input_id)
     - drop_zone_attrs = Attachment::DropZoneDecorator.new(mode: :remote, input_selector: "##{pj_input_id}").data_attributes
 

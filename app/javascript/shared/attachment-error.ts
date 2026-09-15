@@ -1,3 +1,5 @@
+import { t } from '@lingui/core/macro';
+
 export function fileSizeErrorMessage(
   input: HTMLInputElement,
   file: File
@@ -10,7 +12,7 @@ export function fileSizeErrorMessage(
 
   const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(0);
 
-  return `La taille maximale du fichier autorisée est de&nbsp;<strong>${maxSizeMB} Mo</strong>.`;
+  return t`La taille maximale du fichier autorisée est de&nbsp;<strong>${maxSizeMB} Mo</strong>.`;
 }
 
 /**
