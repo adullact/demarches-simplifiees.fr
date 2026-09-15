@@ -136,7 +136,7 @@ module Experts
     end
 
     def sign_up
-      @email = params[:email]
+      @email = email_param
       @confirmation_token = confirmation_token_param
       @dossier = Avis.includes(:dossier).find(params[:id]).dossier
 
@@ -146,7 +146,7 @@ module Experts
     def update_expert
       procedure_id = params[:procedure_id]
       avis_id = params[:id]
-      email = params[:email]
+      email = email_param
       confirmation_token = confirmation_token_param
       if confirmation_token.nil?
         return redirect_to root_path, alert: "Vous n’avez pas accès à cet avis."
@@ -248,7 +248,7 @@ module Experts
       if current_expert.present?
         # an expert is authenticated ... lets see if it can view the dossier
         redirect_to expert_avis_url(avis.procedure, avis)
-      elsif avis.expert&.email == params[:email] &&
+      elsif avis.expert&.email == email_param &&
             avis.expert.user.confirmation_token.present? &&
             avis.expert.user.confirmation_token == confirmation_token_param
         if avis.expert.user.administrateur&.pro_connect_required?
@@ -266,6 +266,10 @@ module Experts
     def confirmation_token_param
       String.try_convert(params[:confirmation_token]).presence ||
         String.try_convert(params.dig(:user, :confirmation_token)).presence
+    end
+
+    def email_param
+      String.try_convert(params[:email])
     end
 
     def avis

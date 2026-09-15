@@ -774,13 +774,14 @@ describe Experts::AvisController, type: :controller do
         context 'when the parameters are crafted' do
           let(:other_token) { nil }
           let(:posted_token) { valid_confirmation_token }
+          let(:posted_email) { email }
           let(:request_format) { nil }
 
           subject do
             post :update_expert, params: {
               id: avis_id,
               procedure_id:,
-              email:,
+              email: posted_email,
               confirmation_token: other_token,
               user: { password:, confirmation_token: posted_token },
             }, as: request_format
@@ -811,6 +812,12 @@ describe Experts::AvisController, type: :controller do
 
           context 'with another token in the query' do
             let(:other_token) { 'not-the-token' }
+
+            it_behaves_like 'a request that opens nothing'
+          end
+
+          context 'with the email wrapped in an array' do
+            let(:posted_email) { [email] }
 
             it_behaves_like 'a request that opens nothing'
           end
