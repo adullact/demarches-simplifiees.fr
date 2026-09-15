@@ -1,0 +1,43 @@
+<% reset_url = batch ? batch_instruction_modal_instructeur_batch_operations_path(procedure, "reset") : instruction_modal_instructeur_dossier_path(dossier.procedure, dossier, "reset") -%>
+
+<div
+  class="instruction-modal-wrapper"
+  data-controller="instruction-modal"
+  data-reset-url="<%= reset_url %>"
+  data-action="batch-operation:open@window->instruction-modal#openWithIds"
+>
+  <dialog
+    id="modal-instruction-button"
+    class="fr-modal"
+    aria-labelledby="modal-instruction-title"
+    role="dialog"
+    data-instruction-modal-target="modal"
+  >
+    <div class="fr-container fr-container--fluid fr-container-md">
+      <div class="fr-grid-row fr-grid-row--center">
+        <div class="fr-col-12 fr-col-md-10 fr-col-lg-8">
+          <div class="fr-modal__body">
+            <div class="fr-modal__header">
+              <button
+                type="button"
+                class="fr-btn--close fr-btn"
+                aria-controls="modal-instruction-button"
+                title="<%= t('utils.modal_close_alt') %>"
+              >
+                <%= t('utils.modal_close') %>
+              </button>
+            </div>
+
+            <div class="fr-modal__content">
+              <div id="instruction-modal-content">
+                <%= render partial: "instructeurs/dossiers/instruction_modal_content", locals: { dossier:, operation: nil, batch:, procedure:, modal_title_data: instruction_modal_title_data(dossier:, batch:) } %>
+              </div>
+            </div>
+
+            <%= render partial: 'instructeurs/dossiers/instruction_modal_footer', locals: { dossier:, batch: } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</div>
