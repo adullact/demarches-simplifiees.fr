@@ -1,0 +1,27 @@
+<%# CONTROLLER CONTEXT: users/dossiers %>
+
+<h1 class="flex column-reverse">
+  <span class="fr-h2">
+    <%= t('views.users.dossiers.show.header.dossier_number', dossier_id: dossier.id) %>
+    <%= t('views.users.dossiers.show.header.created_date', date_du_dossier: I18n.l(dossier.created_at, format: :long_with_time)) %>
+  </span>
+
+  <span class="fr-text--lg">
+    <%= dossier.procedure.libelle %>
+    <%= status_badge_user(dossier, 'super') %>
+  </span>
+</h1>
+
+<%= render(partial: 'users/dossiers/expiration_banner', locals: {dossier: dossier}) %>
+
+<% if dossier.show_procedure_state_warning? -%>
+  <%= render(partial: 'users/dossiers/procedure_removed_banner', locals: { dossier: dossier }) %>
+<%- elsif current_user.owns?(dossier) -%>
+  <div class="header-actions">
+    <%= render partial: 'invites/button', locals: { dossier: } %>
+
+    <% unless dossier.read_only? -%>
+      <%= render partial: 'users/dossiers/identity_dropdown', locals: { dossier: dossier } %>
+    <%- end -%>
+  </div>
+<%- end -%>

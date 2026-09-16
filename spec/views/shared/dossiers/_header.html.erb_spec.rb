@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 describe 'dossiers/show/header', type: :view do
-  let(:procedure) { create(:procedure, :discarded) }
+  let(:procedure) { create(:procedure, :published, :discarded) }
   let(:dossier) { create(:dossier, state: "brouillon", procedure: procedure) }
   let(:user) { dossier.user }
 
@@ -71,7 +71,7 @@ describe 'dossiers/show/header', type: :view do
       let(:dossier) { create(:dossier, :with_entreprise, state: "brouillon", procedure: procedure) }
 
       it "display short identity with an edit siret link" do
-        expect(rendered).to have_text(/Dénomination :\s+#{dossier.etablissement.entreprise_raison_sociale}/)
+        expect(rendered).to have_text(/Dénomination\s+#{dossier.etablissement.entreprise_raison_sociale}/)
         expect(rendered).not_to have_text("Numéro de TVA")
         expect(rendered).to have_link("Modifier le SIRET")
       end
