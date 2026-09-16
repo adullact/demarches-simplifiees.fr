@@ -35,6 +35,14 @@ class Rack::Attack
     end
   end
 
+  # Public stats of a procedure: the queries behind them are heavy, and the
+  # endpoint is served without authentication. Same order of magnitude as /stats.
+  throttle('/api/public/v1/stats/ip', limit: 5, period: 15.seconds) do |req|
+    if req.get? && req.path.match?(%r{\A/api/public/v1/demarches/\d+/stats(\.\w+)?\z}) && rack_attack_enabled?
+      req.remote_ip
+    end
+  end
+
   throttle('referentiel_search_per_ip', limit: 60, period: 1.minute) do |req|
     req.remote_ip if req.post? && req.path.match?(/data_sources\/referentiel/) && rack_attack_enabled?
   end

@@ -75,4 +75,28 @@ describe Rack::Attack, type: :request do
       expect(response).to have_http_status(:too_many_requests)
     end
   end
+
+  # The public stats endpoint is anonymous and its queries are heavy, so this
+  # throttle is the only thing limiting them.
+  context '/api/public/v1/demarches/:id/stats' do
+    let(:limit) { 5 }
+
+    before do
+      limit.times do
+        Rack::Attack.cache.count("/api/public/v1/stats/ip:#{ip}", period)
+      end
+    end
+
+    it "throttle excessive requests by IP address" do
+      get "/api/public/v1/demarches/1/stats", headers: { 'X-Forwarded-For': ip }
+
+      expect(response).to have_http_status(:too_many_requests)
+    end
+
+    it "throttle them whatever format is asked for" do
+      get "/api/public/v1/demarches/1/stats.json", headers: { 'X-Forwarded-For': ip }
+
+      expect(response).to have_http_status(:too_many_requests)
+    end
+  end
 end
