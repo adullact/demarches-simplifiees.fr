@@ -27,9 +27,10 @@ class Rack::Attack
     end
   end
 
-  # API prefill
+  # API prefill : la création est imbriquée sous la démarche, d'où le motif plutôt
+  # qu'une égalité. Le nom du throttle reste la clé de cache historique.
   throttle('/api/public/v1/dossiers/ip', limit: 15, period: 15.seconds) do |req|
-    if req.path == '/api/public/v1/dossiers' && req.post? && rack_attack_enabled?
+    if req.post? && req.path.match?(%r{\A/api/public/v1/demarches/\d+/dossiers\z}) && rack_attack_enabled?
       req.remote_ip
     end
   end
