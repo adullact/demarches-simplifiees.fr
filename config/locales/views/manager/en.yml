@@ -2,6 +2,15 @@ en:
   manager:
     fresh_otp:
       invalid_code: "Invalid or missing OTP code. The operation has been cancelled."
+    users:
+      show:
+        cannot_be_deleted: "This user cannot be deleted: they are an administrateur, an instructeur or an expert."
+      delete_edit:
+        title: "Delete user %{id}"
+        warning_html: "You are about to permanently delete the account of <strong>%{email}</strong>. This deletion cannot be undone."
+        purged_dossiers: "Their brouillon and en construction dossiers are destroyed along with their attachments."
+        detached_dossiers: "Their other dossiers are detached from the account: completed ones are hidden, those still under instruction remain instructable."
+        submit: "Delete the user"
     super_admins:
       self_otp_reset_forbidden: "You cannot reset your own two-factor authentication from this screen."
       reset_otp_edit:

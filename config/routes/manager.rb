@@ -47,6 +47,7 @@ namespace :manager do
 
   resources :users, only: [:index, :show, :edit, :update] do
     member do
+      get :delete_edit
       delete :delete
       post :resend_confirmation_instructions
       post :resend_reset_password_instructions

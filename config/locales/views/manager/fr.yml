@@ -11,6 +11,15 @@ fr:
         administrateurs: "Administrateurs actuels : %{emails}. Ils ne sont pas prévenus de cet accès."
         duration: "L’accès est retiré automatiquement lors de la purge quotidienne de 2 h 45."
         submit: "Devenir administrateur et instructeur"
+    users:
+      show:
+        cannot_be_deleted: "Cet utilisateur ne peut pas être supprimé : il est administrateur, instructeur ou expert."
+      delete_edit:
+        title: "Supprimer l’utilisateur n° %{id}"
+        warning_html: "Vous allez supprimer définitivement le compte de <strong>%{email}</strong>. Cette suppression est irréversible."
+        purged_dossiers: "Ses dossiers brouillon et en construction sont détruits avec leurs pièces jointes."
+        detached_dossiers: "Ses autres dossiers sont détachés du compte : les dossiers terminés sont masqués, ceux en cours d’instruction restent instruisables."
+        submit: "Supprimer l’utilisateur"
     super_admins:
       self_otp_reset_forbidden: "Vous ne pouvez pas réinitialiser votre propre authentification double-facteur depuis cet écran."
       reset_otp_edit:

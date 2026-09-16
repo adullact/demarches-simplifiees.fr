@@ -1,0 +1,15 @@
+<% content_for(:title) { t('.title', id: @user.id) } %>
+
+<%= render Manager::OtpConfirmationComponent.new(
+      title: content_for(:title),
+      url: delete_manager_user_path(@user),
+      submit: t('.submit'),
+      cancel_url: manager_user_path(@user),
+      form_method: :delete
+    ) do %>
+  <p><%= t('.warning_html', email: @user.email) %></p>
+
+  <p><%= t('.purged_dossiers') %></p>
+
+  <p><%= t('.detached_dossiers') %></p>
+<% end %>
