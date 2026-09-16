@@ -92,10 +92,12 @@ namespace :manager do
 
   resources :services, only: [:index, :show]
 
-  resources :super_admins, only: [:index, :show, :destroy] do
+  resources :super_admins, only: [:index, :show] do
     member do
       get :reset_otp_edit
       post :reset_otp
+      get :delete_edit
+      delete :delete
     end
   end
 

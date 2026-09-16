@@ -37,12 +37,24 @@ fr:
         submit: "Supprimer l’utilisateur"
     super_admins:
       self_otp_reset_forbidden: "Vous ne pouvez pas réinitialiser votre propre authentification double-facteur depuis cet écran."
+      self_deletion_forbidden: "Vous ne pouvez pas supprimer votre propre compte super-admin depuis cet écran."
+      show:
+        cannot_be_deleted: "Vous ne pouvez pas supprimer votre propre compte super-admin."
       reset_otp_edit:
         title: "Réinitialiser l’authentification double-facteur"
         warning_html: "Vous allez réinitialiser l’authentification double-facteur de <strong>%{email}</strong>. Cette personne devra se reconnecter avec son mot de passe puis enrôler à nouveau son application d’authentification."
         submit: "Réinitialiser l’OTP"
       reset_otp:
         success: "L’authentification double-facteur de %{email} a été réinitialisée."
+      delete_edit:
+        title: "Supprimer le compte super-admin n° %{id}"
+        warning_html: "Vous allez supprimer le compte super-admin de <strong>%{email}</strong>."
+        access: "Cette personne perd immédiatement l’accès au Manager, ses sessions ouvertes comprises. Aucun autre super-admin n’en est averti."
+        irreversible: "Le compte ne peut pas être recréé depuis le Manager : il faut une commande sur un serveur."
+        account: "Seul l’accès au Manager est supprimé : les comptes de la plateforme portant la même adresse, administrateur ou instructeur, ne sont pas touchés et doivent être traités à part."
+        submit: "Supprimer le super-admin"
+      delete:
+        success: "Le compte super-admin de %{email} a été supprimé."
     administrateurs:
       show:
         cannot_be_deleted: "Cet administrateur ne peut pas être supprimé : il est le seul administrateur d’une démarche ayant des dossiers."
