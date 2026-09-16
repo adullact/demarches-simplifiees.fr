@@ -231,10 +231,19 @@ describe InvitesController, type: :controller do
           end
         end
 
-        context 'when email is not affected at an user' do
+        context 'when the email does not match a real invitation' do
           let(:email) { 'new_user@octo.com' }
 
-          it 'redirects to the sign-up page' do
+          it 'redirects to the sign-in page (no account-existence oracle)' do
+            expect(subject).to redirect_to new_user_session_path
+            expect(controller.stored_location_for(:user)).to be_present
+          end
+        end
+
+        context 'when the email matches the invitation and has no account' do
+          let(:email) { invite.email }
+
+          it 'redirects to the sign-up page (legitimate onboarding)' do
             expect(subject).to redirect_to new_user_registration_path(user: { email: email })
             expect(controller.stored_location_for(:user)).to be_present
           end

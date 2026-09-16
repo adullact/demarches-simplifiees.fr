@@ -15,8 +15,17 @@ describe 'InvitesController account-existence oracle', type: :request do
     expect(response).to redirect_to(new_user_session_path)
   end
 
-  it 'sends an email WITHOUT an account to registration (the oracle: different response)' do
+  it 'sends an email WITHOUT an account to the same sign-in page (uniform, no oracle)' do
     get invite_path(forged_id, email: email_without_account)
-    expect(response).to redirect_to(new_user_registration_path(user: { email: email_without_account }))
+    expect(response).to redirect_to(new_user_session_path)
+  end
+
+  # Non-regression: a genuine invitation link still onboards a new invitee.
+  it 'still sends a real invitee (matching invitation, no account) to registration' do
+    invite = create(:invite, email: 'fresh-invitee-xyz@example.com', user: nil)
+
+    get invite_path(invite.id, email: invite.email)
+
+    expect(response).to redirect_to(new_user_registration_path(user: { email: invite.email }))
   end
 end
