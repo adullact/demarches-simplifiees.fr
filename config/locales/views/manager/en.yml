@@ -21,6 +21,31 @@ en:
         success: "Two-factor authentication for %{email} has been reset."
     gestionnaires:
       manage_root_groupe_gestionnaire: Root group management
+      show:
+        cannot_be_deleted: "This gestionnaire cannot be deleted: they are the only gestionnaire of a root group."
+      delete_edit:
+        title: "Delete gestionnaire %{id}"
+        warning_html: "You are about to delete the gestionnaire role of <strong>%{email}</strong>. They are removed from the administrateur groups they manage."
+        account: "Their sign-in account is not deleted: only the gestionnaire role is."
+        submit: "Delete the gestionnaire"
+    instructeurs:
+      show:
+        cannot_be_deleted: "This instructeur cannot be deleted: they are an administrateur, or one of their procedures has a single instructeur in its default group."
+      delete_edit:
+        title: "Delete instructeur %{id}"
+        warning_html: "You are about to delete the instructeur role of <strong>%{email}</strong>. Their assignments to instructeur groups, their dossier follows, their bulk messages, their exports and their archives are destroyed."
+        account: "Their sign-in account is not deleted: only the instructeur role is. The messages they wrote in the mailboxes stay visible."
+        submit: "Delete the instructeur"
+    administrateurs:
+      show:
+        cannot_be_deleted: "This administrateur cannot be deleted: they are the only administrateur of a procedure that has dossiers."
+      delete_edit:
+        title: "Delete administrateur %{id}"
+        warning_html: "You are about to delete the administrateur role of <strong>%{email}</strong>."
+        procedures: "Their procedures without any dossier are deleted, along with the services left empty. The procedures they share are taken away from them, and their service is handed over to another administrateur."
+        refused: "If a procedure or a service is still attached to them at the end, the deletion is cancelled."
+        account: "Their sign-in account is not deleted: only the administrateur role is."
+        submit: "Delete the administrateur"
     procedures:
       add_administrateur_and_instructeur_edit:
         title: "Become administrator and instructeur of procedure %{id}"

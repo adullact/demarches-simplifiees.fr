@@ -4,6 +4,21 @@ fr:
       invalid_code: "Code OTP invalide ou manquant. L’opération a été annulée."
     gestionnaires:
       manage_root_groupe_gestionnaire: Gestion du groupe racine
+      show:
+        cannot_be_deleted: "Ce gestionnaire ne peut pas être supprimé : il est le seul gestionnaire d’un groupe racine."
+      delete_edit:
+        title: "Supprimer le gestionnaire n° %{id}"
+        warning_html: "Vous allez supprimer le rôle gestionnaire de <strong>%{email}</strong>. Il est retiré des groupes d’administrateurs qu’il gère."
+        account: "Son compte de connexion n’est pas supprimé : seul le rôle gestionnaire l’est."
+        submit: "Supprimer le gestionnaire"
+    instructeurs:
+      show:
+        cannot_be_deleted: "Cet instructeur ne peut pas être supprimé : il est administrateur, ou l’une de ses démarches n’a qu’un seul instructeur dans son groupe par défaut."
+      delete_edit:
+        title: "Supprimer l’instructeur n° %{id}"
+        warning_html: "Vous allez supprimer le rôle instructeur de <strong>%{email}</strong>. Ses affectations aux groupes d’instructeurs, ses suivis de dossiers, ses envois groupés, ses exports et ses archives sont détruits."
+        account: "Son compte de connexion n’est pas supprimé : seul le rôle instructeur l’est. Les messages qu’il a écrits dans les messageries restent visibles."
+        submit: "Supprimer l’instructeur"
     procedures:
       add_administrateur_and_instructeur_edit:
         title: "Devenir administrateur et instructeur de la démarche n° %{id}"
@@ -29,6 +44,15 @@ fr:
       reset_otp:
         success: "L’authentification double-facteur de %{email} a été réinitialisée."
     administrateurs:
+      show:
+        cannot_be_deleted: "Cet administrateur ne peut pas être supprimé : il est le seul administrateur d’une démarche ayant des dossiers."
+      delete_edit:
+        title: "Supprimer l’administrateur n° %{id}"
+        warning_html: "Vous allez supprimer le rôle administrateur de <strong>%{email}</strong>."
+        procedures: "Ses démarches sans aucun dossier sont supprimées, ainsi que ses services devenus vides. Les démarches qu’il partage lui sont retirées, et leur service passe à un autre administrateur."
+        refused: "Si une démarche ou un service lui reste attaché à la fin, la suppression est annulée."
+        account: "Son compte de connexion n’est pas supprimé : seul le rôle administrateur l’est."
+        submit: "Supprimer l’administrateur"
       delete:
         cannot_be_deleted: "L’administrateur ne peut pas être supprimé"
         still_procedures: "L’administrateur ne peut pas être supprimé car il a encore des démarches"

@@ -41,6 +41,7 @@ namespace :manager do
   resources :administrateurs, only: [:index, :show, :new, :create] do
     member do
       post :reinvite
+      get :delete_edit
       delete :delete
     end
   end
@@ -64,13 +65,17 @@ namespace :manager do
   resources :instructeurs, only: [:index, :show, :edit, :update] do
     member do
       post :reinvite
+      get :delete_edit
       delete :delete
     end
   end
 
   if ENV['ADMINS_GROUP_ENABLED'] == 'enabled' || Rails.env.test? # can be removed if needed when EVERY PARTS of the feature will be merged / from env.example.optional
     resources :gestionnaires, only: [:index, :show, :edit, :update] do
-      delete :delete, on: :member
+      member do
+        get :delete_edit
+        delete :delete
+      end
     end
 
     resources :groupe_gestionnaires, path: 'groupe_administrateurs', only: [:index, :show, :new, :create, :edit, :update] do

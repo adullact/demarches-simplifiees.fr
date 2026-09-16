@@ -2,11 +2,19 @@
 
 module Manager
   class InstructeursController < Manager::ApplicationController
+    include RequiresFreshSuperAdminOtp
+
+    before_action :verify_fresh_super_admin_otp!, only: [:delete]
+
     def reinvite
       instructeur = Instructeur.find(params[:id])
       instructeur.user.invite_instructeur!
       flash[:notice] = "Instructeur réinvité."
       redirect_to manager_instructeur_path(instructeur)
+    end
+
+    def delete_edit
+      @instructeur = Instructeur.find(params[:id])
     end
 
     def delete
