@@ -23,12 +23,16 @@ class ApplicationRecord < ActiveRecord::Base
     attr.gsub(NON_PRINTABLE_REGEXP, '').gsub(LINE_FEED_REGEXP, "\n")
   end
 
+  # Models the GraphQL API v2 resolves from a client-supplied global id (`loads:` arguments),
+  # besides Dossier which is scoped to what the administration may see.
+  TYPED_ID_MODELS = ['Commentaire', 'GroupeInstructeur', 'Instructeur', 'Label'].freeze
+
   def self.record_from_typed_id(id)
     class_name, record_id = GraphQL::Schema::UniqueWithinType.decode(id)
 
     if class_name == 'Dossier'
       Dossier.visible_by_administration.find(record_id)
-    elsif defined?(class_name)
+    elsif class_name.in?(TYPED_ID_MODELS)
       Object.const_get(class_name).find(record_id)
     else
       raise ActiveRecord::RecordNotFound, "Unexpected object: #{class_name}"
