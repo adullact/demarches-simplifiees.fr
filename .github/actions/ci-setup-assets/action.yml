@@ -9,15 +9,15 @@ runs:
       id: cache
       with:
         path: |
-          public/assets
+          public/assets-test
           public/vite-test
           public/vite
           tmp/cache/vite
-        key: asset-cache-${{ runner.os }}-${{ hashFiles('package.json', 'patches/**/*.patch', 'app/javascript/**', 'app/assets/**', 'vite.config.ts') }}
+        key: asset-cache-v2-${{ runner.os }}-${{ hashFiles('package.json', 'patches/**/*.patch', 'app/javascript/**', 'app/assets/**', 'vite.config.ts') }}
         restore-keys: |
-          asset-cache-${{ runner.os }}-${{ hashFiles('package.json', 'patches/**/*.patch', 'app/javascript/**', 'app/assets/**') }}
-          asset-cache-${{ runner.os }}-${{ hashFiles('package.json', 'patches/**/*.patch') }}
-          asset-cache-${{ runner.os }}-
+          asset-cache-v2-${{ runner.os }}-${{ hashFiles('package.json', 'patches/**/*.patch', 'app/javascript/**', 'app/assets/**') }}
+          asset-cache-v2-${{ runner.os }}-${{ hashFiles('package.json', 'patches/**/*.patch') }}
+          asset-cache-v2-${{ runner.os }}-
 
     - name: Setup bun and node modules
       uses: ./.github/actions/ci-setup-bun-node

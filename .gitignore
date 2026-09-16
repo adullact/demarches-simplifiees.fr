@@ -32,6 +32,7 @@ yarn-debug.log*
 /.zed
 /.idea
 /public/assets
+/public/assets-test
 /spec/support/spec_config.local.rb
 /config/initializers/config.local.rb
 /coverage

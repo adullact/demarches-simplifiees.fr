@@ -8,7 +8,7 @@ describe ProceduresController, type: :controller do
       let(:procedure) { create(:procedure) }
 
       it "redirects to the default logo" do
-        expect(subject).to redirect_to(%r{/assets/.*republique-francaise-logo})
+        expect(subject).to redirect_to(%r{#{Rails.application.config.assets.prefix}/.*republique-francaise-logo})
       end
     end
 

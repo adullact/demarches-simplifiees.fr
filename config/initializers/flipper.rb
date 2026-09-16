@@ -70,8 +70,8 @@ end
 
 Rails.application.configure do
   config.flipper.actor_limit = 500 # default is 100 but hide_instructeur_email feature has ~478
-  # don't preload features for /assets/* but do for everything else
-  config.flipper.preload = -> (request) { !request.path.start_with?('/assets/', '/ping') }
+  # don't preload features for asset requests but do for everything else
+  config.flipper.preload = -> (request) { !request.path.start_with?('/assets', '/ping') }
   config.flipper.strict = Rails.env.development?
 end
 

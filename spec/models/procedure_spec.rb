@@ -1974,7 +1974,7 @@ describe Procedure do
     context 'without a logo' do
       let(:procedure) { create(:procedure) }
 
-      it { is_expected.to match(%r{/assets/.*republique-francaise-logo}) }
+      it { is_expected.to match(%r{#{Rails.application.config.assets.prefix}/.*republique-francaise-logo}) }
     end
 
     # The variant is made by BlobProcessorJob. Reading the logo must not make one:
