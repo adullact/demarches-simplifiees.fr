@@ -54,4 +54,25 @@ describe Rack::Attack, type: :request do
       end
     end
   end
+
+  # La création de dossier préremplie est anonyme : son throttle est la seule limite.
+  context '/api/public/v1/demarches/:id/dossiers' do
+    let(:limit) { 15 }
+
+    before do
+      limit.times do
+        Rack::Attack.cache.count("/api/public/v1/dossiers/ip:#{ip}", period)
+      end
+    end
+
+    subject do
+      post "/api/public/v1/demarches/1/dossiers", headers: { 'X-Forwarded-For': ip }
+    end
+
+    it "throttle excessive requests by IP address" do
+      subject
+
+      expect(response).to have_http_status(:too_many_requests)
+    end
+  end
 end
