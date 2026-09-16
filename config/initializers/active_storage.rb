@@ -224,10 +224,20 @@ end
 # would then be redefined (clobbered) by that require; a prepended module stays ahead
 # of Real in the ancestor chain and wins whatever the load order.
 #
+# The request is also marked idempotent so Excon replays it on a transient failure
+# (`retry_errors`: timeout, socket error, 5xx). Swift deletes the listed objects one
+# by one, so a request of a thousand takes tens of seconds: long enough for ds_proxy
+# to give up ahead of it (502 "Timeout while waiting for response") or for Excon's
+# read timeout to fire. Replaying is safe: an object deleted by the first attempt is
+# counted under "Number Not Found" on the next, not under "Errors".
+#
 # https://github.com/fog/fog-openstack/blob/v1.1.5/lib/fog/openstack/storage/requests/delete_multiple_objects.rb
 require 'fog/openstack'
 
 module OpenStackBulkDeletePatch
+  # Seconds between two attempts: lets the storage finish the previous one first.
+  RETRY_INTERVAL = 5
+
   def delete_multiple_objects(container, object_names, options = {})
     body = object_names.map do |name|
       object_name = container ? "#{container}/#{name}" : name
@@ -240,6 +250,8 @@ module OpenStackBulkDeletePatch
       headers: options.merge('Content-Type' => 'text/plain', 'Accept' => 'application/json'),
       body:,
       query: { 'bulk-delete' => true },
+      idempotent: true,
+      retry_interval: RETRY_INTERVAL,
     }, false)
     response.body = Fog::JSON.decode(response.body)
     response
