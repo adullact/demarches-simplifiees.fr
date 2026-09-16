@@ -2,7 +2,7 @@
 
 describe 'Dossier::Recovery::LifeCycle' do
   describe '.load_export_destroy_and_import' do
-    let(:procedure) do
+    let_it_be(:procedure) do
       create(:procedure,
              public_type_de_champs: [
                { type: :repetition, children: [{ type: :piece_justificative }], mandatory: false },
@@ -11,10 +11,10 @@ describe 'Dossier::Recovery::LifeCycle' do
              ])
     end
 
-    let(:some_file) { Rack::Test::UploadedFile.new('spec/fixtures/files/white.png', 'image/png') }
-    let(:geo_area) { build(:geo_area, :selection_utilisateur, :polygon) }
+    let_it_be(:some_file) { Rack::Test::UploadedFile.new('spec/fixtures/files/white.png', 'image/png') }
+    let_it_be(:geo_area) { build(:geo_area, :selection_utilisateur, :polygon) }
     let(:fp) { Rails.root.join('spec', 'fixtures', 'export.dump') }
-    let(:dossier) do
+    let_it_be(:dossier, refind: true) do
       d = create(:dossier, :with_populated_champs, procedure:)
 
       repetition(d).add_row(updated_by: 'test')
@@ -44,7 +44,7 @@ describe 'Dossier::Recovery::LifeCycle' do
 
       d.dossier_operation_logs << build(:dossier_operation_log, :with_serialized)
 
-      d.transfer_logs.create(from: create(:user), to: create(:user))
+      d.transfer_logs.create(from: users.usager, to: users.usager)
 
       d
     end
