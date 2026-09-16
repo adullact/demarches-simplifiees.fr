@@ -18,7 +18,7 @@ namespace :champs do
   get ':dossier_id/:stable_id/piece_justificative/template', to: 'piece_justificative#template', as: :piece_justificative_template
 end
 
-resources :attachments, only: [:show, :destroy]
+resources :attachments, only: :destroy
 resources :recherche, only: [:index]
 
 get "carte", to: "carte#show"
