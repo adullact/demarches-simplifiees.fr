@@ -53,7 +53,7 @@ describe 'layouts/_header', type: :view do
       is_expected.to have_css(".fr-header__logo")
       is_expected.to have_link("Mes dossiers", href: dossiers_path)
       is_expected.to have_selector(:button, user.email, class: "account-btn")
-      is_expected.not_to have_selector(:button, class: "lasuite-gaufre-btn")
+      is_expected.not_to have_selector("#lasuite-gaufre-desktop")
     end
 
     it 'displays the Help button' do
@@ -71,7 +71,7 @@ describe 'layouts/_header', type: :view do
     it do
       is_expected.to have_css(".fr-header__logo")
       is_expected.to have_selector(:button, user.email, class: "account-btn")
-      is_expected.to have_selector(:button, class: "lasuite-gaufre-btn")
+      is_expected.to have_selector("#lasuite-gaufre-desktop")
     end
 
     it 'displays the Help dropdown menu' do
@@ -93,7 +93,7 @@ describe 'layouts/_header', type: :view do
     it do
       is_expected.to have_css(".fr-header__logo")
       is_expected.to have_selector(:button, user.email, class: "account-btn")
-      is_expected.to have_selector(:button, class: "lasuite-gaufre-btn")
+      is_expected.to have_selector("#lasuite-gaufre-desktop")
     end
 
     it 'does not display the Help dropdown menu' do

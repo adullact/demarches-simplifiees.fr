@@ -64,6 +64,22 @@ input[type='radio'] {
   margin-right: 0;
 }
 
+// Meme probleme dans la zone tools du header, ou le DSFR annule en plus le carre
+// (overflow, max-width, max-height) et rabat l’icone a 1rem. Sans libelle visible,
+// la marge droite de l’icone laisse un vide a droite du bouton.
+// !important car la regle du DSFR pese (0,8,0) : ses quatre :not() comptent.
+.fr-header__tools .fr-btn.icon-only {
+  min-height: 2.5rem !important;
+  max-width: 2.5rem !important;
+  padding: 0.5rem !important;
+
+  &::before {
+    --icon-size: 1.5rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
 .fr-btn.fr-btn--secondary.danger {
   color: $light-red;
   box-shadow: 0px 0px 0px 1px $light-red;
