@@ -52,8 +52,7 @@ class AttachmentsController < ApplicationController
   end
 
   def ensure_legitimate_access_destroy
-    return if user_or_invite_changing_an_attachment?
-    return if instructeur_changing_an_attachment?
+    return if champ_updatable?
     return if admin_changing_its_procedure?
     return if admin_changing_its_attestation_template?
     return if admin_changing_its_type_de_champ?
@@ -66,6 +65,13 @@ class AttachmentsController < ApplicationController
 
   def set_attachment
     @attachment = @blob.attachments.find(params[:id])
+  end
+
+  def champ_updatable?
+    return false if !champ?
+
+    policy = ChampPolicy.new(current_user, record)
+    record.private? ? policy.update_annotation? : policy.update?
   end
 
   def user_or_invite_changing_an_attachment?
