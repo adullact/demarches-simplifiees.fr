@@ -655,7 +655,6 @@ module Administrateurs
         :auto_archive_on,
         :monavis_embed,
         :accuse_lecture,
-        :api_entreprise_token,
         :duree_conservation_dossiers_dans_ds,
         :lien_dpo,
         :opendata,
