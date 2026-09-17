@@ -29,13 +29,10 @@ module AvisCreationConcern
 
   private
 
-  # Same rules as the avis_new views, which hide the form in these cases.
   def handle_forbidden_avis_creation(dossier)
-    if dossier.termine?
-      flash.now[:alert] = t('helpers.information_text.no_new_avis_text')
-    elsif dossier.procedure.disallow_expert_review?
-      flash.now[:alert] = t('helpers.information_text.unauthorized_avis_text')
-    end
+    return if dossier.avis_creatable?
+
+    flash.now[:alert] = t(dossier.termine? ? 'helpers.information_text.no_new_avis_text' : 'helpers.information_text.unauthorized_avis_text')
   end
 
   def handle_empty_emails

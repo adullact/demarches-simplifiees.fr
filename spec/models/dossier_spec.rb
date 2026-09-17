@@ -1357,6 +1357,35 @@ describe Dossier, type: :model do
     end
   end
 
+  describe "#avis_creatable?" do
+    let(:dossier) { dossiers.en_instruction }
+
+    subject { dossier.avis_creatable? }
+
+    shared_examples "matching the avis_creatable scope" do |expected|
+      it do
+        is_expected.to be expected
+        expect(Dossier.where(id: dossier.id).avis_creatable.exists?).to be expected
+      end
+    end
+
+    context "when the dossier is not termine and the procedure allows expert review" do
+      it_behaves_like "matching the avis_creatable scope", true
+    end
+
+    context "when the dossier is termine" do
+      let(:dossier) { dossiers.accepte }
+
+      it_behaves_like "matching the avis_creatable scope", false
+    end
+
+    context "when the procedure disallows expert review" do
+      before { dossier.procedure.update!(allow_expert_review: false) }
+
+      it_behaves_like "matching the avis_creatable scope", false
+    end
+  end
+
   describe '#can_repasser_en_construction?' do
     let(:dossier) { dossiers.en_instruction }
     it { expect(dossier.can_repasser_en_construction?).to be_truthy }

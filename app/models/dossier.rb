@@ -542,6 +542,11 @@ class Dossier < ApplicationRecord
     TERMINE.include?(state)
   end
 
+  # Same rule as the avis_creatable scope.
+  def avis_creatable?
+    !termine? && procedure.allow_expert_review?
+  end
+
   def instruction_commencee?
     INSTRUCTION_COMMENCEE.include?(state)
   end
