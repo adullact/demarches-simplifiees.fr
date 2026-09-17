@@ -5,9 +5,10 @@ describe CreateAvisService do
   let(:procedure) { procedures.individual }
   let(:dossier) { create(:dossier, :en_instruction, :with_individual, procedure:) }
   let(:expert_email) { 'expert@exemple.fr' }
+  let(:invite_linked_dossiers) { false }
 
   subject(:result) do
-    avis = Avis.new(introduction: 'Merci de donner votre avis.', dossier:)
+    avis = Avis.new(introduction: 'Merci de donner votre avis.', dossier:, invite_linked_dossiers:)
     CreateAvisService.call(
       claimant: instructeur,
       batch: true,
@@ -20,6 +21,23 @@ describe CreateAvisService do
     context 'when everything goes well' do
       it 'creates an avis for the dossier' do
         expect { result }.to change { dossier.avis.count }.by(1)
+      end
+    end
+
+    context 'when inviting the expert on linked dossiers' do
+      let(:invite_linked_dossiers) { true }
+      let(:expert_email) { 'expert-dossiers-lies@exemple.fr' }
+      let(:disallowed_procedure) { create(:simple_procedure, allow_expert_review: false, instructeurs: [instructeur]) }
+      let(:disallowed_dossier) { create(:dossier, :en_instruction, procedure: disallowed_procedure) }
+      let(:linked_dossiers) { [dossiers.en_construction, dossiers.accepte, disallowed_dossier] }
+
+      before do
+        allow(dossier).to receive(:linked_dossiers_for).with(instructeur).and_return(Dossier.where(id: linked_dossiers))
+      end
+
+      it 'skips the linked dossiers that no longer accept avis' do
+        result
+        expect(User.find_by!(email: expert_email).expert.avis.pluck(:dossier_id)).to contain_exactly(dossier.id, dossiers.en_construction.id)
       end
     end
 
