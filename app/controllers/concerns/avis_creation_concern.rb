@@ -30,9 +30,10 @@ module AvisCreationConcern
   private
 
   def handle_forbidden_avis_creation(dossier)
-    return if dossier.avis_creatable?
+    return false if dossier.avis_creatable?
 
     flash.now[:alert] = t(dossier.termine? ? 'helpers.information_text.no_new_avis_text' : 'helpers.information_text.unauthorized_avis_text')
+    true
   end
 
   def handle_empty_emails
