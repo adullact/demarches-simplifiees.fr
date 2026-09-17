@@ -186,6 +186,28 @@ describe BatchOperation, type: :model do
     end
   end
 
+  describe '#dossiers_safe_scope (with create_avis)' do
+    let(:procedure) { procedures.individual }
+    let(:dossier) { dossiers.en_instruction }
+    let(:batch_operation) { create(:batch_operation, operation: :create_avis, instructeur: instructeurs.default, dossiers: [dossier]) }
+
+    context 'when the procedure allows expert review' do
+      it { expect(batch_operation.dossiers_safe_scope).to include(dossier) }
+    end
+
+    context 'when the procedure disallows expert review' do
+      before { procedure.update!(allow_expert_review: false) }
+
+      it { expect(batch_operation.dossiers_safe_scope).not_to include(dossier) }
+    end
+
+    context 'when the dossier is termine' do
+      let(:dossier) { dossiers.accepte }
+
+      it { expect(batch_operation.dossiers_safe_scope).not_to include(dossier) }
+    end
+  end
+
   describe '#dossiers_safe_scope (with passer_en_instruction)' do
     let(:instructeur) { instructeurs.default }
     let(:procedure) { procedures.individual }

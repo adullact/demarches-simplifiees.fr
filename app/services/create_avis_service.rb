@@ -32,7 +32,7 @@ class CreateAvisService
       failed_emails += restricted_emails.map { { email: it, messages: [I18n.t('create_avis_service.errors.expert_not_allowed')] } }
 
       # list all related dossiers
-      dossiers = avis.invite_linked_dossiers.present? ? [dossier, *dossier.linked_dossiers_for(claimant)] : [dossier]
+      dossiers = avis.invite_linked_dossiers.present? ? [dossier, *dossier.linked_dossiers_for(claimant).avis_creatable] : [dossier]
 
       # create expert <-> procedure — batch-load experts and ExpertsProcedure records
       experts = User.where(id: users.map(&:id)).includes(:expert).map(&:expert)

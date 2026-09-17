@@ -87,7 +87,7 @@ class BatchOperation < ApplicationRecord
     when BatchOperation.operations.fetch(:restaurer) then
       query.hidden_by_administration
     when BatchOperation.operations.fetch(:create_avis) then
-      query.visible_by_administration.state_not_termine
+      query.visible_by_administration.avis_creatable
     when BatchOperation.operations.fetch(:create_commentaire) then
       query.visible_by_administration
     when BatchOperation.operations.fetch(:restaurer_repousser_expiration) then
