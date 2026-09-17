@@ -3,32 +3,24 @@
 RSpec.describe DossierMailer, type: :mailer do
   let(:to_email) { 'instructeur@exemple.gouv.fr' }
 
-  shared_examples 'a dossier notification' do
-    it 'is sent from a no-reply address' do
-      expect(subject.from.first).to eq(Mail::Address.new(NO_REPLY_EMAIL).address)
-    end
-
-    it 'includes the contact informations in the footer' do
-      expect(subject.body).to include('ne pas répondre')
-    end
-  end
-
   describe '.notify_new_draft' do
     let(:user) { create(:user) }
     let(:dossier) { create(:dossier, procedure: create(:simple_procedure, :with_auto_archive), user:) }
 
     subject { described_class.with(dossier:).notify_new_draft }
 
-    it 'includes the correct subject and body content' do
-      expect(subject.subject).to include("brouillon")
-      expect(subject.subject).to include(dossier.procedure.libelle)
-      expect(subject.body).to include(dossier.procedure.libelle)
-      expect(subject.body).to include(dossier_url(dossier))
-      expect(subject.body).to include("Vous pouvez déposer votre dossier jusqu’au")
-      expect(subject.body).to include("heure de")
+    it 'includes the correct subject, body content and contact informations' do
+      aggregate_failures(true) do
+        expect(subject.subject).to include("brouillon")
+        expect(subject.subject).to include(dossier.procedure.libelle)
+        expect(subject.body).to include(dossier.procedure.libelle)
+        expect(subject.body).to include(dossier_url(dossier))
+        expect(subject.body).to include("Vous pouvez déposer votre dossier jusqu’au")
+        expect(subject.body).to include("heure de")
+        expect(subject.from.first).to eq(Mail::Address.new(NO_REPLY_EMAIL).address)
+        expect(subject.body).to include('ne pas répondre')
+      end
     end
-
-    it_behaves_like 'a dossier notification'
 
     it 'when dossier is hidden, it does not send the email' do
       dossier.hide_and_keep_track!(user, :user_request)
@@ -51,14 +43,16 @@ RSpec.describe DossierMailer, type: :mailer do
     let(:commentaire) { create(:commentaire, dossier: dossier) }
     subject { described_class.with(commentaire: commentaire).notify_new_answer }
 
-    it 'checks email subject and body for correct inclusions and exclusions' do
-      expect(subject.subject).to include("Nouveau message")
-      expect(subject.subject).to include(dossier.id.to_s)
-      expect(subject.body).to include(dossier.procedure.service.email)
-      expect(subject.body).not_to include(messagerie_dossier_url(dossier))
+    it 'checks email subject and body for correct inclusions, exclusions and contact informations' do
+      aggregate_failures(true) do
+        expect(subject.subject).to include("Nouveau message")
+        expect(subject.subject).to include(dossier.id.to_s)
+        expect(subject.body).to include(dossier.procedure.service.email)
+        expect(subject.body).not_to include(messagerie_dossier_url(dossier))
+        expect(subject.from.first).to eq(Mail::Address.new(NO_REPLY_EMAIL).address)
+        expect(subject.body).to include('ne pas répondre')
+      end
     end
-
-    it_behaves_like 'a dossier notification'
 
     context 'when there is no associated service' do
       let(:service) { nil }
@@ -72,13 +66,15 @@ RSpec.describe DossierMailer, type: :mailer do
 
     subject { described_class.with(commentaire: commentaire).notify_new_answer }
 
-    it 'checks email subject and body for correct inclusions' do
-      expect(subject.subject).to include("Nouveau message")
-      expect(subject.subject).to include(dossier.id.to_s)
-      expect(subject.body).to include(messagerie_dossier_url(dossier))
+    it 'checks email subject and body for correct inclusions and contact informations' do
+      aggregate_failures(true) do
+        expect(subject.subject).to include("Nouveau message")
+        expect(subject.subject).to include(dossier.id.to_s)
+        expect(subject.body).to include(messagerie_dossier_url(dossier))
+        expect(subject.from.first).to eq(Mail::Address.new(NO_REPLY_EMAIL).address)
+        expect(subject.body).to include('ne pas répondre')
+      end
     end
-
-    it_behaves_like 'a dossier notification'
   end
 
   describe '.notify_new_answer with commentaire discarded' do
@@ -440,18 +436,17 @@ RSpec.describe DossierMailer, type: :mailer do
       described_class.notify_owner_for_changes(dossier, invite)
     end
 
-    it 'sends email to owner' do
-      expect(subject.to).to eq([owner.email])
+    it 'sends email to owner with correct subject, body content and contact informations' do
+      aggregate_failures(true) do
+        expect(subject.to).to eq([owner.email])
+        expect(subject.subject).to include("modifié")
+        expect(subject.subject).to include(dossier.id.to_s)
+        expect(subject.body).to include(invite.email)
+        expect(subject.body).to include(dossier_url(dossier))
+        expect(subject.body).to include("modifications")
+        expect(subject.from.first).to eq(Mail::Address.new(NO_REPLY_EMAIL).address)
+        expect(subject.body).to include('ne pas répondre')
+      end
     end
-
-    it 'includes the correct subject and body content' do
-      expect(subject.subject).to include("modifié")
-      expect(subject.subject).to include(dossier.id.to_s)
-      expect(subject.body).to include(invite.email)
-      expect(subject.body).to include(dossier_url(dossier))
-      expect(subject.body).to include("modifications")
-    end
-
-    it_behaves_like 'a dossier notification'
   end
 end

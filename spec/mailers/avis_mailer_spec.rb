@@ -2,16 +2,15 @@
 
 RSpec.describe AvisMailer, type: :mailer do
   describe ".avis_invitation_and_confirm_email" do
-    let(:procedure) { create(:procedure) }
-    let(:dossier) { create(:dossier, :en_instruction, procedure: procedure) }
-    let(:dossier2) { create(:dossier, :en_instruction, procedure: procedure) }
+    let_it_be(:procedure) { procedures.individual }
+    let_it_be(:dossier, reload: true) { create(:dossier, :en_instruction, procedure: procedure) }
+    let_it_be(:dossier2, reload: true) { create(:dossier, :en_instruction, procedure: procedure) }
+    let_it_be(:expert) { experts.default }
+    let_it_be(:experts_procedure) { experts_procedures.default }
+    let_it_be(:avis1, reload: true) { create(:avis, dossier: dossier, experts_procedure: experts_procedure) }
+    let(:avis2) { create(:avis, dossier: dossier2, experts_procedure: experts_procedure) }
 
     let(:user) { create(:user, confirmation_token: "token") }
-    let(:expert) { create(:expert, user: user) }
-    let(:experts_procedure) { create(:experts_procedure, expert: expert, procedure: procedure) }
-
-    let(:avis1) { create(:avis, dossier: dossier, experts_procedure: experts_procedure) }
-    let(:avis2) { create(:avis, dossier: dossier2, experts_procedure: experts_procedure) }
 
     let(:mail) do
       described_class
@@ -19,14 +18,11 @@ RSpec.describe AvisMailer, type: :mailer do
         .deliver_now
     end
 
-    shared_examples "includes targeted link" do
-      it "includes a targeted_user_link in email body" do
-        mail # force rendering
-
-        link = TargetedUserLink.last
-        expect(link).not_to be_nil
-        expect(mail.html_part.body.to_s).to include("/targeted_user_links/#{link.id}")
-      end
+    def check_targeted_link
+      mail # force rendering
+      link = TargetedUserLink.last
+      expect(link).not_to be_nil
+      expect(mail.html_part.body.to_s).to include("/targeted_user_links/#{link.id}")
     end
 
     context "with single avis" do
@@ -35,31 +31,34 @@ RSpec.describe AvisMailer, type: :mailer do
       context "when user is active and verified" do
         let(:user) { create(:user, :active, :with_email_verified, confirmation_token: "token") }
 
-        it "does not include confirmation_token" do
-          expect(mail.html_part.body.to_s).not_to include("confirmation_token=")
+        it "does not include confirmation_token and includes targeted link" do
+          aggregate_failures do
+            expect(mail.html_part.body.to_s).not_to include("confirmation_token=")
+            check_targeted_link
+          end
         end
-
-        include_examples "includes targeted link"
       end
 
       context "when user is inactive" do
         let(:user) { create(:user, :inactive, confirmation_token: "token") }
 
-        it "includes confirmation_token" do
-          expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+        it "includes confirmation_token and includes targeted link" do
+          aggregate_failures do
+            expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+            check_targeted_link
+          end
         end
-
-        include_examples "includes targeted link"
       end
 
       context "when user is active but unverified" do
         let(:user) { create(:user, :active, email_verified_at: nil, confirmation_token: "token") }
 
-        it "includes confirmation_token" do
-          expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+        it "includes confirmation_token and includes targeted link" do
+          aggregate_failures do
+            expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+            check_targeted_link
+          end
         end
-
-        include_examples "includes targeted link"
       end
     end
 
@@ -69,31 +68,34 @@ RSpec.describe AvisMailer, type: :mailer do
       context "when user is active and verified" do
         let(:user) { create(:user, :active, :with_email_verified, confirmation_token: "token") }
 
-        it "does not include confirmation_token" do
-          expect(mail.html_part.body.to_s).not_to include("confirmation_token=")
+        it "does not include confirmation_token and includes targeted link" do
+          aggregate_failures do
+            expect(mail.html_part.body.to_s).not_to include("confirmation_token=")
+            check_targeted_link
+          end
         end
-
-        include_examples "includes targeted link"
       end
 
       context "when user is inactive" do
         let(:user) { create(:user, :inactive, confirmation_token: "token") }
 
-        it "includes confirmation_token" do
-          expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+        it "includes confirmation_token and includes targeted link" do
+          aggregate_failures do
+            expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+            check_targeted_link
+          end
         end
-
-        include_examples "includes targeted link"
       end
 
       context "when user is active but unverified" do
         let(:user) { create(:user, :active, email_verified_at: nil, confirmation_token: "token") }
 
-        it "includes confirmation_token" do
-          expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+        it "includes confirmation_token and includes targeted link" do
+          aggregate_failures do
+            expect(mail.html_part.body.to_s).to include("confirmation_token=token")
+            check_targeted_link
+          end
         end
-
-        include_examples "includes targeted link"
       end
 
       context "when all dossiers are hidden" do
