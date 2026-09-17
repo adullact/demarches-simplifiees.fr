@@ -43,9 +43,13 @@ class InvitesController < ApplicationController
         .find_by!(invites: { email: current_user.email, id: params[:id] })
 
       redirect_to helpers.url_for_dossier(dossier)
-    elsif params[:email].present? && !User.find_by(email: params[:email])
+    elsif params[:email].present? &&
+          Invite.exists?(id: params[:id].to_s, email: params[:email].to_s) &&
+          !User.find_by(email: params[:email])
       redirect_to new_user_registration_path(user: { email: params[:email] })
     else
+      # Uniform response for any email without a matching invitation, so the
+      # branch above cannot be used as an account-existence oracle.
       authenticate_user!
     end
   rescue ActiveRecord::RecordNotFound
