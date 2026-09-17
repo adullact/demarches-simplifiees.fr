@@ -8,6 +8,7 @@ module Administrateurs
     def index
       @procedure = procedure
       @services = ([procedure.service].compact + services.ordered).uniq
+      @procedures_count_by_service_id = Procedure.where(service_id: @services.map(&:id)).group(:service_id).count
     end
 
     def new
@@ -97,12 +98,13 @@ module Administrateurs
 
     def destroy
       service_to_destroy = current_administrateur.services.find(params[:id])
+      procedures_count = service_to_destroy.procedures.count
 
-      if service_to_destroy.procedures.present?
-        if service_to_destroy.procedures.count == 1
+      if procedures_count > 0
+        if procedures_count == 1
           message = "La démarche #{service_to_destroy.procedures.first.libelle} utilise encore le service #{service_to_destroy.nom}. Veuillez l’affecter à un autre service avant de pouvoir le supprimer"
         else
-          message = "Les démarches #{service_to_destroy.procedures.map(&:libelle).join(', ')} utilisent encore le service #{service.nom}. Veuillez les affecter à un autre service avant de pouvoir le supprimer"
+          message = "#{procedures_count} démarches utilisent encore le service #{service_to_destroy.nom}. Veuillez les affecter à un autre service avant de pouvoir le supprimer"
         end
         flash[:alert] = message
         redirect_to admin_services_path(procedure_id: params[:procedure_id])

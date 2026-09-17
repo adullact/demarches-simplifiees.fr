@@ -374,6 +374,24 @@ describe Administrateurs::ServicesController, type: :controller do
       end
     end
 
+    context 'when a service is still used by several procedures' do
+      let!(:procedure) { create(:procedure, service: service) }
+      let!(:other_procedures) { create_list(:procedure, 20, service: service, libelle: 'Demande de subvention ' * 10) }
+
+      before do
+        sign_in(admin.user)
+        delete :destroy, params: { id: service.id, procedure_id: procedure.id }
+      end
+
+      it 'counts the procedures instead of listing them, so the flash fits in the session cookie' do
+        expect(service.reload).not_to be_nil
+        expect(flash.alert).to eq("21 démarches utilisent encore le service #{service.nom}. Veuillez les affecter à un autre service avant de pouvoir le supprimer")
+        expect(flash.alert.bytesize).to be < 500
+        expect(flash.notice).to be_nil
+        expect(response).to redirect_to(admin_services_path(procedure_id: procedure.id))
+      end
+    end
+
     context "when a service has some related discarded procedures" do
       let!(:procedure) { create(:procedure, :discarded, service: service) }
 
@@ -449,6 +467,31 @@ describe Administrateurs::ServicesController, type: :controller do
         destroy_form = response.parsed_body
           .css("form[action='#{admin_service_path(foreign_service, procedure_id: procedure.id)}'][method='post']")
         expect(destroy_form.css("button[disabled]")).not_to be_empty
+      end
+    end
+
+    context 'when listing services still used by other procedures' do
+      render_views
+
+      let!(:used_service) { create(:service, administrateur: admin) }
+      let!(:unused_service) { create(:service, administrateur: admin) }
+      let!(:procedure) { create(:procedure, administrateur: admin) }
+      let!(:other_procedures) { create_list(:procedure, 2, administrateur: admin, service: used_service) }
+      let!(:discarded_procedure) { create(:procedure, :discarded, administrateur: admin, service: unused_service) }
+
+      def destroy_button(service)
+        response.parsed_body
+          .css("form[action='#{admin_service_path(service, procedure_id: procedure.id)}'][method='post'] button")
+          .first
+      end
+
+      it 'disables the destroy button and explains why' do
+        get :index, params: { procedure_id: procedure.id }
+
+        expect(destroy_button(used_service)['disabled']).to be_present
+        expect(destroy_button(used_service)['title']).to eq('Ce service est encore utilisé par 2 démarches')
+        expect(destroy_button(unused_service)['disabled']).to be_nil
+        expect(destroy_button(unused_service)['title']).to be_nil
       end
     end
   end
