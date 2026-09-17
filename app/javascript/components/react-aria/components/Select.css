@@ -12,6 +12,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    /* The nowrap label must not count towards the intrinsic width of the
+       trigger: in a flex item (min-width: auto) it would widen the column
+       to the whole label and overflow the layout instead of being cut with
+       the ellipsis above. Size containment makes the trigger as wide as its
+       container, whatever the selected label. */
+    contain: inline-size;
 
     &[data-placeholder] {
       color: var(--text-color-placeholder);
