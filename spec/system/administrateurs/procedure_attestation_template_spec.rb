@@ -173,15 +173,15 @@ describe 'As an administrateur, I want to manage the procedure’s attestation',
       expect(find('input[data-tiptap-target="input"]', visible: false).value).to include('pageBreak')
 
       click_on "Publier"
-      expect(attestation.reload).to be_published
       expect(page).to have_text("L’attestation a été publiée")
+      expect(attestation.reload).to be_published
 
       fill_in "Intitulé de la direction", with: "plop"
       accept_alert do
         click_on "Publier les modifications"
       end
-      expect(procedure.reload.attestation_acceptation_template.label_direction).to eq("plop")
       expect(page).to have_text(/La nouvelle version de l’attestation/)
+      expect(procedure.reload.attestation_acceptation_template.label_direction).to eq("plop")
     end
 
     context "tag in error" do

@@ -1,0 +1,26 @@
+<% if @batch -%>
+  <button
+    type="button"
+    class="
+      fr-btn fr-btn--sm fr-btn--icon-left fr-icon-arrow-right-circle-line
+      fr-ml-1w
+    "
+    disabled
+    aria-controls="modal-instruction-button"
+    data-operation="instruction"
+    data-action="batch-operation#openInstructionModal"
+    data-fr-js-modal-button="true"
+    data-fr-opened="false"
+  >
+    <%= t(".labels.instruction") %>
+  </button>
+<% else -%>
+  <button
+    class="fr-btn fr-icon-arrow-right-circle-line"
+    aria-controls="modal-instruction-button"
+    data-fr-opened="false"
+  >
+    <%= t(".labels.instruction") %>
+  </button>
+  <%= render partial: 'instructeurs/dossiers/instruction_modal', locals: { dossier:, batch:, procedure: } %>
+<% end -%>
