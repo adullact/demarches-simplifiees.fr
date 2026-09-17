@@ -9,15 +9,21 @@ import {
   useCallback
 } from 'react';
 import { createPortal } from 'react-dom';
-import { Map, NavigationControl, addProtocol } from 'maplibre-gl';
+import { Map, NavigationControl, addProtocol, setWorkerUrl } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { StyleSpecification, IControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+// maplibre-gl 6 resolves its worker from import.meta.url, which does not
+// survive bundling: hand Vite's self-contained worker URL over instead.
+// https://maplibre.org/maplibre-gl-js/docs/#installation
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 
 import invariant from 'tiny-invariant';
 
 import { useStyle, useElementVisible } from './hooks';
 import { StyleSwitch } from './StyleControl';
+
+setWorkerUrl(workerUrl);
 
 const Context = createContext<{ map?: Map | null }>({});
 
