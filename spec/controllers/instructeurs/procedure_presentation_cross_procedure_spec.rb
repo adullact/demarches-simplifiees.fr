@@ -15,15 +15,17 @@ describe Instructeurs::ProcedurePresentationController, type: :controller do
 
   before { sign_in(instructeur.user) }
 
-  it 'leaks the label of a column from another procedure' do
+  it 'ignores a column from another procedure instead of leaking its label' do
     post :refresh_filters, params: { id: procedure_presentation.id, statut: 'tous', filters_columns: [other_column.id] }, format: :turbo_stream
 
-    expect(response.body).to include('SECRET')
+    expect(response.body).not_to include('SECRET')
   end
 
-  it 'persists a column from another procedure' do
+  it 'drops a column from another procedure and notifies Sentry instead of persisting it' do
+    expect(Sentry).to receive(:capture_message)
+
     patch :update, params: { id: procedure_presentation.id, displayed_columns: [other_column.id] }
 
-    expect(procedure_presentation.reload.displayed_columns.map { it.h_id[:procedure_id] }).to include(other_procedure.id)
+    expect(procedure_presentation.reload.displayed_columns.map { it.h_id[:procedure_id] }).not_to include(other_procedure.id)
   end
 end

@@ -75,7 +75,15 @@ module Instructeurs
     end
 
     def filters_columns_from_params
-      Array(params[:filters_columns]).uniq.map { ColumnType.new.cast(it) }
+      # Resolve columns within this presentation's own procedure, so a forged id
+      # pointing at another procedure is ignored rather than read.
+      Array(params[:filters_columns]).uniq.filter_map { own_column_from_id(it) }
+    end
+
+    def own_column_from_id(raw_id)
+      procedure.find_column(h_id: JSON.parse(raw_id, symbolize_names: true))
+    rescue ActiveRecord::RecordNotFound, JSON::ParserError, TypeError
+      nil
     end
 
     # complicated way to display inner error messages

@@ -20,8 +20,8 @@ describe ProcedurePresentation do
 
     context 'of filters' do
       it 'validates the filter_column objects' do
-        expect(build(:procedure_presentation, "suivis_filters": [{ id: { column_id: "user/email", procedure_id: }, "filter": "not so long filter value" }])).to be_valid
-        expect(build(:procedure_presentation, "suivis_filters": [{ id: { column_id: "user/email", procedure_id: }, "filter": "exceedingly long filter value" * 400 }])).to be_invalid
+        expect(build(:procedure_presentation, assign_to:, "suivis_filters": [{ id: { column_id: "user/email", procedure_id: }, "filter": "not so long filter value" }])).to be_valid
+        expect(build(:procedure_presentation, assign_to:, "suivis_filters": [{ id: { column_id: "user/email", procedure_id: }, "filter": "exceedingly long filter value" * 400 }])).to be_invalid
       end
     end
   end
