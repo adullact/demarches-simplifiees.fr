@@ -7,7 +7,7 @@ describe DossierSearchService do
     before { perform_enqueued_jobs(only: DossierIndexSearchTermsJob) }
 
     def searching(terms, with_annotations: false)
-      described_class.matching_dossiers(dossiers, terms, with_annotations)
+      described_class.matching_dossiers(dossiers, terms, with_annotations:)
     end
 
     describe 'ignores brouillon' do
