@@ -20,8 +20,8 @@ module Administrateurs
         @service.siret = siret
 
         if @service.valid_siret?
-          prefilled_result = @service.prefill_from_siret
-          @prefilled = handle_siret_prefill(prefilled_result)
+          prefill_result = @service.prefill_from_siret
+          @prefilled = prefill_result.any?(Dry::Monads::Result::Success)
         end
       end
     end
@@ -74,8 +74,8 @@ module Administrateurs
       prefilled = nil
 
       if @service.valid_siret?
-        prefilled_result = @service.prefill_from_siret
-        prefilled = handle_siret_prefill(prefilled_result)
+        prefill_result = @service.prefill_from_siret
+        prefilled = prefill_result.any?(Dry::Monads::Result::Success)
       end
 
       render turbo_stream: turbo_stream.replace(
@@ -148,17 +148,6 @@ module Administrateurs
 
     def siret_params
       params.require(:service).permit(:siret)
-    end
-
-    def handle_siret_prefill(prefill_result)
-      case prefill_result
-      in [Dry::Monads::Result::Success, Dry::Monads::Result::Success]
-        :success
-      in [Dry::Monads::Result::Failure, Dry::Monads::Result::Success] | [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
-        :partial
-      else
-        :failure
-      end
     end
   end
 end
