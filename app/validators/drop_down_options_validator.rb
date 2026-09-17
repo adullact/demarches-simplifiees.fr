@@ -5,10 +5,11 @@
 # screening go through it, so the allowed set of each mode is computed once.
 class DropDownOptionsValidator < ActiveModel::Validator
   # Whether every value belongs to the options: the configured options for a
-  # simple list, the items of the referentiel for an advanced one. The items are
-  # read from the association, which the rendering of the list has already
-  # loaded and which every champ of the same type de champ shares — a query per
-  # champ would be a query per row of a repetition.
+  # simple list, the options the referentiel offers for an advanced one — the
+  # very list the select renders, so the rule accepts exactly what the form
+  # proposes. Those options are read from the loaded items association, which
+  # every champ of the same type de champ shares: a query per champ would be a
+  # query per row of a repetition.
   def self.allowed?(values, type_de_champ)
     values = values.uniq
     if type_de_champ.drop_down_advanced?
@@ -16,7 +17,7 @@ class DropDownOptionsValidator < ActiveModel::Validator
       return false if referentiel.nil?
 
       # a JSON array of ids parses into Integers: compare the ids as strings
-      (values.map(&:to_s) - referentiel.items.map { it.id.to_s }).empty?
+      (values.map(&:to_s) - referentiel.options_for_select.map(&:last)).empty?
     else
       (values - type_de_champ.drop_down_options).empty?
     end

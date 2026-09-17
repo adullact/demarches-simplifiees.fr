@@ -79,6 +79,19 @@ describe DropDownOptionsValidator do
         it { is_expected.to eq([[:not_in_options, {}]]) }
       end
 
+      # `options_for_select` skips the items whose first column is blank, so
+      # the select never offers them: the rule must not accept them either.
+      context 'when a value is the id of an item the select does not offer' do
+        let!(:blank_item) { create(:referentiel_item, referentiel:, data: { row: { 'option' => '', 'calorie_kcal' => '1', 'poids_g' => '1' } }) }
+        let(:values) { [blank_item.id.to_s] }
+
+        it 'is not offered by the select' do
+          expect(referentiel.options_for_select.map(&:last)).not_to include(blank_item.id.to_s)
+        end
+
+        it { is_expected.to eq([[:not_in_options, {}]]) }
+      end
+
       context 'when the list has no referentiel yet' do
         let(:type_de_champ_attributes) { { type: :multiple_drop_down_list, drop_down_mode: 'advanced' } }
         let(:values) { ['1'] }
