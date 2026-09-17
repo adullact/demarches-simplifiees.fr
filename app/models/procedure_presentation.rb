@@ -40,6 +40,11 @@ class ProcedurePresentation < ApplicationRecord
   validates_associated :displayed_columns, :sorted_column, :a_suivre_filters, :suivis_filters,
     :traites_filters, :tous_filters, :supprimes_filters, :expirant_filters, :archives_filters
 
+  # A column carries a client-supplied procedure_id. Referencing another
+  # procedure's column can only be a bug or a malicious request, never a valid
+  # use, so drop it silently and let Sentry know rather than erroring at the user.
+  before_validation :discard_foreign_columns
+
   def filters_for(statut)
     send(filters_name_for(statut))
   end
@@ -132,5 +137,33 @@ class ProcedurePresentation < ApplicationRecord
         admin_default_procedure_presentation_active: false,
         admin_default_procedure_presentation_id: nil
       )
+  end
+
+  def discard_foreign_columns
+    return if procedure.nil?
+
+    own = -> (column) { column.nil? || column.h_id[:procedure_id] == procedure.id }
+    dropped = false
+
+    if displayed_columns.present? && !displayed_columns.all?(&own)
+      self.displayed_columns = displayed_columns.filter(&own)
+      dropped = true
+    end
+
+    if sorted_column && !own.call(sorted_column.column)
+      self.sorted_column = nil
+      dropped = true
+    end
+
+    ALL_FILTERS.each do |attr|
+      filters = send(attr)
+      next if filters.blank? || filters.all? { own.call(it.column) }
+      send("#{attr}=", filters.filter { own.call(it.column) })
+      dropped = true
+    end
+
+    if dropped
+      Sentry.capture_message("ProcedurePresentation: dropped column from another procedure", extra: { procedure_presentation: id, procedure: procedure.id })
+    end
   end
 end
