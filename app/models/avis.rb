@@ -42,7 +42,6 @@ class Avis < ApplicationRecord
   scope :without_answer, -> { where(answer: nil) }
   scope :for_dossier, -> (dossier_id) { where(dossier_id: dossier_id) }
   scope :by_latest, -> { order(updated_at: :desc) }
-  scope :updated_since?, -> (date) { where('avis.updated_at > ?', date) }
   scope :termine_expired_after_notice_grace, -> { unscope(:joins).where(dossier: Dossier.termine_expired_after_notice_grace) }
   scope :not_hidden_by_administration, -> { where(dossiers: { hidden_by_administration_at: nil }) }
   # Both revocations cut the expert off: the avis itself (instructeur) or the
