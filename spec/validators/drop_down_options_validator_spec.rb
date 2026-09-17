@@ -73,4 +73,35 @@ describe DropDownOptionsValidator do
       end
     end
   end
+
+  describe '.allowed? query cost' do
+    let(:referentiel) { create(:csv_referentiel, :with_items) }
+    let(:procedure) do
+      create(:procedure, public_type_de_champs: [
+        { type: :repetition, children: [{ type: :drop_down_list, drop_down_mode: 'advanced', referentiel: }] },
+      ])
+    end
+    let(:dossier) { create(:dossier, procedure:) }
+    let(:repetition_tdc) { procedure.active_revision.public_root_type_de_champs.first }
+    let(:child_tdc) { procedure.active_revision.children_of(repetition_tdc).first }
+
+    def sql_touching(table, &block)
+      queries = []
+      callback = lambda { |*args| queries << args.last[:sql] if args.last[:sql].include?(table) }
+      ActiveSupport::Notifications.subscribed(callback, 'sql.active_record', &block)
+      queries
+    end
+
+    # Every row of a repetition shares the same type de champ, hence the same
+    # referentiel instance and its loaded items: the rule must read them, not
+    # re-query the items of each champ.
+    it 'reads the referentiel items once for the whole repetition' do
+      item_id = referentiel.items.first.id.to_s
+      Array.new(10) { dossier.repetition_add_row(repetition_tdc, updated_by: 'test') }
+        .each { dossier.champ_for_update(child_tdc, row_id: it, updated_by: 'test').update!(value: item_id) }
+      dossier.reload
+
+      expect(sql_touching('referentiel_items') { dossier.validate(:champs_public_value) }.size).to eq(1)
+    end
+  end
 end
