@@ -113,6 +113,20 @@ RSpec.describe BillSignature, type: :model do
     end
   end
 
+  describe 'a bill read back from the database' do
+    let(:day) { Date.new(2022, 12, 6) }
+
+    it 'checks its timestamp token, not its bill' do
+      DossierOperationLog.where(id: [1, 2]).delete_all
+      operations = [create(:dossier_operation_log, id: 1, digest: 'hash1'), create(:dossier_operation_log, id: 2, digest: 'hash2')]
+      bill = BillSignature.build_with_operations(operations, day)
+      bill.set_signature(File.binread('spec/fixtures/files/bill_signature/signature.der'), day)
+      bill.save!
+
+      expect(BillSignature.find(bill.id)).to be_valid
+    end
+  end
+
   describe '.build_with_operations' do
     let(:day) { Date.new(1871, 03, 18) }
     subject(:bill_signature) { build(:bill_signature, :with_signature) }

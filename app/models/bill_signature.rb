@@ -97,17 +97,17 @@ class BillSignature < ApplicationRecord
 
   private
 
-  def read_attachment(attachment)
-    if attachment_changes[attachment]
-      io = io_for_changes(attachment_changes[attachment])
+  def read_attachment(attachment_name)
+    if attachment_changes[attachment_name]
+      io = io_for_changes(attachment_changes[attachment_name])
       if io.present?
         io.rewind
         result = io.read
         io.rewind
         result
       end
-    elsif serialized.attached?
-      serialized.download
+    elsif public_send(attachment_name).attached?
+      public_send(attachment_name).download
     end
   end
 

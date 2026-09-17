@@ -75,9 +75,13 @@ class DossierOperationLog < ApplicationRecord
     }.compact
 
     operation_log.data = data
-    operation_log.digest = Digest::SHA256.hexdigest(data.to_json)
 
-    operation_log.save!
+    # On signe ce qui est réellement en base : jsonb normalise le JSON, à commencer par l'ordre des clés.
+    transaction do
+      operation_log.save!
+      operation_log.reload
+      operation_log.update_column(:digest, Digest::SHA256.hexdigest(operation_log.data.to_json))
+    end
   end
 
   def self.serialize_author(author)
