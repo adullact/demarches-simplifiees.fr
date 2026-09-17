@@ -22,9 +22,9 @@ module ProcedureStatsConcern
   end
 
   # On very large procedures the stats query can hit the statement timeout; these
-  # stats decorate public pages (commencer, dossier status), which must render
-  # anyway. Serve nil and negative-cache it briefly so we don't hammer the
-  # database until the next attempt.
+  # stats decorate public pages (commencer, dossier status, the public stats API),
+  # which must render anyway. Serve nil and negative-cache it briefly so we don't
+  # hammer the database until the next attempt.
   def stats_cache_fetch(key, &)
     Rails.cache.fetch(key, expires_in: 12.hours, &)
   rescue ActiveRecord::QueryCanceled
@@ -33,7 +33,7 @@ module ProcedureStatsConcern
   end
 
   def stats_dossiers_funnel
-    Rails.cache.fetch("#{cache_key_with_version}/stats_dossiers_funnel", expires_in: 12.hours) do
+    stats_cache_fetch("#{cache_key_with_version}/stats_dossiers_funnel") do
       [
         ['Tous (dont brouillon)', dossiers.visible_by_user_or_administration.count + nb_dossiers_termines_supprimes],
         ['Déposés', dossiers.visible_by_administration.count + nb_dossiers_termines_supprimes],
@@ -44,7 +44,7 @@ module ProcedureStatsConcern
   end
 
   def stats_termines_states
-    Rails.cache.fetch("#{cache_key_with_version}/stats_termines_states", expires_in: 12.hours) do
+    stats_cache_fetch("#{cache_key_with_version}/stats_termines_states") do
       [
         ['Acceptés', percentage(nb_dossiers_termines_in_state(:accepte), nb_dossiers_termines)],
         ['Refusés', percentage(nb_dossiers_termines_in_state(:refuse), nb_dossiers_termines)],
@@ -54,7 +54,7 @@ module ProcedureStatsConcern
   end
 
   def stats_termines_by_week
-    Rails.cache.fetch("#{cache_key_with_version}/stats_termines_by_week", expires_in: 12.hours) do
+    stats_cache_fetch("#{cache_key_with_version}/stats_termines_by_week") do
       now = Time.zone.now
       chart_data = dossiers.includes(:traitements)
         .visible_by_administration
