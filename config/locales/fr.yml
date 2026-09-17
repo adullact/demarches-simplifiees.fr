@@ -1249,6 +1249,9 @@ fr:
         Par exemple, si vous déposez votre dossier aujourd’hui, vous aurez une réponse au plus tard le %{date}.
         Si votre dossier est incomplet, cette date pourrait être repoussée jusqu’à la soumission d’un dossier complété.
     champs:
+      iban:
+        show:
+          iban_not_provided: "Iban non fourni"
       linked_drop_down_list:
         secondary_default_libelle: "Valeur secondaire dépendant de la première"
   editable_champ:

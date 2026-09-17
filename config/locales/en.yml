@@ -1209,6 +1209,9 @@ en:
         For example, if you submit your application today, you will receive a reply no later than %{date}.
         If your file is incomplete, this date may be postponed until submitting a completed file.
     champs:
+      iban:
+        show:
+          iban_not_provided: "IBAN not provided"
       linked_drop_down_list:
         secondary_default_libelle: "Secondary value depending on the first"
   editable_champ:
