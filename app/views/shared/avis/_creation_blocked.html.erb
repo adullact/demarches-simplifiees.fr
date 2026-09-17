@@ -1,0 +1,15 @@
+<%- if dossier.termine? -%>
+  <h2 class="empty-text">
+    <%= t('helpers.information_text.no_new_avis_text') %>
+  </h2>
+  <p class="empty-text-details">
+    <%= t('helpers.information_text.no_new_avis_text_detail') %>
+  </p>
+<%- else -%>
+  <h2 class="empty-text">
+    <%= t('helpers.information_text.unauthorized_avis_text') %>
+  </h2>
+  <p class="empty-text-details">
+    <%= t('helpers.information_text.unauthorized_avis_text_detail') %>
+  </p>
+<%- end -%>
