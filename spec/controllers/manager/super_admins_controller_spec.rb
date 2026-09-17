@@ -89,6 +89,83 @@ describe Manager::SuperAdminsController, type: :controller do
         expect(response.body).not_to include(reset_otp_edit_manager_super_admin_path(signed_in_super_admin))
       end
     end
+
+    it 'links to the deletion confirmation page' do
+      target = create(:super_admin, :with_otp)
+
+      get :show, params: { id: target.id }
+
+      expect(response.body).to include(delete_edit_manager_super_admin_path(target))
+    end
+
+    it 'does not offer to delete their own account' do
+      get :show, params: { id: signed_in_super_admin.id }
+
+      expect(response.body).not_to include(delete_edit_manager_super_admin_path(signed_in_super_admin))
+    end
+  end
+
+  describe 'DELETE #delete' do
+    let!(:signed_in_super_admin) { create(:super_admin, :with_otp) }
+    let(:super_admin) { signed_in_super_admin }
+    let(:target) { create(:super_admin, :with_otp) }
+    let(:otp_attempt) { current_otp_for(super_admin) }
+
+    subject { delete :delete, params: { id: target.id, otp_attempt: } }
+
+    it_behaves_like "a manager action gated by a fresh super-admin OTP" do
+      let(:other_target) { create(:super_admin) }
+      let(:action_matcher) { change { SuperAdmin.where(id: [target.id, other_target.id]).count } }
+      let(:replay_subject) { -> { delete :delete, params: { id: other_target.id, otp_attempt: } } }
+    end
+
+    context 'with a fresh OTP code' do
+      it 'deletes the account and redirects with a notice' do
+        subject
+
+        expect(SuperAdmin.find_by(id: target.id)).to be_nil
+        expect(response).to redirect_to(manager_super_admins_path)
+        expect(flash[:notice]).to include(target.email)
+      end
+    end
+
+    context 'when targeting themselves' do
+      it 'refuses and keeps their own account' do
+        expect { delete :delete, params: { id: super_admin.id, otp_attempt: } }
+          .not_to change { SuperAdmin.exists?(super_admin.id) }
+
+        expect(response).to redirect_to(manager_super_admin_path(super_admin))
+        expect(flash[:alert]).to be_present
+      end
+    end
+
+    it 'does not route the destroy action inherited from Administrate' do
+      expect(delete: "/manager/super_admins/#{target.id}").not_to be_routable
+    end
+  end
+
+  describe 'GET #delete_edit' do
+    render_views
+
+    let!(:signed_in_super_admin) { create(:super_admin, :with_otp) }
+    let(:target) { create(:super_admin, :with_otp) }
+
+    it 'renders the confirmation page posting to the deletion' do
+      get :delete_edit, params: { id: target.id }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(target.email)
+      expect(response.body).to include("action=\"#{delete_manager_super_admin_path(target)}\"")
+    end
+
+    context 'when targeting themselves' do
+      it 'refuses' do
+        get :delete_edit, params: { id: signed_in_super_admin.id }
+
+        expect(response).to redirect_to(manager_super_admin_path(signed_in_super_admin))
+        expect(flash[:alert]).to be_present
+      end
+    end
   end
 
   describe 'GET #reset_otp_edit' do

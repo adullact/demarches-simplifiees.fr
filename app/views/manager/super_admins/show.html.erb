@@ -7,6 +7,12 @@
     <% if page.resource.otp_required_for_login? && page.resource != current_super_admin %>
       <%= link_to "Réinitialiser l’OTP", reset_otp_edit_manager_super_admin_path(page.resource), class: "button button--danger" %>
     <% end %>
+
+    <% if page.resource != current_super_admin %>
+      <%= link_to t("administrate.actions.destroy"), delete_edit_manager_super_admin_path(page.resource), class: "button button--danger" %>
+    <% else %>
+      <span><%= t(".cannot_be_deleted") %></span>
+    <% end %>
   </div>
 </header>
 

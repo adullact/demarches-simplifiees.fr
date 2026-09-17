@@ -4,7 +4,7 @@ module Manager
   class UsersController < Manager::ApplicationController
     include RequiresFreshSuperAdminOtp
 
-    before_action :verify_fresh_super_admin_otp!, only: [:update]
+    before_action :verify_fresh_super_admin_otp!, only: [:update, :delete]
 
     def edit
       requested_resource.define_singleton_method(:otp_attempt) { nil }
@@ -78,6 +78,10 @@ module Manager
       end
 
       head :ok
+    end
+
+    def delete_edit
+      @user = User.find(params[:id])
     end
 
     def delete

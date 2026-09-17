@@ -52,13 +52,13 @@
       edit_manager_user_path(page.resource),
       class: "button") %>
 
-    <%= button_to(t("administrate.actions.destroy"),
-                  delete_manager_user_path(page.resource),
-                  method: :delete,
-                  disabled: !page.resource.can_be_deleted?,
-                  class: "button button--danger",
-                  data: { turbo_confirm: "Confirmez-vous la suppression de l’utilisateur ?" },
-                  title: page.resource.can_be_deleted? ? "Supprimer" : "Cet utilisateur ne peut être supprimé. Il a des dossiers dont l’instruction a commencé ou il est administrateur ou instructeur") %>
+    <% if user.can_be_deleted? %>
+      <%= link_to(t("administrate.actions.destroy"),
+                  delete_edit_manager_user_path(page.resource),
+                  class: "button button--danger") %>
+    <% else %>
+      <span><%= t(".cannot_be_deleted") %></span>
+    <% end %>
 
     <% if !user.confirmed? %>
       <%= button_to('Renvoyer l’email de confirmation', [:resend_confirmation_instructions, namespace, page.resource], method: :post, class: 'button') %>

@@ -28,14 +28,14 @@
       class: "button",
     ) if accessible_action?(page.resource, :edit) %>
 
-    <%= button_to(
-    t("administrate.actions.destroy"),
-    [namespace, page.resource],
-    method: :delete,
-    disabled: !page.resource.can_be_deleted?,
-    class: "button button--danger",
-    data: { turbo_confirm: "Confirmez-vous la suppression du gestionnaire ?" },
-    title: page.resource.can_be_deleted? ? "Supprimer" : "Ce gestionnaire ne peut etre supprimé car il est le seul gestionnaire d’un groupe racine") %>
+    <% if page.resource.can_be_deleted? %>
+      <%= link_to(
+      t("administrate.actions.destroy"),
+      delete_edit_manager_gestionnaire_path(page.resource),
+      class: "button button--danger") %>
+    <% else %>
+      <span><%= t(".cannot_be_deleted") %></span>
+    <% end %>
   </div>
 </header>
 

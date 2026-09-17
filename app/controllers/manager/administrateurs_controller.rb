@@ -2,6 +2,10 @@
 
 module Manager
   class AdministrateursController < Manager::ApplicationController
+    include RequiresFreshSuperAdminOtp
+
+    before_action :verify_fresh_super_admin_otp!, only: [:delete]
+
     def create
       administrateur = current_super_admin.invite_admin(create_administrateur_params[:email])
 
@@ -19,6 +23,10 @@ module Manager
       Administrateur.find_inactive_by_id(params[:id]).user.invite_administrateur!
       flash.notice = "Invitation renvoyée"
       redirect_to manager_administrateur_path(params[:id])
+    end
+
+    def delete_edit
+      @administrateur = Administrateur.find(params[:id])
     end
 
     def delete

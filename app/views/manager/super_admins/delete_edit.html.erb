@@ -1,0 +1,17 @@
+<% content_for(:title) { t('.title', id: @super_admin.id) } %>
+
+<%= render Manager::OtpConfirmationComponent.new(
+      title: content_for(:title),
+      url: delete_manager_super_admin_path(@super_admin),
+      submit: t('.submit'),
+      cancel_url: manager_super_admin_path(@super_admin),
+      form_method: :delete
+    ) do %>
+  <p><%= t('.warning_html', email: @super_admin.email) %></p>
+
+  <p><%= t('.access') %></p>
+
+  <p><%= t('.account') %></p>
+
+  <p><%= t('.irreversible') %></p>
+<% end %>

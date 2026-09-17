@@ -78,10 +78,31 @@ describe Manager::AdministrateursController, type: :controller do
     end
   end
 
+  describe '#delete_edit' do
+    render_views
+
+    it 'renders the confirmation page posting to the deletion' do
+      get :delete_edit, params: { id: administrateur.id }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(administrateur.email)
+      expect(response.body).to include("action=\"#{delete_manager_administrateur_path(administrateur)}\"")
+    end
+  end
+
   describe '#delete' do
     # deletion needs an admin who owns nothing, not the shared default one
     let(:administrateur) { administrateurs.blank }
-    subject { delete :delete, params: { id: administrateur.id } }
+    let(:super_admin) { create(:super_admin, :with_otp) }
+    let(:otp_attempt) { current_otp_for(super_admin) }
+
+    subject { delete :delete, params: { id: administrateur.id, otp_attempt: } }
+
+    it_behaves_like "a manager action gated by a fresh super-admin OTP" do
+      let(:other_administrateur) { create(:administrateur) }
+      let(:action_matcher) { change { Administrateur.where(id: [administrateur.id, other_administrateur.id]).count } }
+      let(:replay_subject) { -> { delete :delete, params: { id: other_administrateur.id, otp_attempt: } } }
+    end
 
     it 'deletes the admin' do
       subject

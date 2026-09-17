@@ -4,16 +4,67 @@ fr:
       invalid_code: "Code OTP invalide ou manquant. L’opération a été annulée."
     gestionnaires:
       manage_root_groupe_gestionnaire: Gestion du groupe racine
+      show:
+        cannot_be_deleted: "Ce gestionnaire ne peut pas être supprimé : il est le seul gestionnaire d’un groupe racine."
+      delete_edit:
+        title: "Supprimer le gestionnaire n° %{id}"
+        warning_html: "Vous allez supprimer le rôle gestionnaire de <strong>%{email}</strong>. Il est retiré des groupes d’administrateurs qu’il gère."
+        account: "Son compte de connexion n’est pas supprimé : seul le rôle gestionnaire l’est."
+        submit: "Supprimer le gestionnaire"
+    instructeurs:
+      show:
+        cannot_be_deleted: "Cet instructeur ne peut pas être supprimé : il est administrateur, ou l’une de ses démarches n’a qu’un seul instructeur dans son groupe par défaut."
+      delete_edit:
+        title: "Supprimer l’instructeur n° %{id}"
+        warning_html: "Vous allez supprimer le rôle instructeur de <strong>%{email}</strong>. Ses affectations aux groupes d’instructeurs, ses suivis de dossiers, ses envois groupés, ses exports et ses archives sont détruits."
+        account: "Son compte de connexion n’est pas supprimé : seul le rôle instructeur l’est. Les messages qu’il a écrits dans les messageries restent visibles."
+        submit: "Supprimer l’instructeur"
+    procedures:
+      add_administrateur_and_instructeur_edit:
+        title: "Devenir administrateur et instructeur de la démarche n° %{id}"
+        warning_html: "Vous allez vous attribuer l’accès administrateur et instructeur à <strong>%{libelle}</strong>. Cet accès ouvre tous les dossiers de la démarche, leurs pièces jointes, la messagerie et les annotations privées."
+        administrateurs: "Administrateurs actuels : %{emails}. Ils ne sont pas prévenus de cet accès."
+        duration: "L’accès est retiré automatiquement lors de la purge quotidienne de 2 h 45."
+        submit: "Devenir administrateur et instructeur"
+    users:
+      show:
+        cannot_be_deleted: "Cet utilisateur ne peut pas être supprimé : il est administrateur, instructeur ou expert."
+      delete_edit:
+        title: "Supprimer l’utilisateur n° %{id}"
+        warning_html: "Vous allez supprimer définitivement le compte de <strong>%{email}</strong>. Cette suppression est irréversible."
+        purged_dossiers: "Ses dossiers brouillon et en construction sont détruits avec leurs pièces jointes."
+        detached_dossiers: "Ses autres dossiers sont détachés du compte : les dossiers terminés sont masqués, ceux en cours d’instruction restent instruisables."
+        submit: "Supprimer l’utilisateur"
     super_admins:
       self_otp_reset_forbidden: "Vous ne pouvez pas réinitialiser votre propre authentification double-facteur depuis cet écran."
+      self_deletion_forbidden: "Vous ne pouvez pas supprimer votre propre compte super-admin depuis cet écran."
+      show:
+        cannot_be_deleted: "Vous ne pouvez pas supprimer votre propre compte super-admin."
       reset_otp_edit:
         title: "Réinitialiser l’authentification double-facteur"
         warning_html: "Vous allez réinitialiser l’authentification double-facteur de <strong>%{email}</strong>. Cette personne devra se reconnecter avec son mot de passe puis enrôler à nouveau son application d’authentification."
-        otp_intro: "Confirmez avec votre propre code OTP."
         submit: "Réinitialiser l’OTP"
       reset_otp:
         success: "L’authentification double-facteur de %{email} a été réinitialisée."
+      delete_edit:
+        title: "Supprimer le compte super-admin n° %{id}"
+        warning_html: "Vous allez supprimer le compte super-admin de <strong>%{email}</strong>."
+        access: "Cette personne perd immédiatement l’accès au Manager, ses sessions ouvertes comprises. Aucun autre super-admin n’en est averti."
+        irreversible: "Le compte ne peut pas être recréé depuis le Manager : il faut une commande sur un serveur."
+        account: "Seul l’accès au Manager est supprimé : les comptes de la plateforme portant la même adresse, administrateur ou instructeur, ne sont pas touchés et doivent être traités à part."
+        submit: "Supprimer le super-admin"
+      delete:
+        success: "Le compte super-admin de %{email} a été supprimé."
     administrateurs:
+      show:
+        cannot_be_deleted: "Cet administrateur ne peut pas être supprimé : il est le seul administrateur d’une démarche ayant des dossiers."
+      delete_edit:
+        title: "Supprimer l’administrateur n° %{id}"
+        warning_html: "Vous allez supprimer le rôle administrateur de <strong>%{email}</strong>."
+        procedures: "Ses démarches sans aucun dossier sont supprimées, ainsi que ses services devenus vides. Les démarches qu’il partage lui sont retirées, et leur service passe à un autre administrateur."
+        refused: "Si une démarche ou un service lui reste attaché à la fin, la suppression est annulée."
+        account: "Son compte de connexion n’est pas supprimé : seul le rôle administrateur l’est."
+        submit: "Supprimer l’administrateur"
       delete:
         cannot_be_deleted: "L’administrateur ne peut pas être supprimé"
         still_procedures: "L’administrateur ne peut pas être supprimé car il a encore des démarches"

@@ -9,6 +9,7 @@ namespace :manager do
       post :discard
       post :restore
       put :delete_administrateur
+      get :add_administrateur_and_instructeur_edit
       post :add_administrateur_and_instructeur
       post :add_administrateur_with_confirmation
       post :change_piece_justificative_template
@@ -40,12 +41,14 @@ namespace :manager do
   resources :administrateurs, only: [:index, :show, :new, :create] do
     member do
       post :reinvite
+      get :delete_edit
       delete :delete
     end
   end
 
   resources :users, only: [:index, :show, :edit, :update] do
     member do
+      get :delete_edit
       delete :delete
       post :resend_confirmation_instructions
       post :resend_reset_password_instructions
@@ -62,13 +65,17 @@ namespace :manager do
   resources :instructeurs, only: [:index, :show, :edit, :update] do
     member do
       post :reinvite
+      get :delete_edit
       delete :delete
     end
   end
 
   if ENV['ADMINS_GROUP_ENABLED'] == 'enabled' || Rails.env.test? # can be removed if needed when EVERY PARTS of the feature will be merged / from env.example.optional
     resources :gestionnaires, only: [:index, :show, :edit, :update] do
-      delete :delete, on: :member
+      member do
+        get :delete_edit
+        delete :delete
+      end
     end
 
     resources :groupe_gestionnaires, path: 'groupe_administrateurs', only: [:index, :show, :new, :create, :edit, :update] do
@@ -85,10 +92,12 @@ namespace :manager do
 
   resources :services, only: [:index, :show]
 
-  resources :super_admins, only: [:index, :show, :destroy] do
+  resources :super_admins, only: [:index, :show] do
     member do
       get :reset_otp_edit
       post :reset_otp
+      get :delete_edit
+      delete :delete
     end
   end
 

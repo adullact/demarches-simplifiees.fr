@@ -1,0 +1,13 @@
+<% content_for(:title) { t('.title', id: @gestionnaire.id) } %>
+
+<%= render Manager::OtpConfirmationComponent.new(
+      title: content_for(:title),
+      url: delete_manager_gestionnaire_path(@gestionnaire),
+      submit: t('.submit'),
+      cancel_url: manager_gestionnaire_path(@gestionnaire),
+      form_method: :delete
+    ) do %>
+  <p><%= t('.warning_html', email: @gestionnaire.email) %></p>
+
+  <p><%= t('.account') %></p>
+<% end %>

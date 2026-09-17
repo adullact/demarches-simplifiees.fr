@@ -17,6 +17,18 @@ describe Manager::UsersController, type: :controller do
 
     it { expect(response.body).to include(user.email) }
 
+    it 'links to the deletion confirmation page' do
+      expect(response.body).to include(delete_edit_manager_user_path(user))
+    end
+
+    context 'when the user cannot be deleted' do
+      let(:user) { administrateurs.default.user }
+
+      it 'does not offer the deletion' do
+        expect(response.body).not_to include(delete_edit_manager_user_path(user))
+      end
+    end
+
     context 'when user is blocked' do
       let(:user) { create(:user, blocked_at: Time.zone.now) }
 
@@ -115,10 +127,32 @@ describe Manager::UsersController, type: :controller do
     end
   end
 
+  describe '#delete_edit' do
+    render_views
+
+    let(:user) { users.usager }
+
+    it 'renders the confirmation page posting to the deletion' do
+      get :delete_edit, params: { id: user.id }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(user.email)
+      expect(response.body).to include("action=\"#{delete_manager_user_path(user)}\"")
+    end
+  end
+
   describe '#delete' do
+    let(:super_admin) { create(:super_admin, :with_otp) }
+    let(:otp_attempt) { current_otp_for(super_admin) }
     let(:user) { create(:user) }
 
-    subject { delete :delete, params: { id: user.id } }
+    subject { delete :delete, params: { id: user.id, otp_attempt: } }
+
+    it_behaves_like "a manager action gated by a fresh super-admin OTP" do
+      let(:other_user) { create(:user) }
+      let(:action_matcher) { change { User.where(id: [user.id, other_user.id]).count } }
+      let(:replay_subject) { -> { delete :delete, params: { id: other_user.id, otp_attempt: } } }
+    end
 
     it 'deletes the user' do
       subject

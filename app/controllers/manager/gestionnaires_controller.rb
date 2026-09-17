@@ -2,6 +2,14 @@
 
 module Manager
   class GestionnairesController < Manager::ApplicationController
+    include RequiresFreshSuperAdminOtp
+
+    before_action :verify_fresh_super_admin_otp!, only: [:delete]
+
+    def delete_edit
+      @gestionnaire = Gestionnaire.find(params[:id])
+    end
+
     def delete
       gestionnaire = Gestionnaire.find(params[:id])
 
