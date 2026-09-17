@@ -1,6 +1,51 @@
 # frozen_string_literal: true
 
 describe DossierOperationLog, type: :model do
+  describe 'digest' do
+    let(:instructeur) { create(:instructeur) }
+    let(:dossier) { create(:dossier, :en_instruction, :with_individual) }
+
+    def accepted_operation_from_database
+      DossierOperationLog.create_and_serialize(
+        dossier:,
+        operation: DossierOperationLog.operations.fetch(:accepter),
+        author: instructeur,
+        subject: dossier
+      )
+      DossierOperationLog.find(dossier.dossier_operation_logs.last.id)
+    end
+
+    it 'matches the stored data' do
+      operation = accepted_operation_from_database
+
+      expect(Digest::SHA256.hexdigest(operation.data.to_json)).to eq(operation.digest)
+    end
+
+    it 'matches data holding -0, which the column stores as 0' do
+      allow(SerializerService).to receive(:dossier).and_return({ 'value' => -0.0 })
+      operation = accepted_operation_from_database
+
+      expect(Digest::SHA256.hexdigest(operation.data.to_json)).to eq(operation.digest)
+    end
+
+    it 'matches the file moved to cold storage' do
+      operation = accepted_operation_from_database
+      operation.move_to_cold_storage!
+
+      expect(Digest::SHA256.hexdigest(DossierOperationLog.find(operation.id).serialized.download)).to eq(operation.digest)
+    end
+
+    it 'matches the file handed to the administrateur export' do
+      operation = accepted_operation_from_database
+      documents = PiecesJustificativesService
+        .new(user_profile: Administrateur.new, export_template: nil)
+        .liste_documents([dossier])
+      exported = documents.map(&:first).find { it.record_type == 'DossierOperationLog' }
+
+      expect(Digest::SHA256.hexdigest(exported.file.read)).to eq(operation.digest)
+    end
+  end
+
   describe '.purge_discarded' do
     let(:dossier) { create(:dossier) }
     let!(:witness_dossier) do
