@@ -40,11 +40,13 @@
                       .fr-col-4
                         = link_to('Modifier', edit_admin_service_path(service, procedure_id: @procedure.id), class: 'fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left fr-icon-pencil-line')
                       .fr-col-4
+                        - procedures_count = @procedures_count_by_service_id.fetch(service.id, 0)
                         = button_to 'Supprimer',
                           admin_service_path(service, procedure_id: @procedure.id),
                           method: :delete,
                           data: { confirm: "Confirmez vous la suppression de #{service.nom}" },
                           class: 'fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-left fr-icon-delete-line',
-                          disabled: (@procedure.service == service || service.administrateur_id != current_administrateur.id)
+                          title: (procedures_count > 0 ? "Ce service est encore utilisé par #{pluralize(procedures_count, 'démarche')}" : nil),
+                          disabled: (procedures_count > 0 || service.administrateur_id != current_administrateur.id)
 
 = render Procedure::FixedFooterComponent.new(procedure: @procedure)
