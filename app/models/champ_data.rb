@@ -153,7 +153,6 @@ class ChampData < ApplicationRecord
 
   delegate :revision, to: :dossier, prefix: true
 
-  scope :updated_since?, -> (date) { where('champs.updated_at > ?', date) }
   scope :prefilled, -> { where(prefilled: true) }
   scope :public_only, -> { where(private: false) }
   scope :private_only, -> { where(private: true) }

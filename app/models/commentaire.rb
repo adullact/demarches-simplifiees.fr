@@ -25,7 +25,6 @@ class Commentaire < ApplicationRecord
     empty_file: true
 
   scope :chronological, -> { order(created_at: :asc) }
-  scope :updated_since?, -> (date) { where('commentaires.updated_at > ?', date) }
   scope :sent_by_usager, -> { where(instructeur_id: nil, expert_id: nil) }
   scope :sent_by_instructeur, -> { where.not(instructeur_id: nil) }
   scope :sent_by_agent, -> { where('commentaires.instructeur_id IS NOT NULL OR commentaires.expert_id IS NOT NULL') }
