@@ -8,7 +8,7 @@ class Service < ApplicationRecord
 
   scope :ordered, -> { order(nom: :asc) }
 
-  SIRET_TEST = '35600082800018'
+  SIRET_TEST = '00000000000000'
 
   enum :type_organisme, {
     administration_centrale: 'administration_centrale',
@@ -31,6 +31,8 @@ class Service < ApplicationRecord
   validates :adresse, presence: { message: 'doit être renseignée' }, allow_nil: false
   validates :administrateur, presence: { message: 'doit être renseigné' }, allow_nil: false
   validate :at_least_one_contact
+
+  normalizes :siret, with: -> (siret) { siret&.delete(" ") }
 
   def at_least_one_contact
     if email.blank? && contact_link.blank?
@@ -65,5 +67,13 @@ class Service < ApplicationRecord
 
   def enqueue_api_entreprise
     APIEntreprise::ServiceJob.perform_later(self.id)
+  end
+
+  def valid_siret?
+    ActiveModel::Validations::SiretValidator
+      .new(attributes: [:siret])
+      .validate_each(self, :siret, siret)
+
+    errors[:siret].empty?
   end
 end
