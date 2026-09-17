@@ -220,6 +220,28 @@ describe AttachmentsController, type: :controller do
         end
       end
 
+      context 'and the dossier can no longer be updated by the user' do
+        let(:user) { users.usager }
+        let(:type_de_champ) { dossier.revision.public_root_type_de_champs.find(&:piece_justificative?) }
+        let(:champ) do
+          dossier.champ_for_update(type_de_champ, updated_by: user.email).tap do
+            it.piece_justificative_file.attach(io: Rails.root.join('spec/fixtures/files/Contrat.pdf').open, filename: 'Contrat.pdf')
+            it.save!
+          end
+        end
+
+        [:en_instruction, :accepte].each do |state|
+          context "when the dossier is #{state}" do
+            let(:dossier) { dossiers.public_send(state) }
+
+            it 'doesn’t remove the attachment' do
+              is_expected.to have_http_status(404)
+              expect(champ.reload.piece_justificative_file.attached?).to be(true)
+            end
+          end
+        end
+      end
+
       context 'and signed_id is invalid' do
         let(:signed_id) { 'yolo' }
 
@@ -342,7 +364,7 @@ describe AttachmentsController, type: :controller do
 
       context 'when the instructeur belongs to the procedure' do
         let(:procedure) { create(:procedure, instructeurs: [instructeur], private_type_de_champs: [{ type: :piece_justificative }]) }
-        let(:dossier) { create(:dossier, procedure:) }
+        let(:dossier) { create(:dossier, :en_instruction, procedure:) }
         let(:champ) do
           dossier.champ_data.private_only.first.tap do |c|
             c.piece_justificative_file.attach({ io: Rails.root.join('spec/fixtures/files/Contrat.pdf').open, filename: 'Contrat.pdf' })
