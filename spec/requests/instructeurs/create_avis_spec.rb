@@ -33,4 +33,19 @@ describe "Instructeurs::DossiersController#create_avis", type: :request do
 
     it_behaves_like "a refused avis request", 'helpers.information_text.no_new_avis_text'
   end
+
+  describe "the avis form" do
+    let(:dossier) { dossiers.en_instruction }
+
+    before do
+      allow_any_instance_of(Dossier).to receive(:linked_dossiers_for)
+        .and_return(Dossier.where(id: [dossiers.en_construction, dossiers.accepte]))
+    end
+
+    it "offers only the linked dossiers that accept avis" do
+      get avis_new_instructeur_dossier_path(procedure_id: procedure.id, dossier_id: dossier.id)
+
+      expect(response.body).to include(I18n.t('helpers.label.invite_linked_dossiers', count: 1, ids: dossiers.en_construction.id))
+    end
+  end
 end
