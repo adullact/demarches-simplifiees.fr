@@ -42,7 +42,7 @@ class DossierSearchService
   end
 
   def self.dossier_by_full_text(dossiers, search_terms, with_annotations: false)
-    if Flipper.enabled?(:search_terms_tsvector)
+    if Flipper.enabled?(:search_terms_tsvector, Current.user)
       dossier_by_stored_tsvector(dossiers, search_terms, with_annotations)
     else
       dossier_by_tsvector_expression(dossiers, search_terms, with_annotations)
