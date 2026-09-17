@@ -4,20 +4,7 @@ class AttachmentsController < ApplicationController
   before_action :authenticate_logged_user!
   include ActiveStorage::SetBlob
   before_action :set_attachment
-  before_action :ensure_legitimate_access_show, only: :show
-  before_action :ensure_legitimate_access_destroy, only: :destroy
-
-  def show
-    @user_can_edit = cast_bool(params[:user_can_edit])
-    @direct_upload = cast_bool(params[:direct_upload])
-    @view_as = params[:view_as]&.to_sym
-    @auto_attach_url = params[:auto_attach_url]
-
-    respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_back_or_to(root_url) }
-    end
-  end
+  before_action :ensure_legitimate_access_destroy
 
   def destroy
     if champ?
@@ -41,15 +28,6 @@ class AttachmentsController < ApplicationController
   end
 
   private
-
-  def ensure_legitimate_access_show
-    return if user_or_invite_changing_an_attachment?
-    return if instructeur_changing_an_attachment?
-    return if expert_changing_its_avis?
-    return if !champ? && !avis?
-
-    head :not_found
-  end
 
   def ensure_legitimate_access_destroy
     return if champ_updatable?
