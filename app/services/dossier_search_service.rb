@@ -6,12 +6,12 @@ class DossierSearchService
   # Matches beyond this cap are dropped before ranking.
   MAX_RESULTS = 1000
 
-  def self.matching_dossiers(dossiers, search_terms, with_annotations = false)
+  def self.matching_dossiers(dossiers, search_terms, with_annotations: false)
     if dossiers.nil?
       []
     else
       dossier_by_exact_id(dossiers, search_terms)
-        .presence || dossier_ids_by_full_text(dossiers, search_terms, with_annotations)
+        .presence || dossier_ids_by_full_text(dossiers, search_terms, with_annotations:)
     end
   end
 
@@ -31,7 +31,7 @@ class DossierSearchService
     end
   end
 
-  def self.dossier_ids_by_full_text(dossiers, search_terms, with_annotations)
+  def self.dossier_ids_by_full_text(dossiers, search_terms, with_annotations:)
     dossier_by_full_text(dossiers.visible_by_administration, search_terms, with_annotations:)
       .pluck('id')
       .uniq
@@ -42,7 +42,7 @@ class DossierSearchService
   end
 
   def self.dossier_by_full_text(dossiers, search_terms, with_annotations: false)
-    if Flipper.enabled?(:search_terms_tsvector)
+    if Flipper.enabled?(:search_terms_tsvector, Current.user)
       dossier_by_stored_tsvector(dossiers, search_terms, with_annotations)
     else
       dossier_by_tsvector_expression(dossiers, search_terms, with_annotations)

@@ -7,7 +7,7 @@ describe DossierSearchService do
     before { perform_enqueued_jobs(only: DossierIndexSearchTermsJob) }
 
     def searching(terms, with_annotations: false)
-      described_class.matching_dossiers(dossiers, terms, with_annotations)
+      described_class.matching_dossiers(dossiers, terms, with_annotations:)
     end
 
     describe 'ignores brouillon' do
@@ -133,6 +133,25 @@ describe DossierSearchService do
         Dossier.where(id: dossier.id).update_all(search_terms_tsvector: nil, all_search_terms_tsvector: nil)
 
         expect(searching('nicolas')).to eq([])
+      end
+    end
+
+    describe 'with the flag enabled for a single actor' do
+      let(:user) { users.usager }
+      let(:dossier) { create(:dossier, state: :en_construction, user:) }
+
+      # Blanking the column makes the two paths disagree: only the stored one
+      # stops matching, which is what tells them apart.
+      before do
+        Flipper.enable_actor(:search_terms_tsvector, user)
+        Dossier.where(id: dossier.id).update_all(search_terms_tsvector: nil)
+      end
+
+      after { Flipper.disable_actor(:search_terms_tsvector, user) }
+
+      it 'reads the stored column for that actor only' do
+        Current.set(user:) { expect(searching('usager')).to eq([]) }
+        Current.set(user: users.instructeur) { expect(searching('usager')).to eq([dossier.id]) }
       end
     end
   end

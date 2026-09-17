@@ -172,6 +172,24 @@ describe RechercheController, type: :controller do
         end
       end
 
+      context 'when the tsvector flag is enabled for the signed in user' do
+        let(:query) { 'district A' }
+
+        # Blanking the column makes the two paths disagree: losing the dossier
+        # is what proves the flag was read against the signed in user.
+        before do
+          Flipper.enable_actor(:search_terms_tsvector, user)
+          Dossier.where(id: dossier.id).update_all(all_search_terms_tsvector: nil)
+        end
+
+        after { Flipper.disable_actor(:search_terms_tsvector, user) }
+
+        it 'searches the stored tsvector column' do
+          is_expected.to have_http_status(200)
+          expect(assigns(:projected_dossiers)).to be_empty
+        end
+      end
+
       context 'as an expert' do
         let(:user) { avis.experts_procedure.expert.user }
         let(:query) { 'district' }

@@ -30,7 +30,7 @@ class RechercheController < ApplicationController
     return if handle_special_cases
 
     @instructeur_dossiers_ids = DossierSearchService
-      .matching_dossiers(current_instructeur&.dossiers, @search_terms, with_annotation: true)
+      .matching_dossiers(current_instructeur&.dossiers, @search_terms, with_annotations: true)
 
     expert_dossier_ids = DossierSearchService
       .matching_dossiers(current_expert&.dossiers_from_not_revoked_avis, @search_terms)
