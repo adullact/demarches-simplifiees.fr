@@ -1,0 +1,15 @@
+<%# https://integration.lasuite.numerique.gouv.fr/guides/gaufre-v2/ %>
+<%# locals: (button_id:) %>
+<%#
+  icon-only: the header zone cancels the DSFR icon-only square (overflow,
+  max-width, icon margins), so we restore it in dsfr.scss.
+%>
+
+<button
+  type="button"
+  id="<%= button_id %>"
+  class="fr-btn fr-icon-grid-fill fr-btn--tertiary-no-outline icon-only"
+  aria-label="<%= t('lasuite_gaufre.label') %>"
+  title="<%= t('lasuite_gaufre.label') %>"
+  aria-expanded="false"
+></button>
