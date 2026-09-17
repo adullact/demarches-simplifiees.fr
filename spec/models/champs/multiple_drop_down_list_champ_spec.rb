@@ -74,6 +74,15 @@ describe Champs::MultipleDropDownListChamp do
       expect(champ.errors).to be_empty
     end
 
+    # A prefill URL or an API payload carries the ids as a JSON array, which
+    # parses into Integers, not Strings.
+    it "accepts a JSON array of ids" do
+      champ.value = "[#{item.id}]"
+      expect(champ.selected_options).to eq([item.id])
+      champ.validate(:champ_value)
+      expect(champ.errors).to be_empty
+    end
+
     it "rejects a saved selection whose item was deleted since" do
       champ.update!(value: [item.id.to_s])
       item.destroy!

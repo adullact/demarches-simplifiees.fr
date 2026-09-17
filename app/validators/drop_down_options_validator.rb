@@ -15,7 +15,8 @@ class DropDownOptionsValidator < ActiveModel::Validator
       referentiel = type_de_champ.referentiel
       return false if referentiel.nil?
 
-      (values - referentiel.items.map { it.id.to_s }).empty?
+      # a JSON array of ids parses into Integers: compare the ids as strings
+      (values.map(&:to_s) - referentiel.items.map { it.id.to_s }).empty?
     else
       (values - type_de_champ.drop_down_options).empty?
     end

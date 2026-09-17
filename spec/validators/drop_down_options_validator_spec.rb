@@ -53,6 +53,20 @@ describe DropDownOptionsValidator do
         it { is_expected.to eq([[:not_in_options, {}]]) }
       end
 
+      # A JSON array of ids ("[1,2]") — what a prefill URL or an API payload
+      # carries — parses into Integers, not Strings.
+      context 'when the ids are Integers' do
+        let(:values) { [items.second.id, items.first.id] }
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when the ids mix Integers and Strings' do
+        let(:values) { [items.second.id, items.first.id.to_s] }
+
+        it { is_expected.to be_empty }
+      end
+
       context 'when a value is a label rather than an id' do
         let(:values) { ['fromage'] }
 
