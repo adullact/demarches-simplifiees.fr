@@ -1,4 +1,5 @@
 import './process-env-shim';
+import '@gouvfr/dsfr/dist/component/select/select.min.css';
 import { vi, suite, test, expect, beforeEach, afterEach } from 'vitest';
 import { userEvent, page } from '@vitest/browser/context';
 import { createRoot, type Root } from 'react-dom/client';
