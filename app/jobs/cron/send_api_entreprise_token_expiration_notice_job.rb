@@ -26,7 +26,7 @@ class Cron::SendAPIEntrepriseTokenExpirationNoticeJob < Cron::CronJob
 
   def procedures_with_expiring_token
     Procedure.kept
-      .where.not(api_entreprise_token: [nil, ''])
+      .where.not(api_entreprise_token: nil)
       .filter { it.api_entreprise_token.expired_or_expires_soon? }
   end
 

@@ -127,7 +127,7 @@ namespace :stats do
     end
 
     # 10. API entreprise avec jeton personnalisé
-    api_entreprise_procedures = base_scope.where.not(api_entreprise_token: [nil, ''])
+    api_entreprise_procedures = base_scope.where.not(api_entreprise_token: nil)
     add_procedure_stat(stats, "API Entreprise avec jeton personnalisé", api_entreprise_procedures, total_procedures, total_dossiers_all_procedures)
 
     # 11. Démarches déclaratives - en instruction
