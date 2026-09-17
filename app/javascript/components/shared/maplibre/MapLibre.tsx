@@ -9,15 +9,21 @@ import {
   useCallback
 } from 'react';
 import { createPortal } from 'react-dom';
-import { Map, NavigationControl, addProtocol } from 'maplibre-gl';
+import { Map, NavigationControl, addProtocol, setWorkerUrl } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { StyleSpecification, IControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+// maplibre-gl 6 resolves its worker from import.meta.url, which does not
+// survive bundling: hand Vite's self-contained worker URL over instead.
+// https://maplibre.org/maplibre-gl-js/docs/#installation
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 
 import invariant from 'tiny-invariant';
 
 import { useStyle, useElementVisible } from './hooks';
 import { StyleSwitch } from './StyleControl';
+
+setWorkerUrl(workerUrl);
 
 const Context = createContext<{ map?: Map | null }>({});
 
@@ -113,15 +119,17 @@ export function MapLibre({ children, layers }: MapLibreProps) {
   );
 }
 
+// maplibre-gl 6 requires WebGL2: a WebGL1-only browser must get our banner,
+// not maplibre's own error.
 function isWebglSupported() {
-  if (window.WebGLRenderingContext) {
+  if (window.WebGL2RenderingContext) {
     const canvas = document.createElement('canvas');
     try {
       // Note that { failIfMajorPerformanceCaveat: true } can be passed as a second argument
       // to canvas.getContext(), causing the check to fail if hardware rendering is not available. See
       // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
       // for more details.
-      const context = canvas.getContext('webgl2') || canvas.getContext('webgl');
+      const context = canvas.getContext('webgl2');
       if (context && typeof context.getParameter == 'function') {
         return true;
       }
