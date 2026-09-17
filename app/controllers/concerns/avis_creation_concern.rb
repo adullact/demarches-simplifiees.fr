@@ -4,6 +4,7 @@ module AvisCreationConcern
   extend ActiveSupport::Concern
 
   def handle_create_avis(claimant:, dossier:, success_path:, error_template:, avis_source: nil)
+    return render error_template, status: :forbidden if handle_forbidden_avis_creation(dossier)
     return render error_template, status: :unprocessable_content if handle_empty_emails
 
     sent_emails, failed_emails = CreateAvisService.call(
@@ -27,6 +28,15 @@ module AvisCreationConcern
   end
 
   private
+
+  # Same rules as the avis_new views, which hide the form in these cases.
+  def handle_forbidden_avis_creation(dossier)
+    if dossier.termine?
+      flash.now[:alert] = t('helpers.information_text.no_new_avis_text')
+    elsif dossier.procedure.disallow_expert_review?
+      flash.now[:alert] = t('helpers.information_text.unauthorized_avis_text')
+    end
+  end
 
   def handle_empty_emails
     if avis_emails.empty?
