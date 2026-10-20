@@ -1,6 +1,6 @@
 ---
 name: criticite-pr
-description: Évalue la criticité d'une ou plusieurs PR de demarche.numerique.gouv.fr (haute / moyenne / faible), pose le label criticité:* et un commentaire qui argumente le choix, et réévalue les PR qui ont reçu de nouveaux commits. À utiliser quand l'utilisateur demande la criticité, le niveau de risque ou le niveau de relecture d'une PR, veut labelliser les PR « autonome », ou lance /criticite-pr.
+description: Évalue la criticité d'une ou plusieurs PR de demarche-numerique (haute / moyenne / faible), pose le label criticité:* et un commentaire qui argumente le choix, et réévalue les PR qui ont reçu de nouveaux commits. À utiliser quand l'utilisateur demande la criticité, le niveau de risque ou le niveau de relecture d'une PR, veut labelliser les PR « autonome », ou lance /criticite-pr.
 ---
 
 # Criticité des PR

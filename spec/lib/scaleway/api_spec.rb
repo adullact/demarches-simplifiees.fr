@@ -25,7 +25,7 @@ describe Scaleway::API do
         expect(result).to all(be_a(SentMail))
 
         mail = result.first
-        expect(mail.from).to eq('noreply@demarche.numerique.gouv.fr')
+        expect(mail.from).to eq('noreply@demarche-numerique.example.org')
         expect(mail.to).to eq('user@example.com')
         expect(mail.subject).to eq('Confirmation de creation de compte')
         expect(mail.status).to eq('sent')

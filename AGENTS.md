@@ -3,8 +3,7 @@
 Guidelines for agents contributing to this repository.
 
 ## Project
-
-demarche.numerique.gouv.fr (formerly demarches-simplifiees.fr) — French government platform for digitizing administrative procedures. Rails, React/Stimulus, DSFR design system. Everything here touches sensitive citizen data.
+demarche-numerique (formerly demarches-simplifiees.fr) — French government platform for digitizing administrative procedures. Rails, React/Stimulus, DSFR design system. Everything here touches sensitive citizen data.
 
 ## Commands
 

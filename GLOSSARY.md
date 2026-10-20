@@ -1,6 +1,6 @@
 # Glossary
 
-The reference vocabulary of demarche.numerique.gouv.fr, in French and in
+The reference vocabulary of demarche-numerique in French and in
 English. It says how each domain concept is called in the product (French),
 in the English UI, in code, and where an older name is frozen.
 

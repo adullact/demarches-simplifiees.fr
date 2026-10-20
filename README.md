@@ -1,15 +1,15 @@
-# demarche.numerique.gouv.fr
+# demarche-numerique
 
 > [!NOTE]
 > [Lire la version française du README](README.fr.md)
 
 ## Context
 
-[demarche.numerique.gouv.fr](https://demarche.numerique.gouv.fr) is a web platform designed to address the French government's urgent need to comply with the directive for 100% digitization of administrative procedures.
+[demarche-numerique](https://demarche.numerique.gouv.fr) is a web platform designed to address the French government's urgent need to comply with the directive for 100% digitization of administrative procedures.
 
 ## How to contribute?
 
-demarche.numerique.gouv.fr is [open source](https://en.wikipedia.org/wiki/Open-source_software) software under the AGPL license.
+demarche-numerique is [open source](https://en.wikipedia.org/wiki/Open-source_software) software under the AGPL license.
 
 Would you like to make changes or improvements? Read our [contribution guide](CONTRIBUTING.md).
 

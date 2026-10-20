@@ -144,8 +144,10 @@ describe ApplicationHelper do
       expect(helper.acronymize('Application Name')).to eq('AN')
       expect(helper.acronymize('Hello World')).to eq('HW')
       expect(helper.acronymize('Demarches Simplifiees')).to eq('DS')
-      expect(helper.acronymize('demarche.numerique.gouv.fr')).to eq('DN')
       expect(helper.acronymize('demarches-simplifiees.fr')).to eq('DS')
+      expect(helper.acronymize('demarche.numerique.gouv.fr')).to eq('DN')
+      expect(helper.acronymize('demarche-numerique')).to eq('DN')
+      expect(helper.acronymize('Demarche Numerique')).to eq('DN')
       expect(helper.acronymize('demarches.adullact.org')).to eq('DA')
     end
   end

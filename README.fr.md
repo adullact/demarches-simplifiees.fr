@@ -1,12 +1,12 @@
-# demarche.numerique.gouv.fr
+# demarche-numerique
 
 ## Contexte
 
-[demarche.numerique.gouv.fr](https://demarche.numerique.gouv.fr) est un site web conçu afin de répondre au besoin urgent de l’État d’appliquer la directive sur le 100 % dématérialisation pour les démarches administratives.
+[demarche-numerique](https://demarche.numerique.gouv.fr) est un site web conçu afin de répondre au besoin urgent de l’État d’appliquer la directive sur le 100 % dématérialisation pour les démarches administratives.
 
 ## Comment contribuer ?
 
-demarche.numerique.gouv.fr est un [logiciel libre](https://fr.wikipedia.org/wiki/Logiciel_libre) sous licence AGPL.
+demarche-numerique est un [logiciel libre](https://fr.wikipedia.org/wiki/Logiciel_libre) sous licence AGPL.
 
 Vous souhaitez y apporter des changements ou des améliorations ? Lisez notre [guide de contribution](CONTRIBUTING.md).
 
